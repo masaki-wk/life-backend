@@ -7,17 +7,17 @@ use std::hash::Hash;
 pub type DefaultIndexType = i16;
 
 /// A representation of boards.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board<IndexType = DefaultIndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     live_cells: HashSet<(IndexType, IndexType)>,
 }
 
 impl<IndexType> Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     /// Creates an empty board.
     pub fn new() -> Self {
@@ -113,9 +113,19 @@ where
     }
 }
 
+impl<'a, IndexType> Board<IndexType>
+where
+    IndexType: Integer + Hash,
+{
+    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
+    pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, (IndexType, IndexType)> {
+        self.into_iter()
+    }
+}
+
 impl<IndexType> Default for Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     /// Same as new().
     fn default() -> Self {
@@ -125,7 +135,7 @@ where
 
 impl<IndexType> fmt::Display for Board<IndexType>
 where
-    IndexType: Copy + Hash + Integer,
+    IndexType: Integer + Hash + Copy,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (x_min, x_max, y_min, y_max) = self.bounding_box();
@@ -146,7 +156,7 @@ where
 
 impl<'a, IndexType> FromIterator<&'a (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Hash + Integer + 'a,
+    IndexType: Integer + Hash + Copy + 'a,
 {
     /// Conversion from a non-owning iterator over a series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
@@ -173,7 +183,7 @@ where
 
 impl<'a, IndexType> FromIterator<&'a mut (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Hash + Integer + 'a,
+    IndexType: Integer + Hash + Copy + 'a,
 {
     /// Conversion from a non-owning iterator over a series of &mut (IndexType, IndexType).
     /// Each item in the series represents a mutable reference of a live cell position.
@@ -201,7 +211,7 @@ where
 
 impl<IndexType> FromIterator<(IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     /// Conversion from an owning iterator over a series of (IndexType, IndexType).
     /// Each item in the series represents a moved live cell position.
@@ -228,7 +238,7 @@ where
 
 impl<'a, IndexType> Extend<&'a (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Hash + Integer + 'a,
+    IndexType: Integer + Hash + Copy + 'a,
 {
     /// Extend the board with the contents of the specified non-owning iterator over the series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
@@ -255,7 +265,7 @@ where
 
 impl<IndexType> Extend<(IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     /// Extend the board with the contents of the specified owning iterator over the series of (IndexType, IndexType).
     /// Each item in the series represents a moved live cell position.
@@ -282,7 +292,7 @@ where
 
 impl<'a, IndexType> IntoIterator for &'a Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     type Item = &'a (IndexType, IndexType);
     type IntoIter = std::collections::hash_set::Iter<'a, (IndexType, IndexType)>;
@@ -304,19 +314,9 @@ where
     }
 }
 
-impl<'a, IndexType> Board<IndexType>
-where
-    IndexType: Hash + Integer,
-{
-    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
-    pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, (IndexType, IndexType)> {
-        self.into_iter()
-    }
-}
-
 impl<IndexType> IntoIterator for Board<IndexType>
 where
-    IndexType: Hash + Integer,
+    IndexType: Integer + Hash,
 {
     type Item = (IndexType, IndexType);
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
