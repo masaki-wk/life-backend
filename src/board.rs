@@ -75,25 +75,28 @@ impl Board {
     ///
     pub fn bounding_box(&self) -> (IndexType, IndexType, IndexType, IndexType) {
         let mut iter = self.live_cells.iter();
-        let Some(&(mut x_min, mut y_min)) = iter.next() else {
-            return (0, 0, 0, 0);
-        };
-        let (mut x_max, mut y_max) = (x_min, y_min);
-        for &(x, y) in &self.live_cells {
-            if x < x_min {
-                x_min = x
-            };
-            if x > x_max {
-                x_max = x
-            };
-            if y < y_min {
-                y_min = y
-            };
-            if y > y_max {
-                y_max = y
-            };
+        if let Some(&(init_x, init_y)) = iter.next() {
+            iter.fold(
+                (init_x, init_x, init_y, init_y),
+                |(mut x_min, mut x_max, mut y_min, mut y_max), &(x, y)| {
+                    if x < x_min {
+                        x_min = x
+                    };
+                    if x > x_max {
+                        x_max = x
+                    };
+                    if y < y_min {
+                        y_min = y
+                    };
+                    if y > y_max {
+                        y_max = y
+                    };
+                    (x_min, x_max, y_min, y_max)
+                },
+            )
+        } else {
+            (0, 0, 0, 0)
         }
-        (x_min, x_max, y_min, y_max)
     }
 }
 
