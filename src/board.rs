@@ -161,3 +161,52 @@ impl FromIterator<Position> for Board {
         Self { live_cells }
     }
 }
+
+impl<'a> IntoIterator for &'a Board {
+    type Item = &'a Position;
+    type IntoIter = std::collections::hash_set::Iter<'a, Position>;
+
+    /// Creates an borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// # use std::collections::HashSet;
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let board: Board = pattern.iter().collect();
+    /// let result: HashSet<_> = (&board).into_iter().collect();
+    /// let expected: HashSet<_> = pattern.iter().collect();
+    /// assert_eq!(result, expected);
+    /// ```
+    ///
+    fn into_iter(self) -> Self::IntoIter {
+        self.live_cells.iter()
+    }
+}
+
+impl<'a> Board {
+    /// Creates an borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, Position> {
+        self.into_iter()
+    }
+}
+
+impl IntoIterator for Board {
+    type Item = Position;
+    type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
+
+    /// Creates an consuming iterator, that is, one that moves each live cell out of the board in arbitrary order.
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// # use std::collections::HashSet;
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let board: Board = pattern.iter().collect();
+    /// let result: HashSet<_> = board.into_iter().collect();
+    /// let expected: HashSet<_> = pattern.into_iter().collect();
+    /// assert_eq!(result, expected);
+    /// ```
+    ///
+    fn into_iter(self) -> Self::IntoIter {
+        self.live_cells.into_iter()
+    }
+}
