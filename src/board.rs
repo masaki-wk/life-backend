@@ -8,7 +8,7 @@ pub type IndexType = i16;
 type Position = (IndexType, IndexType);
 
 /// A representation of boards.
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Board {
     live_cells: HashSet<Position>,
 }
