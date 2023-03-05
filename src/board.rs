@@ -115,7 +115,7 @@ impl fmt::Display for Board {
 }
 
 impl<'a> FromIterator<&'a Position> for Board {
-    /// Conversion from a non-consuming iterator over a series of &(IndexType, IndexType).
+    /// Conversion from a non-owning iterator over a series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -139,7 +139,7 @@ impl<'a> FromIterator<&'a Position> for Board {
 }
 
 impl<'a> FromIterator<&'a mut Position> for Board {
-    /// Conversion from a non-consuming iterator over a series of &mut (IndexType, IndexType).
+    /// Conversion from a non-owning iterator over a series of &mut (IndexType, IndexType).
     /// Each item in the series represents a mutable reference of a live cell position.
     ///
     /// # Examples
@@ -163,8 +163,8 @@ impl<'a> FromIterator<&'a mut Position> for Board {
 }
 
 impl FromIterator<Position> for Board {
-    /// Conversion from a consuming iterator over a series of (IndexType, IndexType).
-    /// Each item in the series represents a live cell position.
+    /// Conversion from an owning iterator over a series of (IndexType, IndexType).
+    /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
     ///
@@ -187,7 +187,7 @@ impl FromIterator<Position> for Board {
 }
 
 impl<'a> Extend<&'a Position> for Board {
-    /// Extend the board with the contents of the specified non-consuming iterator over the series of &(IndexType, IndexType).
+    /// Extend the board with the contents of the specified non-owning iterator over the series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -211,8 +211,8 @@ impl<'a> Extend<&'a Position> for Board {
 }
 
 impl Extend<Position> for Board {
-    /// Extend the board with the contents of the specified consuming iterator over the series of (IndexType, IndexType).
-    /// Each item in the series represents a live cell position.
+    /// Extend the board with the contents of the specified owning iterator over the series of (IndexType, IndexType).
+    /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
     ///
@@ -238,7 +238,7 @@ impl<'a> IntoIterator for &'a Board {
     type Item = &'a Position;
     type IntoIter = std::collections::hash_set::Iter<'a, Position>;
 
-    /// Creates a non-consuming iterator over the series of immutable live cell positions on the board in arbitrary order.
+    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
@@ -256,7 +256,7 @@ impl<'a> IntoIterator for &'a Board {
 }
 
 impl<'a> Board {
-    /// Creates a non-consuming iterator over the series of immutable live cell positions on the board in arbitrary order.
+    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, Position> {
         self.into_iter()
     }
@@ -266,7 +266,7 @@ impl IntoIterator for Board {
     type Item = Position;
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
 
-    /// Creates a consuming iterator over the series of moved live cell positions on the board in arbitrary order.
+    /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
