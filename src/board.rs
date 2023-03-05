@@ -56,12 +56,14 @@ impl Board {
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
+    /// If the board is empty, returns (0, 0, 0, 0).
     ///
     /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
     /// let mut board = Board::new();
+    /// assert_eq!((0, 0, 0, 0), board.bounding_box());
     /// board.set(-1, 2, true);
     /// board.set(3, -2, true);
     /// let (x_min, x_max, y_min, y_max) = board.bounding_box();
@@ -72,10 +74,11 @@ impl Board {
     /// ```
     ///
     pub fn bounding_box(&self) -> (IndexType, IndexType, IndexType, IndexType) {
-        let mut x_min = 0;
-        let mut x_max = 0;
-        let mut y_min = 0;
-        let mut y_max = 0;
+        let mut iter = self.live_cells.iter();
+        let Some(&(mut x_min, mut y_min)) = iter.next() else {
+            return (0, 0, 0, 0);
+        };
+        let (mut x_max, mut y_max) = (x_min, y_min);
         for &(x, y) in &self.live_cells {
             if x < x_min {
                 x_min = x
