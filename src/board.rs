@@ -186,6 +186,54 @@ impl FromIterator<Position> for Board {
     }
 }
 
+impl<'a> Extend<&'a Position> for Board {
+    /// Extend the board with the contents of the specified non-consuming iterator over the series of &(IndexType, IndexType).
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// board.extend(pattern.iter());
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), true);
+    /// assert_eq!(board.get(2, 0), true);
+    /// assert_eq!(board.get(0, 1), false);
+    /// assert_eq!(board.get(1, 1), true);
+    /// assert_eq!(board.get(2, 1), false);
+    /// ```
+    ///
+    fn extend<T: IntoIterator<Item = &'a Position>>(&mut self, iter: T) {
+        self.live_cells.extend(iter);
+    }
+}
+
+impl Extend<Position> for Board {
+    /// Extend the board with the contents of the specified consuming iterator over the series of (IndexType, IndexType).
+    /// Each item in the series represents a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// board.extend(pattern.into_iter());
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), true);
+    /// assert_eq!(board.get(2, 0), true);
+    /// assert_eq!(board.get(0, 1), false);
+    /// assert_eq!(board.get(1, 1), true);
+    /// assert_eq!(board.get(2, 1), false);
+    /// ```
+    ///
+    fn extend<T: IntoIterator<Item = Position>>(&mut self, iter: T) {
+        self.live_cells.extend(iter);
+    }
+}
+
 impl<'a> IntoIterator for &'a Board {
     type Item = &'a Position;
     type IntoIter = std::collections::hash_set::Iter<'a, Position>;
