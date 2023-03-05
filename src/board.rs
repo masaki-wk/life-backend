@@ -115,8 +115,8 @@ impl fmt::Display for Board {
 }
 
 impl<'a> FromIterator<&'a Position> for Board {
-    /// Conversion from a non-consuming iterator over a sequence of &(IndexType, IndexType).
-    /// Each item in the sequence represents an immutable reference of a live cell position.
+    /// Conversion from a non-consuming iterator over a series of &(IndexType, IndexType).
+    /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
     ///
@@ -139,8 +139,8 @@ impl<'a> FromIterator<&'a Position> for Board {
 }
 
 impl<'a> FromIterator<&'a mut Position> for Board {
-    /// Conversion from a non-consuming iterator over a sequence of &mut (IndexType, IndexType).
-    /// Each item in the sequence represents a mutable reference of a live cell position.
+    /// Conversion from a non-consuming iterator over a series of &mut (IndexType, IndexType).
+    /// Each item in the series represents a mutable reference of a live cell position.
     ///
     /// # Examples
     ///
@@ -163,8 +163,8 @@ impl<'a> FromIterator<&'a mut Position> for Board {
 }
 
 impl FromIterator<Position> for Board {
-    /// Conversion from a consuming iterator over a sequence of (IndexType, IndexType).
-    /// Each item in the sequence represents a live cell position.
+    /// Conversion from a consuming iterator over a series of (IndexType, IndexType).
+    /// Each item in the series represents a live cell position.
     ///
     /// # Examples
     ///
@@ -190,7 +190,7 @@ impl<'a> IntoIterator for &'a Board {
     type Item = &'a Position;
     type IntoIter = std::collections::hash_set::Iter<'a, Position>;
 
-    /// Creates a non-consuming iterator over the sequence of immutable live cell positions on the board in arbitrary order.
+    /// Creates a non-consuming iterator over the series of immutable live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
@@ -208,7 +208,7 @@ impl<'a> IntoIterator for &'a Board {
 }
 
 impl<'a> Board {
-    /// Creates a non-consuming iterator over the sequence of immutable live cell positions on the board in arbitrary order.
+    /// Creates a non-consuming iterator over the series of immutable live cell positions on the board in arbitrary order.
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, Position> {
         self.into_iter()
     }
@@ -218,7 +218,7 @@ impl IntoIterator for Board {
     type Item = Position;
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
 
-    /// Creates a consuming iterator over the sequence of moved live cell positions on the board in arbitrary order.
+    /// Creates a consuming iterator over the series of moved live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
