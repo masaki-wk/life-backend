@@ -1,105 +1,112 @@
-use anyhow::{ensure, Result};
+use std::collections::HashSet;
 use std::fmt;
 
 /// the index type of boards.
-pub type BoardIndexType = u16;
+pub type IndexType = i16;
 
-// the position type on boards.
-type Position = (BoardIndexType, BoardIndexType);
+// the position type of boards.
+type Position = (IndexType, IndexType);
 
 /// A representation of boards.
 #[derive(Debug)]
 pub struct Board {
-    width: BoardIndexType,
-    height: BoardIndexType,
-    grids: Vec<bool>,
+    live_cells: HashSet<Position>,
 }
 
 impl Board {
-    /// Creates a board with specified width and height.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use life_backend::Board;
-    /// let board = Board::with_size(3, 2);
-    /// assert_eq!(board.width(), 3);
-    /// assert_eq!(board.height(), 2);
-    /// ```
-    ///
-    pub fn with_size(width: BoardIndexType, height: BoardIndexType) -> Self {
-        let grids = if width > 0 && height > 0 {
-            vec![false; width as usize * height as usize]
-        } else {
-            Vec::new()
-        };
-        Self {
-            width,
-            height,
-            grids,
-        }
-    }
-
-    /// Returns the width of the board.
-    pub fn width(&self) -> BoardIndexType {
-        self.width
-    }
-
-    /// Returns the height of the board.
-    pub fn height(&self) -> BoardIndexType {
-        self.height
-    }
-
-    // Converts the specified position (x, y) into the index for self.grids.
-    // If the position is out of the board, returns an error.
-    fn position_to_index(&self, x: BoardIndexType, y: BoardIndexType) -> Result<usize> {
-        ensure!(x < self.width && y < self.height, "index out of bounds");
-        let index = y as usize * self.width as usize + x as usize;
-        Ok(index)
+    /// Creates an empty board.
+    pub fn new() -> Self {
+        let live_cells = HashSet::new();
+        Self { live_cells }
     }
 
     /// Returns the value of the specified position of the board.
-    /// If the position is out of the board, returns an error.
     ///
     /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let board = Board::with_size(3, 2);
-    /// assert!(matches!(board.get(0, 0), Ok(false)));
-    /// assert!(matches!(board.get(3, 0), Err(_)));
+    /// let board = Board::new();
+    /// assert_eq!(board.get(0, 0), false);
     /// ```
     ///
-    pub fn get(&self, x: BoardIndexType, y: BoardIndexType) -> Result<bool> {
-        let index = self.position_to_index(x, y)?;
-        Ok(self.grids[index])
+    pub fn get(&self, x: IndexType, y: IndexType) -> bool {
+        let pos = (x, y);
+        self.live_cells.contains(&pos)
     }
 
     /// Set the specified value on the specified position of the board.
-    /// If the position is out of the board, changes nothing and returns an error.
     ///
     /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let mut board = Board::with_size(3, 2);
-    /// assert!(matches!(board.set(0, 0, true), Ok(_)));
-    /// assert!(matches!(board.get(0, 0), Ok(true)));
-    /// assert!(matches!(board.set(3, 0, true), Err(_)));
+    /// let mut board = Board::new();
+    /// board.set(0, 0, true);
+    /// assert_eq!(board.get(0, 0), true);
     /// ```
     ///
-    pub fn set(&mut self, x: BoardIndexType, y: BoardIndexType, value: bool) -> Result<()> {
-        let index = self.position_to_index(x, y)?;
-        self.grids[index] = value;
-        Ok(())
+    pub fn set(&mut self, x: IndexType, y: IndexType, value: bool) {
+        let pos = (x, y);
+        if value {
+            self.live_cells.insert(pos);
+        } else {
+            self.live_cells.remove(&pos);
+        }
+    }
+
+    /// Returns the minimum bounding box of all live cells on the board.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// board.set(-1, 2, true);
+    /// board.set(3, -2, true);
+    /// let (x_min, x_max, y_min, y_max) = board.bounding_box();
+    /// assert_eq!(x_min, -1);
+    /// assert_eq!(x_max, 3);
+    /// assert_eq!(y_min, -2);
+    /// assert_eq!(y_max, 2);
+    /// ```
+    ///
+    pub fn bounding_box(&self) -> (IndexType, IndexType, IndexType, IndexType) {
+        let mut x_min = 0;
+        let mut x_max = 0;
+        let mut y_min = 0;
+        let mut y_max = 0;
+        for &(x, y) in &self.live_cells {
+            if x < x_min {
+                x_min = x
+            };
+            if x > x_max {
+                x_max = x
+            };
+            if y < y_min {
+                y_min = y
+            };
+            if y > y_max {
+                y_max = y
+            };
+        }
+        (x_min, x_max, y_min, y_max)
+    }
+}
+
+impl Default for Board {
+    /// Same as new().
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for y in 0..self.height() {
-            let line: String = (0..self.width())
-                .map(|x| if self.get(x, y).unwrap() { 'O' } else { '.' })
+        let (x_min, x_max, y_min, y_max) = self.bounding_box();
+        for y in y_min..=y_max {
+            let line: String = (x_min..=x_max)
+                .map(|x| if self.get(x, y) { 'O' } else { '.' })
                 .collect();
             writeln!(f, "{line}")?;
         }
@@ -108,7 +115,7 @@ impl fmt::Display for Board {
 }
 
 impl<'a> FromIterator<&'a Position> for Board {
-    /// Conversion from an Iterator over a sequence of &(BoardIndexType, BoardIndexType).
+    /// Conversion from an Iterator over a sequence of &(IndexType, IndexType).
     /// Each item in the sequence represents a reference of a live cell position.
     ///
     /// # Examples
@@ -117,40 +124,16 @@ impl<'a> FromIterator<&'a Position> for Board {
     /// # use life_backend::Board;
     /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
     /// let board: Board = pattern.iter().collect();
-    /// assert_eq!(board.width(), 3);
-    /// assert_eq!(board.height(), 2);
-    /// assert_eq!(board.get(0, 0).unwrap(), true);
-    /// assert_eq!(board.get(1, 0).unwrap(), true);
-    /// assert_eq!(board.get(2, 0).unwrap(), true);
-    /// assert_eq!(board.get(0, 1).unwrap(), false);
-    /// assert_eq!(board.get(1, 1).unwrap(), true);
-    /// assert_eq!(board.get(2, 1).unwrap(), false);
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), true);
+    /// assert_eq!(board.get(2, 0), true);
+    /// assert_eq!(board.get(0, 1), false);
+    /// assert_eq!(board.get(1, 1), true);
+    /// assert_eq!(board.get(2, 1), false);
     /// ```
     ///
     fn from_iter<T: IntoIterator<Item = &'a Position>>(iter: T) -> Self {
-        let mut buf = Vec::new();
-        let mut width: BoardIndexType = 0;
-        let mut height: BoardIndexType = 0;
-        for &pos in iter {
-            let (x, y) = pos;
-            if x >= width {
-                if x == BoardIndexType::MAX {
-                    panic!("x coordinate of the position is out of bounds");
-                }
-                width = x + 1;
-            }
-            if y >= height {
-                if y == BoardIndexType::MAX {
-                    panic!("y coordinate of the position is out of bounds");
-                }
-                height = y + 1;
-            }
-            buf.push(pos);
-        }
-        let mut board = Self::with_size(width, height);
-        for pos in buf {
-            board.set(pos.0, pos.1, true).unwrap(); // this never panics
-        }
-        board
+        let live_cells: HashSet<Position> = iter.into_iter().copied().collect();
+        Self { live_cells }
     }
 }
