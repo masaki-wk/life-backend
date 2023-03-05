@@ -115,14 +115,14 @@ impl fmt::Display for Board {
 }
 
 impl<'a> FromIterator<&'a Position> for Board {
-    /// Conversion from a borrowing iterator over a sequence of &(IndexType, IndexType).
-    /// Each item in the sequence represents a reference of a live cell position.
+    /// Conversion from a non-consuming iterator over a sequence of &(IndexType, IndexType).
+    /// Each item in the sequence represents an immutable reference of a live cell position.
     ///
     /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
     /// let board: Board = pattern.iter().collect();
     /// assert_eq!(board.get(0, 0), true);
     /// assert_eq!(board.get(1, 0), true);
@@ -146,7 +146,7 @@ impl FromIterator<Position> for Board {
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
     /// let board: Board = pattern.into_iter().collect();
     /// assert_eq!(board.get(0, 0), true);
     /// assert_eq!(board.get(1, 0), true);
@@ -166,12 +166,12 @@ impl<'a> IntoIterator for &'a Board {
     type Item = &'a Position;
     type IntoIter = std::collections::hash_set::Iter<'a, Position>;
 
-    /// Creates a borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    /// Creates a non-consuming iterator over the sequence of immutable live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
     /// let expected: HashSet<_> = pattern.iter().collect();
@@ -184,7 +184,7 @@ impl<'a> IntoIterator for &'a Board {
 }
 
 impl<'a> Board {
-    /// Creates a borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    /// Creates a non-consuming iterator over the sequence of immutable live cell positions on the board in arbitrary order.
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, Position> {
         self.into_iter()
     }
@@ -194,12 +194,12 @@ impl IntoIterator for Board {
     type Item = Position;
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
 
-    /// Creates a consuming iterator, that is, one that moves each live cell out of the board in arbitrary order.
+    /// Creates a consuming iterator over the sequence of moved live cell positions on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
     /// let expected: HashSet<_> = pattern.into_iter().collect();
