@@ -5,4 +5,4 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-num = "0.4.0"
+num-integer = "0.1.45"

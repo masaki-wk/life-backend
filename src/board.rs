@@ -1,8 +1,7 @@
-use num::One;
+use num_integer::Integer;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
-use std::ops::Add;
 
 /// the default index type of boards.
 pub type DefaultIndexType = i16;
@@ -11,14 +10,14 @@ pub type DefaultIndexType = i16;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Board<IndexType = DefaultIndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     live_cells: HashSet<(IndexType, IndexType)>,
 }
 
 impl<IndexType> Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     /// Creates an empty board.
     pub fn new() -> Self {
@@ -81,7 +80,7 @@ where
     ///
     pub fn bounding_box(&self) -> (IndexType, IndexType, IndexType, IndexType)
     where
-        IndexType: Copy + Default + PartialOrd,
+        IndexType: Copy,
     {
         let mut iter = self.live_cells.iter();
         if let Some(&(init_x, init_y)) = iter.next() {
@@ -105,10 +104,10 @@ where
             )
         } else {
             (
-                IndexType::default(),
-                IndexType::default(),
-                IndexType::default(),
-                IndexType::default(),
+                IndexType::zero(),
+                IndexType::zero(),
+                IndexType::zero(),
+                IndexType::zero(),
             )
         }
     }
@@ -116,7 +115,7 @@ where
 
 impl<IndexType> Default for Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     /// Same as new().
     fn default() -> Self {
@@ -126,7 +125,7 @@ where
 
 impl<IndexType> fmt::Display for Board<IndexType>
 where
-    IndexType: Add<Output = IndexType> + Copy + Default + Eq + Hash + One + PartialOrd,
+    IndexType: Copy + Hash + Integer,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (x_min, x_max, y_min, y_max) = self.bounding_box();
@@ -147,7 +146,7 @@ where
 
 impl<'a, IndexType> FromIterator<&'a (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Eq + Hash + 'a,
+    IndexType: Copy + Hash + Integer + 'a,
 {
     /// Conversion from a non-owning iterator over a series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
@@ -174,7 +173,7 @@ where
 
 impl<'a, IndexType> FromIterator<&'a mut (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Eq + Hash,
+    IndexType: Copy + Hash + Integer + 'a,
 {
     /// Conversion from a non-owning iterator over a series of &mut (IndexType, IndexType).
     /// Each item in the series represents a mutable reference of a live cell position.
@@ -202,7 +201,7 @@ where
 
 impl<IndexType> FromIterator<(IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     /// Conversion from an owning iterator over a series of (IndexType, IndexType).
     /// Each item in the series represents a moved live cell position.
@@ -229,7 +228,7 @@ where
 
 impl<'a, IndexType> Extend<&'a (IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Copy + Eq + Hash + 'a,
+    IndexType: Copy + Hash + Integer + 'a,
 {
     /// Extend the board with the contents of the specified non-owning iterator over the series of &(IndexType, IndexType).
     /// Each item in the series represents an immutable reference of a live cell position.
@@ -256,7 +255,7 @@ where
 
 impl<IndexType> Extend<(IndexType, IndexType)> for Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     /// Extend the board with the contents of the specified owning iterator over the series of (IndexType, IndexType).
     /// Each item in the series represents a moved live cell position.
@@ -283,7 +282,7 @@ where
 
 impl<'a, IndexType> IntoIterator for &'a Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     type Item = &'a (IndexType, IndexType);
     type IntoIter = std::collections::hash_set::Iter<'a, (IndexType, IndexType)>;
@@ -307,7 +306,7 @@ where
 
 impl<'a, IndexType> Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, (IndexType, IndexType)> {
@@ -317,7 +316,7 @@ where
 
 impl<IndexType> IntoIterator for Board<IndexType>
 where
-    IndexType: Eq + Hash,
+    IndexType: Hash + Integer,
 {
     type Item = (IndexType, IndexType);
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
