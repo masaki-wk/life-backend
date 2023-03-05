@@ -137,3 +137,27 @@ impl<'a> FromIterator<&'a Position> for Board {
         Self { live_cells }
     }
 }
+
+impl FromIterator<Position> for Board {
+    /// Conversion from an Iterator over a sequence of (IndexType, IndexType).
+    /// Each item in the sequence represents a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];  // T-tetromino pattern
+    /// let board: Board = pattern.into_iter().collect();
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), true);
+    /// assert_eq!(board.get(2, 0), true);
+    /// assert_eq!(board.get(0, 1), false);
+    /// assert_eq!(board.get(1, 1), true);
+    /// assert_eq!(board.get(2, 1), false);
+    /// ```
+    ///
+    fn from_iter<T: IntoIterator<Item = Position>>(iter: T) -> Self {
+        let live_cells: HashSet<Position> = iter.into_iter().collect();
+        Self { live_cells }
+    }
+}
