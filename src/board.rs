@@ -115,7 +115,7 @@ impl fmt::Display for Board {
 }
 
 impl<'a> FromIterator<&'a Position> for Board {
-    /// Conversion from an Iterator over a sequence of &(IndexType, IndexType).
+    /// Conversion from a borrowing iterator over a sequence of &(IndexType, IndexType).
     /// Each item in the sequence represents a reference of a live cell position.
     ///
     /// # Examples
@@ -139,7 +139,7 @@ impl<'a> FromIterator<&'a Position> for Board {
 }
 
 impl FromIterator<Position> for Board {
-    /// Conversion from an Iterator over a sequence of (IndexType, IndexType).
+    /// Conversion from a consuming iterator over a sequence of (IndexType, IndexType).
     /// Each item in the sequence represents a live cell position.
     ///
     /// # Examples
@@ -166,7 +166,7 @@ impl<'a> IntoIterator for &'a Board {
     type Item = &'a Position;
     type IntoIter = std::collections::hash_set::Iter<'a, Position>;
 
-    /// Creates an borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    /// Creates a borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
@@ -184,7 +184,7 @@ impl<'a> IntoIterator for &'a Board {
 }
 
 impl<'a> Board {
-    /// Creates an borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
+    /// Creates a borrowing iterator, that is, one that references each live cell on the board in arbitrary order.
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, Position> {
         self.into_iter()
     }
@@ -194,7 +194,7 @@ impl IntoIterator for Board {
     type Item = Position;
     type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
 
-    /// Creates an consuming iterator, that is, one that moves each live cell out of the board in arbitrary order.
+    /// Creates a consuming iterator, that is, one that moves each live cell out of the board in arbitrary order.
     ///
     /// ```
     /// # use life_backend::Board;
