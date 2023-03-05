@@ -138,6 +138,30 @@ impl<'a> FromIterator<&'a Position> for Board {
     }
 }
 
+impl<'a> FromIterator<&'a mut Position> for Board {
+    /// Conversion from a non-consuming iterator over a sequence of &mut (IndexType, IndexType).
+    /// Each item in the sequence represents a mutable reference of a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let board: Board = pattern.iter_mut().collect();
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), true);
+    /// assert_eq!(board.get(2, 0), true);
+    /// assert_eq!(board.get(0, 1), false);
+    /// assert_eq!(board.get(1, 1), true);
+    /// assert_eq!(board.get(2, 1), false);
+    /// ```
+    ///
+    fn from_iter<T: IntoIterator<Item = &'a mut Position>>(iter: T) -> Self {
+        let live_cells: HashSet<Position> = iter.into_iter().map(|&mut x| x).collect();
+        Self { live_cells }
+    }
+}
+
 impl FromIterator<Position> for Board {
     /// Conversion from a consuming iterator over a sequence of (IndexType, IndexType).
     /// Each item in the sequence represents a live cell position.
