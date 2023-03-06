@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use std::fmt;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Plaintext {
     name: String,
     comments: Vec<String>,
@@ -88,7 +88,7 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// use life_backend::format::Plaintext;
+    /// # use life_backend::format::Plaintext;
     /// let string = "\
     /// !Name: Glider\n\
     /// .O\n\
