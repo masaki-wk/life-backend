@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-/// the default index type of boards.
+/// The default index type of boards.
 pub type DefaultIndexType = i16;
 
 /// A representation of boards.
@@ -14,6 +14,8 @@ where
 {
     live_cells: HashSet<(IndexType, IndexType)>,
 }
+
+// Inherent methods
 
 impl<IndexType> Board<IndexType>
 where
@@ -123,6 +125,8 @@ where
     }
 }
 
+// Trait implementations
+
 impl<IndexType> Default for Board<IndexType>
 where
     IndexType: Integer + Hash,
@@ -151,6 +155,54 @@ where
             y = y + IndexType::one();
         }
         Ok(())
+    }
+}
+
+impl<'a, IndexType> IntoIterator for &'a Board<IndexType>
+where
+    IndexType: Integer + Hash,
+{
+    type Item = &'a (IndexType, IndexType);
+    type IntoIter = std::collections::hash_set::Iter<'a, (IndexType, IndexType)>;
+
+    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// # use std::collections::HashSet;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let board: Board = pattern.iter().collect();
+    /// let result: HashSet<_> = (&board).into_iter().collect();
+    /// let expected: HashSet<_> = pattern.iter().collect();
+    /// assert_eq!(result, expected);
+    /// ```
+    ///
+    fn into_iter(self) -> Self::IntoIter {
+        self.live_cells.iter()
+    }
+}
+
+impl<IndexType> IntoIterator for Board<IndexType>
+where
+    IndexType: Integer + Hash,
+{
+    type Item = (IndexType, IndexType);
+    type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
+
+    /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// # use std::collections::HashSet;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let board: Board = pattern.iter().collect();
+    /// let result: HashSet<_> = board.into_iter().collect();
+    /// let expected: HashSet<_> = pattern.into_iter().collect();
+    /// assert_eq!(result, expected);
+    /// ```
+    ///
+    fn into_iter(self) -> Self::IntoIter {
+        self.live_cells.into_iter()
     }
 }
 
@@ -277,53 +329,5 @@ where
     ///
     fn extend<T: IntoIterator<Item = (IndexType, IndexType)>>(&mut self, iter: T) {
         self.live_cells.extend(iter);
-    }
-}
-
-impl<'a, IndexType> IntoIterator for &'a Board<IndexType>
-where
-    IndexType: Integer + Hash,
-{
-    type Item = &'a (IndexType, IndexType);
-    type IntoIter = std::collections::hash_set::Iter<'a, (IndexType, IndexType)>;
-
-    /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
-    ///
-    /// ```
-    /// # use life_backend::Board;
-    /// # use std::collections::HashSet;
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter().collect();
-    /// let result: HashSet<_> = (&board).into_iter().collect();
-    /// let expected: HashSet<_> = pattern.iter().collect();
-    /// assert_eq!(result, expected);
-    /// ```
-    ///
-    fn into_iter(self) -> Self::IntoIter {
-        self.live_cells.iter()
-    }
-}
-
-impl<IndexType> IntoIterator for Board<IndexType>
-where
-    IndexType: Integer + Hash,
-{
-    type Item = (IndexType, IndexType);
-    type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
-
-    /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
-    ///
-    /// ```
-    /// # use life_backend::Board;
-    /// # use std::collections::HashSet;
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter().collect();
-    /// let result: HashSet<_> = board.into_iter().collect();
-    /// let expected: HashSet<_> = pattern.into_iter().collect();
-    /// assert_eq!(result, expected);
-    /// ```
-    ///
-    fn into_iter(self) -> Self::IntoIter {
-        self.live_cells.into_iter()
     }
 }
