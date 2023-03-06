@@ -1,4 +1,5 @@
 use anyhow::{bail, ensure, Result};
+use std::fmt;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug)]
@@ -99,5 +100,19 @@ impl Plaintext {
     #[inline]
     pub fn pattern(&self) -> &Vec<Vec<bool>> {
         &self.pattern
+    }
+}
+
+impl fmt::Display for Plaintext {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "!Name: {}", self.name())?;
+        for line in self.comment() {
+            writeln!(f, "!{}", line)?;
+        }
+        for line in self.pattern() {
+            let str: String = line.iter().map(|&x| if x { 'O' } else { '.' }).collect();
+            writeln!(f, "{str}")?;
+        }
+        Ok(())
     }
 }

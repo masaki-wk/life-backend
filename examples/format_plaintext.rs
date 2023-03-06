@@ -1,6 +1,7 @@
+use anyhow::Result;
 use life_backend::format::Plaintext;
 
-fn main() {
+fn main() -> Result<()> {
     let parser = Plaintext::new(
         "\
         !Name: Glider\n\
@@ -8,6 +9,8 @@ fn main() {
         ..O\n\
         OOO\n\
     ",
-    );
+    )?;
     println!("Print as Debug: {:?}", parser);
+    println!("Print as Display:\n{}", parser);
+    Ok(())
 }
