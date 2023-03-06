@@ -126,13 +126,13 @@ impl Plaintext {
         &self.name
     }
 
-    /// Returns the name of the pattern.
+    /// Returns comments of the pattern.
     #[inline]
     pub fn comment(&self) -> &Vec<String> {
         &self.comment
     }
 
-    /// Returns the name of the pattern.
+    /// Returns the content of the pattern.
     #[inline]
     pub fn pattern(&self) -> &Vec<Vec<bool>> {
         &self.pattern
