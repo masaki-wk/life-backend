@@ -5,15 +5,15 @@ use std::fmt;
 #[derive(Debug)]
 pub struct Plaintext {
     name: String,
-    comment: Vec<String>,
-    pattern: Vec<Vec<bool>>,
+    comments: Vec<String>,
+    contents: Vec<Vec<bool>>,
 }
 
 // An internal struct, used during constructing of Plaintext
 struct PlaintextPartial {
     name: Option<String>,
-    comment: Vec<String>,
-    pattern: Vec<Vec<bool>>,
+    comments: Vec<String>,
+    contents: Vec<Vec<bool>>,
 }
 
 // Inherent methods of PlaintextPartial
@@ -39,7 +39,7 @@ impl PlaintextPartial {
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
-    fn parse_pattern_line(line: &str) -> Option<Vec<bool>> {
+    fn parse_content_line(line: &str) -> Option<Vec<bool>> {
         let mut buf = Vec::new();
         for char in line.chars() {
             let value = match char {
@@ -54,8 +54,8 @@ impl PlaintextPartial {
     fn new() -> Self {
         Self {
             name: None,
-            comment: Vec::new(),
-            pattern: Vec::new(),
+            comments: Vec::new(),
+            contents: Vec::new(),
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
@@ -65,16 +65,16 @@ impl PlaintextPartial {
             };
             self.name = Some(name.to_string());
         } else {
-            if self.pattern.is_empty() {
+            if self.contents.is_empty() {
                 if let Some(comment) = Self::parse_comment_line(line) {
-                    self.comment.push(comment.to_string());
+                    self.comments.push(comment.to_string());
                     return Ok(());
                 }
             }
-            let Some(pattern) = Self::parse_pattern_line(line) else {
+            let Some(content) = Self::parse_content_line(line) else {
                 bail!("Invalid character found in the pattern");
             };
-            self.pattern.push(pattern);
+            self.contents.push(content);
         }
         Ok(())
     }
@@ -96,10 +96,10 @@ impl Plaintext {
     /// OOO\n\
     /// ").unwrap();
     /// assert_eq!(parser.name(), "Glider");
-    /// assert_eq!(parser.comment().len(), 0);
-    /// assert_eq!(parser.pattern()[0], vec![false, true]);
-    /// assert_eq!(parser.pattern()[1], vec![false, false, true]);
-    /// assert_eq!(parser.pattern()[2], vec![true, true, true]);
+    /// assert_eq!(parser.comments().len(), 0);
+    /// assert_eq!(parser.contents()[0], vec![false, true]);
+    /// assert_eq!(parser.contents()[1], vec![false, false, true]);
+    /// assert_eq!(parser.contents()[2], vec![true, true, true]);
     /// ```
     ///
     pub fn new(str: &str) -> Result<Self> {
@@ -115,8 +115,8 @@ impl Plaintext {
         };
         Ok(Self {
             name,
-            comment: partial.comment,
-            pattern: partial.pattern,
+            comments: partial.comments,
+            contents: partial.contents,
         })
     }
 
@@ -128,24 +128,24 @@ impl Plaintext {
 
     /// Returns comments of the pattern.
     #[inline]
-    pub fn comment(&self) -> &Vec<String> {
-        &self.comment
+    pub fn comments(&self) -> &Vec<String> {
+        &self.comments
     }
 
-    /// Returns the content of the pattern.
+    /// Returns contents of the pattern.
     #[inline]
-    pub fn pattern(&self) -> &Vec<Vec<bool>> {
-        &self.pattern
+    pub fn contents(&self) -> &Vec<Vec<bool>> {
+        &self.contents
     }
 }
 
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
-        for line in self.comment() {
+        for line in self.comments() {
             writeln!(f, "!{}", line)?;
         }
-        for line in self.pattern() {
+        for line in self.contents() {
             let str: String = line.iter().map(|&x| if x { 'O' } else { '.' }).collect();
             writeln!(f, "{str}")?;
         }
