@@ -22,6 +22,7 @@ where
     IndexType: Integer + Hash,
 {
     /// Creates an empty board.
+    #[inline]
     pub fn new() -> Self {
         let live_cells = HashSet::new();
         Self { live_cells }
@@ -37,6 +38,7 @@ where
     /// assert_eq!(board.get(0, 0), false);
     /// ```
     ///
+    #[inline]
     pub fn get(&self, x: IndexType, y: IndexType) -> bool {
         let pos = (x, y);
         self.live_cells.contains(&pos)
@@ -53,6 +55,7 @@ where
     /// assert_eq!(board.get(0, 0), true);
     /// ```
     ///
+    #[inline]
     pub fn set(&mut self, x: IndexType, y: IndexType, value: bool) {
         let pos = (x, y);
         if value {
@@ -120,6 +123,7 @@ where
     IndexType: Integer + Hash,
 {
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
+    #[inline]
     pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, (IndexType, IndexType)> {
         self.into_iter()
     }
@@ -132,6 +136,7 @@ where
     IndexType: Integer + Hash,
 {
     /// Same as new().
+    #[inline]
     fn default() -> Self {
         Self::new()
     }
@@ -177,6 +182,7 @@ where
     /// assert_eq!(result, expected);
     /// ```
     ///
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.live_cells.iter()
     }
@@ -201,6 +207,7 @@ where
     /// assert_eq!(result, expected);
     /// ```
     ///
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.live_cells.into_iter()
     }
@@ -276,6 +283,7 @@ where
     /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
+    #[inline]
     fn extend<T: IntoIterator<Item = &'a (IndexType, IndexType)>>(&mut self, iter: T) {
         self.live_cells.extend(iter);
     }
@@ -301,6 +309,7 @@ where
     /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
+    #[inline]
     fn extend<T: IntoIterator<Item = (IndexType, IndexType)>>(&mut self, iter: T) {
         self.live_cells.extend(iter);
     }
