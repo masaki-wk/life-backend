@@ -80,7 +80,7 @@ impl PlaintextPartial {
     }
 }
 
-// Inherent methods of Plaintext
+// Inherent methods
 
 impl Plaintext {
     /// Creates from the specified string.
@@ -151,5 +151,105 @@ impl fmt::Display for Plaintext {
             writeln!(f, "{str}")?;
         }
         Ok(())
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn content_to_string(content: &[bool]) -> String {
+        content
+            .iter()
+            .map(|&x| if x { 'O' } else { '.' })
+            .collect::<String>()
+    }
+    fn test_new(name: &str, comments: &[&str], contents: &[Vec<bool>]) -> Result<()> {
+        let mut str = String::new();
+        str.push_str(&format!("!Name: {}\n", name));
+        for comment in comments {
+            str.push_str(&format!("!{}\n", comment));
+        }
+        for content in contents {
+            str.push_str(&format!("{}\n", content_to_string(content)));
+        }
+        let target = Plaintext::new(&str)?;
+        assert_eq!(target.name(), name);
+        assert_eq!(target.comments().len(), comments.len());
+        for (result, expected) in target.comments().iter().zip(comments.iter()) {
+            assert_eq!(result, expected);
+        }
+        assert_eq!(target.contents().len(), contents.len());
+        for (result, expected) in target.contents().iter().zip(contents.iter()) {
+            assert_eq!(result, expected);
+        }
+        Ok(())
+    }
+    #[test]
+    fn test_new_header() -> Result<()> {
+        let name = "test";
+        let comments = Vec::new();
+        let contents = Vec::new();
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_header_comment() -> Result<()> {
+        let name = "test";
+        let comments = vec!["comment"];
+        let contents = Vec::new();
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_header_comments() -> Result<()> {
+        let name = "test";
+        let comments = vec!["comment0", "comment1"];
+        let contents = Vec::new();
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_header_content() -> Result<()> {
+        let name = "test";
+        let comments = Vec::new();
+        let contents = vec![vec![false, true]];
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_header_contents() -> Result<()> {
+        let name = "test";
+        let comments = Vec::new();
+        let contents = vec![vec![true, true, true], vec![false, true]];
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_header_comments_contents() -> Result<()> {
+        let name = "test";
+        let comments = vec!["comment0", "comment1"];
+        let contents = vec![vec![true, true, true], vec![false, true]];
+        test_new(name, &comments, &contents)
+    }
+    #[test]
+    fn test_new_empty() {
+        let str = "";
+        let target = Plaintext::new(str);
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_wrong_header() {
+        let str = "_";
+        let target = Plaintext::new(str);
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_wrong_content_without_comment() {
+        let str = concat!("!Name: test\n", "_\n");
+        let target = Plaintext::new(str);
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_wrong_content_with_comment() {
+        let str = concat!("!Name: test\n", "!\n", "_\n");
+        let target = Plaintext::new(str);
+        assert!(target.is_err());
     }
 }
