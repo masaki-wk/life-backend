@@ -231,32 +231,6 @@ where
     }
 }
 
-impl<'a, IndexType> FromIterator<&'a mut (IndexType, IndexType)> for Board<IndexType>
-where
-    IndexType: Integer + Hash + Copy + 'a,
-{
-    /// Conversion from a non-owning iterator over a series of &mut (IndexType, IndexType).
-    /// Each item in the series represents a mutable reference of a live cell position.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use life_backend::Board;
-    /// let mut pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter_mut().collect();
-    /// assert_eq!(board.get(0, 0), false);
-    /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(0, 1), true);
-    /// assert_eq!(board.get(1, 1), false);
-    /// ```
-    ///
-    fn from_iter<T: IntoIterator<Item = &'a mut (IndexType, IndexType)>>(iter: T) -> Self {
-        let live_cells: HashSet<(IndexType, IndexType)> =
-            iter.into_iter().map(|&mut x| x).collect();
-        Self { live_cells }
-    }
-}
-
 impl<IndexType> FromIterator<(IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Integer + Hash,
