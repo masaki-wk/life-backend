@@ -89,12 +89,13 @@ impl Plaintext {
     ///
     /// ```
     /// use life_backend::format::Plaintext;
-    /// let parser = Plaintext::new("\
+    /// let string = "\
     /// !Name: Glider\n\
     /// .O\n\
     /// ..O\n\
     /// OOO\n\
-    /// ").unwrap();
+    /// ";
+    /// let parser = Plaintext::new(string).unwrap();
     /// assert_eq!(parser.name(), "Glider");
     /// assert_eq!(parser.comments().len(), 0);
     /// assert_eq!(parser.contents()[0], vec![false, true]);
