@@ -165,14 +165,12 @@ where
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
-    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), true);
-    /// assert_eq!(board.get(0, 1), false);
-    /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
+    /// assert_eq!(board.get(0, 1), true);
+    /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
     fn from_iter<T: IntoIterator<Item = &'a (IndexType, IndexType)>>(iter: T) -> Self {
@@ -192,14 +190,12 @@ where
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let mut pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let mut pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter_mut().collect();
-    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), true);
-    /// assert_eq!(board.get(0, 1), false);
-    /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
+    /// assert_eq!(board.get(0, 1), true);
+    /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
     fn from_iter<T: IntoIterator<Item = &'a mut (IndexType, IndexType)>>(iter: T) -> Self {
@@ -220,14 +216,12 @@ where
     ///
     /// ```
     /// # use life_backend::Board;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let mut pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.into_iter().collect();
-    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), true);
-    /// assert_eq!(board.get(0, 1), false);
-    /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
+    /// assert_eq!(board.get(0, 1), true);
+    /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
     fn from_iter<T: IntoIterator<Item = (IndexType, IndexType)>>(iter: T) -> Self {
@@ -248,14 +242,12 @@ where
     /// ```
     /// # use life_backend::Board;
     /// let mut board = Board::new();
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.iter());
-    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), true);
-    /// assert_eq!(board.get(0, 1), false);
-    /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
+    /// assert_eq!(board.get(0, 1), true);
+    /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
     fn extend<T: IntoIterator<Item = &'a (IndexType, IndexType)>>(&mut self, iter: T) {
@@ -275,14 +267,12 @@ where
     /// ```
     /// # use life_backend::Board;
     /// let mut board = Board::new();
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.into_iter());
-    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), true);
-    /// assert_eq!(board.get(0, 1), false);
-    /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
+    /// assert_eq!(board.get(0, 1), true);
+    /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
     fn extend<T: IntoIterator<Item = (IndexType, IndexType)>>(&mut self, iter: T) {
@@ -302,7 +292,7 @@ where
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
     /// let expected: HashSet<_> = pattern.iter().collect();
@@ -326,7 +316,7 @@ where
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
-    /// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
     /// let expected: HashSet<_> = pattern.into_iter().collect();
