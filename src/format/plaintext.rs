@@ -84,7 +84,7 @@ impl PlaintextPartial {
 // Inherent methods
 
 impl Plaintext {
-    /// Creates from the specified string.
+    /// Creates from the specified implementor of Read, such as File or &[u8].
     ///
     /// # Examples
     ///
@@ -142,6 +142,8 @@ impl Plaintext {
     }
 }
 
+// Trait implementations
+
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
@@ -168,14 +170,17 @@ mod tests {
             .collect::<String>()
     }
     fn test_new(name: &str, comments: &[&str], contents: &[Vec<bool>]) -> Result<()> {
-        let mut str = String::new();
-        str.push_str(&format!("!Name: {}\n", name));
-        for comment in comments {
-            str.push_str(&format!("!{}\n", comment));
-        }
-        for content in contents {
-            str.push_str(&format!("{}\n", content_to_string(content)));
-        }
+        let str = {
+            let mut buf = String::new();
+            buf.push_str(&format!("!Name: {}\n", name));
+            for comment in comments {
+                buf.push_str(&format!("!{}\n", comment));
+            }
+            for content in contents {
+                buf.push_str(&format!("{}\n", content_to_string(content)));
+            }
+            buf
+        };
         let target = Plaintext::new(str.as_bytes())?;
         assert_eq!(target.name(), name);
         assert_eq!(target.comments().len(), comments.len());
