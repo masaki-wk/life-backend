@@ -1,5 +1,6 @@
 use anyhow::{bail, Result};
 use std::fmt;
+use std::io::{BufRead, BufReader, Read};
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
@@ -89,13 +90,13 @@ impl Plaintext {
     ///
     /// ```
     /// # use life_backend::format::Plaintext;
-    /// let string = "\
-    /// !Name: Glider\n\
-    /// .O\n\
-    /// ..O\n\
-    /// OOO\n\
+    /// let pattern = "\
+    ///     !Name: Glider\n\
+    ///     .O\n\
+    ///     ..O\n\
+    ///     OOO\n\
     /// ";
-    /// let parser = Plaintext::new(string).unwrap();
+    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.name(), "Glider");
     /// assert_eq!(parser.comments().len(), 0);
     /// assert_eq!(parser.contents()[0], vec![false, true]);
@@ -103,11 +104,12 @@ impl Plaintext {
     /// assert_eq!(parser.contents()[2], vec![true, true, true]);
     /// ```
     ///
-    pub fn new(str: &str) -> Result<Self> {
+    pub fn new<R: Read>(read: R) -> Result<Self> {
         let partial = {
             let mut buf = PlaintextPartial::new();
-            for line in str.lines() {
-                buf.push(line)?;
+            for line in BufReader::new(read).lines() {
+                let line = line?;
+                buf.push(&line)?;
             }
             buf
         };
@@ -174,7 +176,7 @@ mod tests {
         for content in contents {
             str.push_str(&format!("{}\n", content_to_string(content)));
         }
-        let target = Plaintext::new(&str)?;
+        let target = Plaintext::new(str.as_bytes())?;
         assert_eq!(target.name(), name);
         assert_eq!(target.comments().len(), comments.len());
         for (result, expected) in target.comments().iter().zip(comments.iter()) {
@@ -230,26 +232,26 @@ mod tests {
     }
     #[test]
     fn test_new_empty() {
-        let str = "";
-        let target = Plaintext::new(str);
+        let pattern = "";
+        let target = Plaintext::new(pattern.as_bytes());
         assert!(target.is_err());
     }
     #[test]
     fn test_new_wrong_header() {
-        let str = "_";
-        let target = Plaintext::new(str);
+        let pattern = "_";
+        let target = Plaintext::new(pattern.as_bytes());
         assert!(target.is_err());
     }
     #[test]
     fn test_new_wrong_content_without_comment() {
-        let str = concat!("!Name: test\n", "_\n");
-        let target = Plaintext::new(str);
+        let pattern = concat!("!Name: test\n", "_\n").as_bytes();
+        let target = Plaintext::new(pattern);
         assert!(target.is_err());
     }
     #[test]
     fn test_new_wrong_content_with_comment() {
-        let str = concat!("!Name: test\n", "!\n", "_\n");
-        let target = Plaintext::new(str);
+        let pattern = concat!("!Name: test\n", "!\n", "_\n").as_bytes();
+        let target = Plaintext::new(pattern);
         assert!(target.is_err());
     }
 }
