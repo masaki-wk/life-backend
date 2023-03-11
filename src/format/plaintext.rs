@@ -1,6 +1,5 @@
 use anyhow::{bail, ensure, Result};
-use num_integer::Integer;
-use num_traits::bounds::UpperBounded;
+use num_traits::{bounds::UpperBounded, One, Zero};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
@@ -9,20 +8,14 @@ pub type DefaultIndexType = i16;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
-pub struct Plaintext<IndexType = DefaultIndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+pub struct Plaintext<IndexType = DefaultIndexType> {
     name: String,
     comments: Vec<String>,
     contents: Vec<(IndexType, Vec<IndexType>)>,
 }
 
 // An internal struct, used during constructing of Plaintext
-struct PlaintextPartial<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+struct PlaintextPartial<IndexType> {
     name: Option<String>,
     comments: Vec<String>,
     lines: IndexType,
@@ -31,10 +24,7 @@ where
 
 // Inherent methods of PlaintextPartial
 
-impl<IndexType> PlaintextPartial<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+impl<IndexType> PlaintextPartial<IndexType> {
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -57,7 +47,10 @@ where
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
-    fn parse_content_line(line: &str) -> Result<Vec<IndexType>> {
+    fn parse_content_line(line: &str) -> Result<Vec<IndexType>>
+    where
+        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+    {
         let mut buf = Vec::new();
         let mut i = IndexType::zero();
         for char in line.chars() {
@@ -71,7 +64,10 @@ where
         }
         Ok(buf)
     }
-    fn new() -> Self {
+    fn new() -> Self
+    where
+        IndexType: Zero,
+    {
         Self {
             name: None,
             comments: Vec::new(),
@@ -79,7 +75,10 @@ where
             contents: Vec::new(),
         }
     }
-    fn push(&mut self, line: &str) -> Result<()> {
+    fn push(&mut self, line: &str) -> Result<()>
+    where
+        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+    {
         if self.name.is_none() {
             let name = Self::parse_name_line(line)?;
             self.name = Some(name.to_string());
@@ -103,10 +102,7 @@ where
 
 // Inherent methods
 
-impl<IndexType> Plaintext<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+impl<IndexType> Plaintext<IndexType> {
     /// Creates from the specified implementor of Read, such as File or &[u8].
     ///
     /// # Examples
@@ -122,7 +118,10 @@ where
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
-    pub fn new<R: Read>(read: R) -> Result<Self> {
+    pub fn new<R: Read>(read: R) -> Result<Self>
+    where
+        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+    {
         let partial = {
             let mut buf = PlaintextPartial::new();
             for line in BufReader::new(read).lines() {
@@ -209,7 +208,10 @@ where
     /// assert_eq!(iter.next(), None);
     /// ```
     ///
-    pub fn iter(&self) -> impl Iterator<Item = (IndexType, IndexType)> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    where
+        IndexType: Copy,
+    {
         self.contents.iter().flat_map(|(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
 }
@@ -218,7 +220,7 @@ where
 
 impl<IndexType> fmt::Display for Plaintext<IndexType>
 where
-    IndexType: Integer + UpperBounded + Copy,
+    IndexType: Copy + Zero + One + PartialOrd,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
