@@ -84,7 +84,7 @@ where
             let name = Self::parse_name_line(line)?;
             self.name = Some(name.to_string());
         } else {
-            if self.lines == IndexType::zero() {
+            if self.lines.is_zero() {
                 if let Some(comment) = Self::parse_comment_line(line) {
                     self.comments.push(comment.to_string());
                     return Ok(());

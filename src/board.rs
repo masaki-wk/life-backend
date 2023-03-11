@@ -105,7 +105,8 @@ where
                 (x_min, x_max, y_min, y_max)
             })
         } else {
-            (IndexType::zero(), IndexType::zero(), IndexType::zero(), IndexType::zero())
+            let zero = IndexType::zero();
+            (zero, zero, zero, zero)
         }
     }
 }
