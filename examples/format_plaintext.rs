@@ -8,8 +8,11 @@ fn main() -> Result<()> {
         ..O\n\
         OOO\n\
     ";
-    let parser = Plaintext::new(pattern.as_bytes())?;
+    let parser = Plaintext::<i16>::new(pattern.as_bytes())?;
     println!("Print as Debug: {:?}", parser);
-    println!("Print as Display:\n{}", parser);
+    println!("Print as Display:");
+    println!("{}", parser);
+    let poses: Vec<_> = parser.iter().collect();
+    println!("{:?}", poses);
     Ok(())
 }
