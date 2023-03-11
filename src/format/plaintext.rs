@@ -39,25 +39,27 @@ impl PlaintextPartial {
             }
         }
     }
-    #[inline]
-    fn parse_name_line(line: &str) -> Option<&str> {
-        Self::parse_prefixed_line("!Name: ", line)
+    fn parse_name_line(line: &str) -> Result<&str> {
+        let Some(name) = Self::parse_prefixed_line("!Name: ", line) else {
+            bail!("The header line is in wrong format");
+        };
+        Ok(name)
     }
     #[inline]
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
-    fn parse_content_line(line: &str) -> Option<Vec<bool>> {
+    fn parse_content_line(line: &str) -> Result<Vec<bool>> {
         let mut buf = Vec::new();
         for char in line.chars() {
             let value = match char {
                 '.' => false,
                 'O' => true,
-                _ => return None,
+                _ => bail!("Invalid character found in the pattern"),
             };
             buf.push(value);
         }
-        Some(buf)
+        Ok(buf)
     }
     fn new() -> Self {
         Self {
@@ -68,9 +70,7 @@ impl PlaintextPartial {
     }
     fn push(&mut self, line: &str) -> Result<()> {
         if self.name.is_none() {
-            let Some(name) = Self::parse_name_line(line) else {
-                bail!("The header line is in wrong format");
-            };
+            let name = Self::parse_name_line(line)?;
             self.name = Some(name.to_string());
         } else {
             if self.contents.is_empty() {
@@ -79,9 +79,7 @@ impl PlaintextPartial {
                     return Ok(());
                 }
             }
-            let Some(content) = Self::parse_content_line(line) else {
-                bail!("Invalid character found in the pattern");
-            };
+            let content = Self::parse_content_line(line)?;
             self.contents.push(content);
         }
         Ok(())
