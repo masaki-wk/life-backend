@@ -18,15 +18,22 @@ where
 }
 
 // An internal struct, used during constructing of Plaintext
-struct PlaintextPartial {
+struct PlaintextPartial<IndexType>
+where
+    IndexType: Integer + Copy,
+{
     name: Option<String>,
     comments: Vec<String>,
-    contents: Vec<Vec<bool>>,
+    lines: IndexType,
+    contents: Vec<(IndexType, Vec<IndexType>)>,
 }
 
 // Inherent methods of PlaintextPartial
 
-impl PlaintextPartial {
+impl<IndexType> PlaintextPartial<IndexType>
+where
+    IndexType: Integer + Copy,
+{
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -49,15 +56,16 @@ impl PlaintextPartial {
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
-    fn parse_content_line(line: &str) -> Result<Vec<bool>> {
+    fn parse_content_line(line: &str) -> Result<Vec<IndexType>> {
         let mut buf = Vec::new();
+        let mut i = IndexType::zero();
         for char in line.chars() {
-            let value = match char {
-                '.' => false,
-                'O' => true,
+            match char {
+                '.' => (),
+                'O' => buf.push(i),
                 _ => bail!("Invalid character found in the pattern"),
             };
-            buf.push(value);
+            i = i + IndexType::one();
         }
         Ok(buf)
     }
@@ -65,6 +73,7 @@ impl PlaintextPartial {
         Self {
             name: None,
             comments: Vec::new(),
+            lines: IndexType::zero(),
             contents: Vec::new(),
         }
     }
@@ -73,14 +82,17 @@ impl PlaintextPartial {
             let name = Self::parse_name_line(line)?;
             self.name = Some(name.to_string());
         } else {
-            if self.contents.is_empty() {
+            if self.lines == IndexType::zero() {
                 if let Some(comment) = Self::parse_comment_line(line) {
                     self.comments.push(comment.to_string());
                     return Ok(());
                 }
             }
             let content = Self::parse_content_line(line)?;
-            self.contents.push(content);
+            if !content.is_empty() {
+                self.contents.push((self.lines, content));
+            }
+            self.lines = self.lines + IndexType::one();
         }
         Ok(())
     }
@@ -128,29 +140,10 @@ where
         let Some(name) = partial.name else {
             bail!("No header line in the pattern");
         };
-        let contents = {
-            let mut buf_y = Vec::new();
-            let mut y = IndexType::zero();
-            for line in partial.contents {
-                let mut buf_x = Vec::new();
-                let mut x = IndexType::zero();
-                for val in line {
-                    if val {
-                        buf_x.push(x);
-                    }
-                    x = x + IndexType::one();
-                }
-                if !buf_x.is_empty() {
-                    buf_y.push((y, buf_x));
-                }
-                y = y + IndexType::one();
-            }
-            buf_y
-        };
         Ok(Self {
             name,
             comments: partial.comments,
-            contents,
+            contents: partial.contents,
         })
     }
 
