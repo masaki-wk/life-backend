@@ -89,31 +89,23 @@ where
     {
         let mut iter = self.live_cells.iter();
         if let Some(&(init_x, init_y)) = iter.next() {
-            iter.fold(
-                (init_x, init_x, init_y, init_y),
-                |(mut x_min, mut x_max, mut y_min, mut y_max), &(x, y)| {
-                    if x < x_min {
-                        x_min = x
-                    };
-                    if x > x_max {
-                        x_max = x
-                    };
-                    if y < y_min {
-                        y_min = y
-                    };
-                    if y > y_max {
-                        y_max = y
-                    };
-                    (x_min, x_max, y_min, y_max)
-                },
-            )
+            iter.fold((init_x, init_x, init_y, init_y), |(mut x_min, mut x_max, mut y_min, mut y_max), &(x, y)| {
+                if x < x_min {
+                    x_min = x
+                };
+                if x > x_max {
+                    x_max = x
+                };
+                if y < y_min {
+                    y_min = y
+                };
+                if y > y_max {
+                    y_max = y
+                };
+                (x_min, x_max, y_min, y_max)
+            })
         } else {
-            (
-                IndexType::zero(),
-                IndexType::zero(),
-                IndexType::zero(),
-                IndexType::zero(),
-            )
+            (IndexType::zero(), IndexType::zero(), IndexType::zero(), IndexType::zero())
         }
     }
 }
