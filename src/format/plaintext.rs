@@ -119,16 +119,7 @@ where
     ///     ..O\n\
     ///     OOO\n\
     /// ";
-    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.name(), "Glider");
-    /// assert_eq!(parser.comments().len(), 0);
-    /// let mut iter = parser.iter();
-    /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 1)));
-    /// assert_eq!(iter.next(), Some((0, 2)));
-    /// assert_eq!(iter.next(), Some((1, 2)));
-    /// assert_eq!(iter.next(), Some((2, 2)));
-    /// assert_eq!(iter.next(), None);
+    /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
     pub fn new<R: Read>(read: R) -> Result<Self> {
@@ -151,18 +142,71 @@ where
     }
 
     /// Returns the name of the pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// let pattern = "\
+    ///     !Name: Glider\n\
+    ///     .O\n\
+    ///     ..O\n\
+    ///     OOO\n\
+    /// ";
+    /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(parser.name(), "Glider");
+    /// ```
+    ///
     #[inline]
     pub fn name(&self) -> &String {
         &self.name
     }
 
     /// Returns comments of the pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// let pattern = "\
+    ///     !Name: Glider\n\
+    ///     !comment.\n\
+    ///     .O\n\
+    ///     ..O\n\
+    ///     OOO\n\
+    /// ";
+    /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(parser.comments().len(), 1);
+    /// assert_eq!(parser.comments()[0], "comment.");
+    /// ```
+    ///
     #[inline]
     pub fn comments(&self) -> &Vec<String> {
         &self.comments
     }
 
-    /// Creates a non-owning iterator over the series of immutable live cell positions.
+    /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// let pattern = "\
+    ///     !Name: Glider\n\
+    ///     .O\n\
+    ///     ..O\n\
+    ///     OOO\n\
+    /// ";
+    /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
+    /// let mut iter = parser.iter();
+    /// assert_eq!(iter.next(), Some((1, 0)));
+    /// assert_eq!(iter.next(), Some((2, 1)));
+    /// assert_eq!(iter.next(), Some((0, 2)));
+    /// assert_eq!(iter.next(), Some((1, 2)));
+    /// assert_eq!(iter.next(), Some((2, 2)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    ///
     pub fn iter(&self) -> impl Iterator<Item = (IndexType, IndexType)> + '_ {
         self.contents.iter().flat_map(|(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
