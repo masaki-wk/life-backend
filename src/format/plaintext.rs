@@ -170,14 +170,16 @@ where
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
     ///     !Name: Glider\n\
-    ///     !comment.\n\
+    ///     !comment0\n\
+    ///     !comment1\n\
     ///     .O\n\
     ///     ..O\n\
     ///     OOO\n\
     /// ";
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.comments().len(), 1);
-    /// assert_eq!(parser.comments()[0], "comment.");
+    /// assert_eq!(parser.comments().len(), 2);
+    /// assert_eq!(parser.comments()[0], "comment0");
+    /// assert_eq!(parser.comments()[1], "comment1");
     /// ```
     ///
     #[inline]
