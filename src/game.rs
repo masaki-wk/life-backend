@@ -58,8 +58,8 @@ where
         &self.board
     }
 
-    // Returns positions of neighbourhoods of the specified position, and the specified position itself if requested.
-    fn neighbourhood_plus_center(includes_center: bool, x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
+    // Returns positions of neighbourhoods of the specified position
+    fn neighbourhoods_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
@@ -69,7 +69,7 @@ where
         let mut buf = Vec::new();
         for v in range_inclusive(if y > min { y - one } else { y }, if y < max { y + one } else { y }) {
             for u in range_inclusive(if x > min { x - one } else { x }, if x < max { x + one } else { x }) {
-                if includes_center || u != x || v != y {
+                if u != x || v != y {
                     buf.push((u, v))
                 }
             }
@@ -77,21 +77,40 @@ where
         buf.into_iter()
     }
 
+    // Returns the count of neighbourhoods of the specified position
+    fn neighbourhoods_count(x: IndexType, y: IndexType, board: &Board<IndexType>) -> usize
+    where
+        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+    {
+        Self::neighbourhoods_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
+    }
+
     // Returns the next board of the specified board.
     fn next_board(board: &Board<IndexType>) -> Board<IndexType>
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        let scan_positions: HashSet<(IndexType, IndexType)> = board.iter().flat_map(|&(x, y)| Self::neighbourhood_plus_center(true, x, y)).collect();
-        let next_board: Board<IndexType> = scan_positions
+        let scanpos_for_deadcells: HashSet<(IndexType, IndexType)> = board
+            .iter()
+            .flat_map(|&(x, y)| Self::neighbourhoods_positions(x, y))
+            .filter(|&(x, y)| !board.get(x, y))
+            .collect();
+        let scanpos_for_livecells = board.iter();
+        let mut livecells = Vec::new();
+        scanpos_for_livecells
+            .filter(|&&(x, y)| {
+                let count = Self::neighbourhoods_count(x, y, board);
+                count == 2 || count == 3
+            })
+            .for_each(|&pos| livecells.push(pos));
+        scanpos_for_deadcells
             .into_iter()
             .filter(|&(x, y)| {
-                let state = board.get(x, y);
-                let count = Self::neighbourhood_plus_center(false, x, y).filter(|&(x, y)| board.get(x, y)).count();
-                matches!((state, count), (true, 2) | (true, 3) | (false, 3))
+                let count = Self::neighbourhoods_count(x, y, board);
+                count == 3
             })
-            .collect();
-        next_board
+            .for_each(|pos| livecells.push(pos));
+        livecells.into_iter().collect()
     }
 
     /// Update the state of the game.
@@ -118,7 +137,7 @@ where
     ///
     pub fn update(&mut self)
     where
-        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive + std::fmt::Debug,
     {
         self.board = Self::next_board(self.board())
     }
