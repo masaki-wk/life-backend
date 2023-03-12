@@ -1,6 +1,7 @@
 use anyhow::{bail, ensure, Result};
-use num_integer::Integer;
+use num_iter::{range, range_from};
 use num_traits::bounds::UpperBounded;
+use num_traits::{One, ToPrimitive, Zero};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
@@ -9,20 +10,14 @@ pub type DefaultIndexType = i16;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
-pub struct Plaintext<IndexType = DefaultIndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+pub struct Plaintext<IndexType = DefaultIndexType> {
     name: String,
     comments: Vec<String>,
     contents: Vec<(IndexType, Vec<IndexType>)>,
 }
 
 // An internal struct, used during constructing of Plaintext
-struct PlaintextPartial<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+struct PlaintextPartial<IndexType> {
     name: Option<String>,
     comments: Vec<String>,
     lines: IndexType,
@@ -31,10 +26,7 @@ where
 
 // Inherent methods of PlaintextPartial
 
-impl<IndexType> PlaintextPartial<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
+impl<IndexType> PlaintextPartial<IndexType> {
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -57,21 +49,29 @@ where
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
-    fn parse_content_line(line: &str) -> Result<Vec<IndexType>> {
+    fn parse_content_line(line: &str) -> Result<Vec<IndexType>>
+    where
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
+    {
         let mut buf = Vec::new();
-        let mut i = IndexType::zero();
-        for char in line.chars() {
+        let mut reach_to_max = false;
+        for (i, char) in range_from(IndexType::zero()).zip(line.chars()) {
+            ensure!(!reach_to_max, "The pattern contains too wide line");
             match char {
                 '.' => (),
                 'O' => buf.push(i),
                 _ => bail!("Invalid character found in the pattern"),
-            };
-            ensure!(i < IndexType::max_value(), "The pattern contains too wide line");
-            i = i + IndexType::one();
+            }
+            if i >= IndexType::max_value() {
+                reach_to_max = true;
+            }
         }
         Ok(buf)
     }
-    fn new() -> Self {
+    fn new() -> Self
+    where
+        IndexType: Zero,
+    {
         Self {
             name: None,
             comments: Vec::new(),
@@ -79,7 +79,10 @@ where
             contents: Vec::new(),
         }
     }
-    fn push(&mut self, line: &str) -> Result<()> {
+    fn push(&mut self, line: &str) -> Result<()>
+    where
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
+    {
         if self.name.is_none() {
             let name = Self::parse_name_line(line)?;
             self.name = Some(name.to_string());
@@ -90,8 +93,8 @@ where
                     return Ok(());
                 }
             }
-            let content = Self::parse_content_line(line)?;
             ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
+            let content = Self::parse_content_line(line)?;
             if !content.is_empty() {
                 self.contents.push((self.lines, content));
             }
@@ -103,11 +106,8 @@ where
 
 // Inherent methods
 
-impl<IndexType> Plaintext<IndexType>
-where
-    IndexType: Integer + UpperBounded + Copy,
-{
-    /// Creates from the specified implementor of Read, such as File or &[u8].
+impl<IndexType> Plaintext<IndexType> {
+    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
     ///
@@ -122,7 +122,10 @@ where
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
-    pub fn new<R: Read>(read: R) -> Result<Self> {
+    pub fn new<R: Read>(read: R) -> Result<Self>
+    where
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
+    {
         let partial = {
             let mut buf = PlaintextPartial::new();
             for line in BufReader::new(read).lines() {
@@ -209,7 +212,10 @@ where
     /// assert_eq!(iter.next(), None);
     /// ```
     ///
-    pub fn iter(&self) -> impl Iterator<Item = (IndexType, IndexType)> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    where
+        IndexType: Copy,
+    {
         self.contents.iter().flat_map(|(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
 }
@@ -218,7 +224,7 @@ where
 
 impl<IndexType> fmt::Display for Plaintext<IndexType>
 where
-    IndexType: Integer + UpperBounded + Copy,
+    IndexType: Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
@@ -227,23 +233,17 @@ where
         }
         if !self.contents.is_empty() {
             let mut prev_y = IndexType::zero();
-            for item in &self.contents {
-                let (curr_y, xs) = item;
-                {
-                    let mut y = prev_y;
-                    while y < *curr_y {
-                        writeln!(f)?;
-                        y = y + IndexType::one();
-                    }
+            for (curr_y, xs) in &self.contents {
+                let curr_y = *curr_y;
+                for _ in range(prev_y, curr_y) {
+                    writeln!(f)?;
                 }
                 let line = {
                     let mut buf = String::new();
                     let mut prev_x = IndexType::zero();
                     for &curr_x in xs {
-                        let mut x = prev_x;
-                        while x < curr_x {
+                        for _ in range(prev_x, curr_x) {
                             buf.push('.');
-                            x = x + IndexType::one();
                         }
                         buf.push('O');
                         prev_x = curr_x + IndexType::one();
@@ -251,7 +251,7 @@ where
                     buf
                 };
                 writeln!(f, "{line}")?;
-                prev_y = *curr_y + IndexType::one();
+                prev_y = curr_y + IndexType::one();
             }
         }
         Ok(())

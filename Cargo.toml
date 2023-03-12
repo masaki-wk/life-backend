@@ -6,5 +6,5 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 anyhow = "1.0.69"
-num-integer = "0.1.45"
+num-iter = "0.1.43"
 num-traits = "0.2.15"
