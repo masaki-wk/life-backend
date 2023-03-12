@@ -1,5 +1,6 @@
 use num_iter::range_inclusive;
 use num_traits::{One, ToPrimitive, Zero};
+use std::collections::hash_set;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
@@ -110,7 +111,7 @@ where
 {
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     #[inline]
-    pub fn iter(&'a self) -> std::collections::hash_set::Iter<'a, (IndexType, IndexType)> {
+    pub fn iter(&'a self) -> hash_set::Iter<'a, (IndexType, IndexType)> {
         self.into_iter()
     }
 }
@@ -150,7 +151,7 @@ where
     IndexType: Eq + Hash,
 {
     type Item = &'a (IndexType, IndexType);
-    type IntoIter = std::collections::hash_set::Iter<'a, (IndexType, IndexType)>;
+    type IntoIter = hash_set::Iter<'a, (IndexType, IndexType)>;
 
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     ///
@@ -175,7 +176,7 @@ where
     IndexType: Eq + Hash,
 {
     type Item = (IndexType, IndexType);
-    type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
+    type IntoIter = hash_set::IntoIter<Self::Item>;
 
     /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
     ///
