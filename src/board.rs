@@ -1,4 +1,5 @@
-use num_traits::{One, Zero};
+use num_iter::range_inclusive;
+use num_traits::{One, ToPrimitive, Zero};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
@@ -137,20 +138,16 @@ where
 
 impl<IndexType> fmt::Display for Board<IndexType>
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Zero + One,
+    IndexType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (x_min, x_max, y_min, y_max) = self.bounding_box();
-        let mut y = y_min;
-        while y <= y_max {
-            let mut x = x_min;
+        for y in range_inclusive(y_min, y_max) {
             let mut line = String::new();
-            while x <= x_max {
+            for x in range_inclusive(x_min, x_max) {
                 line.push(if self.get(x, y) { 'O' } else { '.' });
-                x = x + IndexType::one();
             }
             writeln!(f, "{line}")?;
-            y = y + IndexType::one();
         }
         Ok(())
     }

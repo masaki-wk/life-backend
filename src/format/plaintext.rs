@@ -1,5 +1,7 @@
 use anyhow::{bail, ensure, Result};
-use num_traits::{bounds::UpperBounded, One, Zero};
+use num_iter::range;
+use num_traits::bounds::UpperBounded;
+use num_traits::{One, ToPrimitive, Zero};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
@@ -220,7 +222,7 @@ impl<IndexType> Plaintext<IndexType> {
 
 impl<IndexType> fmt::Display for Plaintext<IndexType>
 where
-    IndexType: Copy + Zero + One + PartialOrd,
+    IndexType: Copy + Zero + One + PartialOrd + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
@@ -231,21 +233,15 @@ where
             let mut prev_y = IndexType::zero();
             for item in &self.contents {
                 let (curr_y, xs) = item;
-                {
-                    let mut y = prev_y;
-                    while y < *curr_y {
-                        writeln!(f)?;
-                        y = y + IndexType::one();
-                    }
+                for _ in range(prev_y, *curr_y) {
+                    writeln!(f)?;
                 }
                 let line = {
                     let mut buf = String::new();
                     let mut prev_x = IndexType::zero();
                     for &curr_x in xs {
-                        let mut x = prev_x;
-                        while x < curr_x {
+                        for _ in range(prev_x, curr_x) {
                             buf.push('.');
-                            x = x + IndexType::one();
                         }
                         buf.push('O');
                         prev_x = curr_x + IndexType::one();
