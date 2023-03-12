@@ -93,8 +93,8 @@ impl<IndexType> PlaintextPartial<IndexType> {
                     return Ok(());
                 }
             }
-            let content = Self::parse_content_line(line)?;
             ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
+            let content = Self::parse_content_line(line)?;
             if !content.is_empty() {
                 self.contents.push((self.lines, content));
             }
