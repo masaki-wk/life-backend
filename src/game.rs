@@ -59,7 +59,7 @@ where
     }
 
     // Returns positions of neighbourhoods of the specified position, and the specified position itself if requested.
-    fn neighbourhood_plus_center(includes_center: bool, x: IndexType, y: IndexType) -> Vec<(IndexType, IndexType)>
+    fn neighbourhood_plus_center(includes_center: bool, x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
@@ -74,7 +74,7 @@ where
                 }
             }
         }
-        buf
+        buf.into_iter()
     }
 
     // Returns the next board of the specified board.
@@ -87,10 +87,7 @@ where
             .into_iter()
             .filter(|&(x, y)| {
                 let state = board.get(x, y);
-                let count = Self::neighbourhood_plus_center(false, x, y)
-                    .into_iter()
-                    .filter(|&(x, y)| board.get(x, y))
-                    .count();
+                let count = Self::neighbourhood_plus_center(false, x, y).filter(|&(x, y)| board.get(x, y)).count();
                 matches!((state, count), (true, 2) | (true, 3) | (false, 3))
             })
             .collect();
