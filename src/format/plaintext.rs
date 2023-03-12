@@ -105,7 +105,7 @@ impl<IndexType> PlaintextPartial<IndexType> {
 // Inherent methods
 
 impl<IndexType> Plaintext<IndexType> {
-    /// Creates from the specified implementor of Read, such as File or &[u8].
+    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
     ///
