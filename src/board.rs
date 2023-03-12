@@ -56,7 +56,6 @@ where
     /// assert_eq!(board.get(0, 0), true);
     /// ```
     ///
-    #[inline]
     pub fn set(&mut self, x: IndexType, y: IndexType, value: bool) {
         let pos = (x, y);
         if value {
