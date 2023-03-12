@@ -78,7 +78,7 @@ where
     }
 
     // Returns the count of neighbourhoods of the specified position
-    fn neighbourhoods_count(x: IndexType, y: IndexType, board: &Board<IndexType>) -> usize
+    fn neighbourhoods_count(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
@@ -96,21 +96,16 @@ where
             .filter(|&(x, y)| !board.get(x, y))
             .collect();
         let scanpos_for_livecells = board.iter();
-        let mut livecells = Vec::new();
-        scanpos_for_livecells
-            .filter(|&&(x, y)| {
-                let count = Self::neighbourhoods_count(x, y, board);
-                count == 2 || count == 3
-            })
-            .for_each(|&pos| livecells.push(pos));
-        scanpos_for_deadcells
-            .into_iter()
-            .filter(|&(x, y)| {
-                let count = Self::neighbourhoods_count(x, y, board);
-                count == 3
-            })
-            .for_each(|pos| livecells.push(pos));
-        livecells.into_iter().collect()
+        let mut next_board = Board::new();
+        next_board.extend(scanpos_for_livecells.filter(|&&(x, y)| {
+            let count = Self::neighbourhoods_count(board, x, y);
+            count == 2 || count == 3
+        }));
+        next_board.extend(scanpos_for_deadcells.into_iter().filter(|&(x, y)| {
+            let count = Self::neighbourhoods_count(board, x, y);
+            count == 3
+        }));
+        next_board
     }
 
     /// Update the state of the game.
