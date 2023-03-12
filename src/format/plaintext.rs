@@ -229,9 +229,9 @@ where
         }
         if !self.contents.is_empty() {
             let mut prev_y = IndexType::zero();
-            for item in &self.contents {
-                let (curr_y, xs) = item;
-                for _ in range(prev_y, *curr_y) {
+            for (curr_y, xs) in &self.contents {
+                let curr_y = *curr_y;
+                for _ in range(prev_y, curr_y) {
                     writeln!(f)?;
                 }
                 let line = {
@@ -247,7 +247,7 @@ where
                     buf
                 };
                 writeln!(f, "{line}")?;
-                prev_y = *curr_y + IndexType::one();
+                prev_y = curr_y + IndexType::one();
             }
         }
         Ok(())
