@@ -51,7 +51,7 @@ impl<IndexType> PlaintextPartial<IndexType> {
     }
     fn parse_content_line(line: &str) -> Result<Vec<IndexType>>
     where
-        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
         let mut buf = Vec::new();
         let mut i = IndexType::zero();
@@ -79,7 +79,7 @@ impl<IndexType> PlaintextPartial<IndexType> {
     }
     fn push(&mut self, line: &str) -> Result<()>
     where
-        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
         if self.name.is_none() {
             let name = Self::parse_name_line(line)?;
@@ -122,7 +122,7 @@ impl<IndexType> Plaintext<IndexType> {
     ///
     pub fn new<R: Read>(read: R) -> Result<Self>
     where
-        IndexType: Copy + Zero + One + PartialOrd + UpperBounded,
+        IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
         let partial = {
             let mut buf = PlaintextPartial::new();
@@ -222,7 +222,7 @@ impl<IndexType> Plaintext<IndexType> {
 
 impl<IndexType> fmt::Display for Plaintext<IndexType>
 where
-    IndexType: Copy + Zero + One + PartialOrd + ToPrimitive,
+    IndexType: Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "!Name: {}", self.name())?;
