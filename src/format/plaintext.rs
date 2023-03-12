@@ -1,5 +1,5 @@
 use anyhow::{bail, ensure, Result};
-use num_iter::range;
+use num_iter::{range, range_from};
 use num_traits::bounds::UpperBounded;
 use num_traits::{One, ToPrimitive, Zero};
 use std::fmt;
@@ -54,15 +54,13 @@ impl<IndexType> PlaintextPartial<IndexType> {
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
         let mut buf = Vec::new();
-        let mut i = IndexType::zero();
-        for char in line.chars() {
+        for (i, char) in range_from(IndexType::zero()).zip(line.chars()) {
             match char {
                 '.' => (),
                 'O' => buf.push(i),
                 _ => bail!("Invalid character found in the pattern"),
             };
             ensure!(i < IndexType::max_value(), "The pattern contains too wide line");
-            i = i + IndexType::one();
         }
         Ok(buf)
     }
