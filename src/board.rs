@@ -136,10 +136,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (x_min, x_max, y_min, y_max) = self.bounding_box();
         for y in range_inclusive(y_min, y_max) {
-            let mut line = String::new();
-            for x in range_inclusive(x_min, x_max) {
-                line.push(if self.get(x, y) { 'O' } else { '.' });
-            }
+            let line: String = range_inclusive(x_min, x_max).map(|x| if self.get(x, y) { 'O' } else { '.' }).collect();
             writeln!(f, "{line}")?;
         }
         Ok(())
