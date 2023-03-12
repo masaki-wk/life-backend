@@ -54,13 +54,17 @@ impl<IndexType> PlaintextPartial<IndexType> {
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
         let mut buf = Vec::new();
+        let mut reach_to_max = false;
         for (i, char) in range_from(IndexType::zero()).zip(line.chars()) {
+            ensure!(!reach_to_max, "The pattern contains too wide line");
             match char {
                 '.' => (),
                 'O' => buf.push(i),
                 _ => bail!("Invalid character found in the pattern"),
-            };
-            ensure!(i < IndexType::max_value(), "The pattern contains too wide line");
+            }
+            if i >= IndexType::max_value() {
+                reach_to_max = true;
+            }
         }
         Ok(buf)
     }
