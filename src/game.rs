@@ -58,7 +58,7 @@ where
         &self.board
     }
 
-    // Returns neighbour positions of the specified position, defined as Moore neighbourhood.
+    // Creates an iterator over neighbour positions of the specified position, defined as Moore neighbourhood.
     fn neighbour_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
@@ -66,15 +66,13 @@ where
         let min = IndexType::min_value();
         let max = IndexType::max_value();
         let one = IndexType::one();
-        let mut buf = Vec::new();
-        for v in range_inclusive(if y > min { y - one } else { y }, if y < max { y + one } else { y }) {
-            for u in range_inclusive(if x > min { x - one } else { x }, if x < max { x + one } else { x }) {
-                if u != x || v != y {
-                    buf.push((u, v))
-                }
-            }
-        }
-        buf.into_iter()
+        let x_start = if x > min { x - one } else { x };
+        let x_stop = if x < max { x + one } else { x };
+        let y_start = if y > min { y - one } else { y };
+        let y_stop = if y < max { y + one } else { y };
+        range_inclusive(y_start, y_stop)
+            .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| (u, v)))
+            .filter(move |&(u, v)| u != x || v != y)
     }
 
     // Returns the count of live neighbours of the specified position.
