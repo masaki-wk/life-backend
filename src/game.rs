@@ -134,6 +134,7 @@ impl<IndexType> fmt::Display for Game<IndexType>
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.board.fmt(f)
     }
