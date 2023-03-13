@@ -30,6 +30,13 @@ fn do_test(init_pattern: &[(I, I)], steps: usize, expected_final_pattern: &[(I, 
 }
 
 #[test]
+fn game_blinker_test() -> Result<()> {
+    let init_pattern = vec![(0, 0), (1, 0), (2, 0)]; // Blinker pattern
+    let steps = 2;
+    do_test(&init_pattern, steps, &init_pattern)
+}
+
+#[test]
 fn game_glider_test() -> Result<()> {
     let init_pattern = vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]; // Glider pattern
     let steps = 4;
