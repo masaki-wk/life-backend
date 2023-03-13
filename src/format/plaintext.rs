@@ -122,9 +122,10 @@ impl<IndexType> Plaintext<IndexType> {
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
-    pub fn new<R: Read>(read: R) -> Result<Self>
+    pub fn new<R>(read: R) -> Result<Self>
     where
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
+        R: Read,
     {
         let partial = {
             let mut buf = PlaintextPartial::new();
