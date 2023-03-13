@@ -294,6 +294,14 @@ mod tests {
         test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
+    fn test_new_no_header_but_comment() -> Result<()> {
+        let pattern = "!comment\n";
+        let expected_name = None;
+        let expected_comments = vec!["comment"];
+        let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+    }
+    #[test]
     fn test_new_header_comment() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment\n");
         let expected_name = Some("test");
