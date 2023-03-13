@@ -11,7 +11,7 @@ type DefaultIndexType = i16;
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
 pub struct Plaintext<IndexType = DefaultIndexType> {
-    name: String,
+    name: Option<String>,
     comments: Vec<String>,
     contents: Vec<(IndexType, Vec<IndexType>)>,
 }
@@ -139,7 +139,7 @@ impl<IndexType> Plaintext<IndexType> {
             bail!("No header line in the pattern");
         };
         Ok(Self {
-            name,
+            name: Some(name),
             comments: partial.comments,
             contents: partial.contents,
         })
@@ -158,12 +158,11 @@ impl<IndexType> Plaintext<IndexType> {
     ///     OOO\n\
     /// ";
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.name(), "Glider");
+    /// assert_eq!(parser.name(), Some("Glider".to_string()));
     /// ```
     ///
-    #[inline]
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn name(&self) -> Option<String> {
+        self.name.clone()
     }
 
     /// Returns comments of the pattern.
@@ -228,7 +227,9 @@ where
     IndexType: Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "!Name: {}", self.name())?;
+        if let Some(name) = self.name() {
+            writeln!(f, "!Name: {}", name)?;
+        }
         for line in self.comments() {
             writeln!(f, "!{}", line)?;
         }
@@ -265,7 +266,13 @@ where
 mod tests {
     use super::*;
     type TargetIndexType = i16;
-    fn test_new(pattern: &str, expected_name: &str, expected_comments: &[&str], expected_contents: &[(TargetIndexType, Vec<TargetIndexType>)]) -> Result<()> {
+    fn test_new(
+        pattern: &str,
+        expected_name: &Option<&str>,
+        expected_comments: &[&str],
+        expected_contents: &[(TargetIndexType, Vec<TargetIndexType>)],
+    ) -> Result<()> {
+        let expected_name = expected_name.map(|s| s.to_string());
         let target = Plaintext::<TargetIndexType>::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
         assert_eq!(target.comments().len(), expected_comments.len());
@@ -281,50 +288,50 @@ mod tests {
     #[test]
     fn test_new_header() -> Result<()> {
         let pattern = "!Name: test\n";
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comment() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment"];
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
         let pattern = concat!("!Name: test\n", ".O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0 as TargetIndexType, vec![1])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
         let pattern = concat!("!Name: test\n", ".O\n", "O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0 as TargetIndexType, vec![1]), (1 as TargetIndexType, vec![0])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments_contents() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0 as TargetIndexType, vec![1]), (1 as TargetIndexType, vec![0])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_empty() {
