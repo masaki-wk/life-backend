@@ -61,7 +61,7 @@ where
     // Returns neighbour positions of the specified position, defined as Moore neighbourhood.
     fn neighbour_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
-        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         let min = IndexType::min_value();
         let max = IndexType::max_value();
@@ -80,7 +80,7 @@ where
     // Returns the count of live neighbours of the specified position.
     fn live_neighbour_count(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
     where
-        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
@@ -88,7 +88,7 @@ where
     // Returns the next board of the specified board.
     fn next_board(board: &Board<IndexType>) -> Board<IndexType>
     where
-        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         let birth_candidates: HashSet<(IndexType, IndexType)> = board
             .iter()
@@ -132,7 +132,7 @@ where
     ///
     pub fn update(&mut self)
     where
-        IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive + std::fmt::Debug,
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         self.board = Self::next_board(self.board())
     }
