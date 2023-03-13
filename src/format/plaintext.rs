@@ -39,11 +39,9 @@ impl<IndexType> PlaintextPartial<IndexType> {
             }
         }
     }
-    fn parse_name_line(line: &str) -> Result<&str> {
-        let Some(name) = Self::parse_prefixed_line("!Name: ", line) else {
-            bail!("The header line is in wrong format");
-        };
-        Ok(name)
+    #[inline]
+    fn parse_name_line(line: &str) -> Option<&str> {
+        Self::parse_prefixed_line("!Name: ", line)
     }
     #[inline]
     fn parse_comment_line(line: &str) -> Option<&str> {
@@ -83,23 +81,24 @@ impl<IndexType> PlaintextPartial<IndexType> {
     where
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
-        if self.name.is_none() {
-            let name = Self::parse_name_line(line)?;
-            self.name = Some(name.to_string());
-        } else {
-            if self.lines.is_zero() {
-                if let Some(comment) = Self::parse_comment_line(line) {
-                    self.comments.push(comment.to_string());
-                    return Ok(());
-                }
+        if self.comments.is_empty() && self.lines.is_zero() {
+            if let Some(name) = Self::parse_name_line(line) {
+                self.name = Some(name.to_string());
+                return Ok(());
             }
-            ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
-            let content = Self::parse_content_line(line)?;
-            if !content.is_empty() {
-                self.contents.push((self.lines, content));
-            }
-            self.lines = self.lines + IndexType::one();
         }
+        if self.lines.is_zero() {
+            if let Some(comment) = Self::parse_comment_line(line) {
+                self.comments.push(comment.to_string());
+                return Ok(());
+            }
+        }
+        ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
+        let content = Self::parse_content_line(line)?;
+        if !content.is_empty() {
+            self.contents.push((self.lines, content));
+        }
+        self.lines = self.lines + IndexType::one();
         Ok(())
     }
 }
@@ -135,11 +134,8 @@ impl<IndexType> Plaintext<IndexType> {
             }
             buf
         };
-        let Some(name) = partial.name else {
-            bail!("No header line in the pattern");
-        };
         Ok(Self {
-            name: Some(name),
+            name: partial.name,
             comments: partial.comments,
             contents: partial.contents,
         })
@@ -286,6 +282,14 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn test_new_empty() -> Result<()> {
+        let pattern = "";
+        let expected_name = None;
+        let expected_comments = Vec::new();
+        let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+    }
+    #[test]
     fn test_new_header() -> Result<()> {
         let pattern = "!Name: test\n";
         let expected_name = Some("test");
@@ -340,12 +344,6 @@ mod tests {
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0 as TargetIndexType, vec![1]), (1 as TargetIndexType, vec![0])];
         test_new(pattern, &expected_name, &expected_comments, &expected_contents)
-    }
-    #[test]
-    fn test_new_empty() {
-        let pattern = "";
-        let target = Plaintext::<TargetIndexType>::new(pattern.as_bytes());
-        assert!(target.is_err());
     }
     #[test]
     fn test_new_wrong_header() {
