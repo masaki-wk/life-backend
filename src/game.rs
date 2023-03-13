@@ -7,7 +7,7 @@ use std::hash::Hash;
 use std::ops::{Add, Sub};
 
 /// The default index type of boards.
-pub type DefaultIndexType = i16;
+type DefaultIndexType = i16;
 
 /// A representation of games.
 #[derive(Debug)]
@@ -134,6 +134,7 @@ impl<IndexType> fmt::Display for Game<IndexType>
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.board.fmt(f)
     }

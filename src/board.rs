@@ -6,7 +6,7 @@ use std::fmt;
 use std::hash::Hash;
 
 /// The default index type of boards.
-pub type DefaultIndexType = i16;
+type DefaultIndexType = i16;
 
 /// A representation of boards.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -152,6 +152,8 @@ where
 
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     ///
+    /// # Examples
+    ///
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
@@ -176,6 +178,8 @@ where
     type IntoIter = hash_set::IntoIter<Self::Item>;
 
     /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
+    ///
+    /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
@@ -212,7 +216,10 @@ where
     /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
-    fn from_iter<T: IntoIterator<Item = &'a (IndexType, IndexType)>>(iter: T) -> Self {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = &'a (IndexType, IndexType)>,
+    {
         let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().copied().collect();
         Self { live_cells }
     }
@@ -237,7 +244,10 @@ where
     /// assert_eq!(board.get(1, 1), false);
     /// ```
     ///
-    fn from_iter<T: IntoIterator<Item = (IndexType, IndexType)>>(iter: T) -> Self {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (IndexType, IndexType)>,
+    {
         let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().collect();
         Self { live_cells }
     }
@@ -264,7 +274,10 @@ where
     /// ```
     ///
     #[inline]
-    fn extend<T: IntoIterator<Item = &'a (IndexType, IndexType)>>(&mut self, iter: T) {
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = &'a (IndexType, IndexType)>,
+    {
         self.live_cells.extend(iter);
     }
 }
@@ -290,7 +303,10 @@ where
     /// ```
     ///
     #[inline]
-    fn extend<T: IntoIterator<Item = (IndexType, IndexType)>>(&mut self, iter: T) {
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = (IndexType, IndexType)>,
+    {
         self.live_cells.extend(iter);
     }
 }

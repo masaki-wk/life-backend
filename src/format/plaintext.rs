@@ -6,7 +6,7 @@ use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
 /// The default index type for Plaintext.
-pub type DefaultIndexType = i16;
+type DefaultIndexType = i16;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
@@ -122,9 +122,10 @@ impl<IndexType> Plaintext<IndexType> {
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
-    pub fn new<R: Read>(read: R) -> Result<Self>
+    pub fn new<R>(read: R) -> Result<Self>
     where
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
+        R: Read,
     {
         let partial = {
             let mut buf = PlaintextPartial::new();
