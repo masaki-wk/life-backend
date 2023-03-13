@@ -88,18 +88,18 @@ where
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        let birth_candidates: HashSet<(IndexType, IndexType)> = board
+        let survive_caondidates = board.iter();
+        let birth_candidates_multiset = board
             .iter()
             .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
-            .filter(|&(x, y)| !board.get(x, y))
-            .collect();
-        let live_cells = board.iter();
+            .filter(|&(x, y)| !board.get(x, y));
+        let birth_candidates_uniquified: HashSet<(IndexType, IndexType)> = birth_candidates_multiset.collect();
         let mut next_board = Board::new();
-        next_board.extend(live_cells.filter(|&&(x, y)| {
+        next_board.extend(survive_caondidates.filter(|&&(x, y)| {
             let count = Self::live_neighbour_count(board, x, y);
             count == 2 || count == 3
         }));
-        next_board.extend(birth_candidates.into_iter().filter(|&(x, y)| {
+        next_board.extend(birth_candidates_uniquified.into_iter().filter(|&(x, y)| {
             let count = Self::live_neighbour_count(board, x, y);
             count == 3
         }));
@@ -117,15 +117,9 @@ where
     /// game.update();
     /// let board = game.board();
     /// assert_eq!(board.bounding_box(), (1, 1, 0, 2));
-    /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
-    /// assert_eq!(board.get(2, 0), false);
-    /// assert_eq!(board.get(0, 1), false);
     /// assert_eq!(board.get(1, 1), true);
-    /// assert_eq!(board.get(2, 1), false);
-    /// assert_eq!(board.get(0, 2), false);
     /// assert_eq!(board.get(1, 2), true);
-    /// assert_eq!(board.get(2, 2), false);
     /// ```
     ///
     pub fn update(&mut self)
