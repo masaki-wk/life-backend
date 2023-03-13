@@ -1,5 +1,5 @@
 use anyhow::{bail, ensure, Result};
-use num_iter::{range, range_from};
+use num_iter::{range, range_from, range_inclusive};
 use num_traits::bounds::UpperBounded;
 use num_traits::{One, ToPrimitive, Zero};
 use std::fmt;
@@ -230,11 +230,17 @@ where
             writeln!(f, "!{}", line)?;
         }
         if !self.contents.is_empty() {
+            let max_x = {
+                let zero = IndexType::zero();
+                let max = |acc, x| if acc > x { acc } else { x };
+                self.contents.iter().map(|(_, xs)| xs.iter().copied().fold(zero, max)).fold(zero, max)
+            };
             let mut prev_y = IndexType::zero();
             for (curr_y, xs) in &self.contents {
                 let curr_y = *curr_y;
                 for _ in range(prev_y, curr_y) {
-                    writeln!(f)?;
+                    let pad: String = ".".repeat(range_inclusive(IndexType::zero(), max_x).count());
+                    writeln!(f, "{pad}")?;
                 }
                 let line = {
                     let mut buf = String::new();
@@ -245,6 +251,9 @@ where
                         }
                         buf.push('O');
                         prev_x = curr_x + IndexType::one();
+                    }
+                    for _ in range_inclusive(prev_x, max_x) {
+                        buf.push('.');
                     }
                     buf
                 };
