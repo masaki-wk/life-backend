@@ -58,8 +58,8 @@ where
         &self.board
     }
 
-    // Returns positions of neighbourhoods of the specified position
-    fn neighbourhoods_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
+    // Returns neighbour positions of the specified position, defined as Moore neighbourhood.
+    fn neighbour_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
@@ -77,12 +77,12 @@ where
         buf.into_iter()
     }
 
-    // Returns the count of neighbourhoods of the specified position
-    fn neighbourhoods_count(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
+    // Returns the count of live neighbours of the specified position.
+    fn live_neighbour_count(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        Self::neighbourhoods_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
+        Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
 
     // Returns the next board of the specified board.
@@ -90,19 +90,19 @@ where
     where
         IndexType: Copy + PartialEq + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        let scanpos_for_deadcells: HashSet<(IndexType, IndexType)> = board
+        let birth_candidates: HashSet<(IndexType, IndexType)> = board
             .iter()
-            .flat_map(|&(x, y)| Self::neighbourhoods_positions(x, y))
+            .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
             .filter(|&(x, y)| !board.get(x, y))
             .collect();
-        let scanpos_for_livecells = board.iter();
+        let live_cells = board.iter();
         let mut next_board = Board::new();
-        next_board.extend(scanpos_for_livecells.filter(|&&(x, y)| {
-            let count = Self::neighbourhoods_count(board, x, y);
+        next_board.extend(live_cells.filter(|&&(x, y)| {
+            let count = Self::live_neighbour_count(board, x, y);
             count == 2 || count == 3
         }));
-        next_board.extend(scanpos_for_deadcells.into_iter().filter(|&(x, y)| {
-            let count = Self::neighbourhoods_count(board, x, y);
+        next_board.extend(birth_candidates.into_iter().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count(board, x, y);
             count == 3
         }));
         next_board
