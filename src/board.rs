@@ -152,6 +152,8 @@ where
 
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
     ///
+    /// # Examples
+    ///
     /// ```
     /// # use life_backend::Board;
     /// # use std::collections::HashSet;
@@ -176,6 +178,8 @@ where
     type IntoIter = hash_set::IntoIter<Self::Item>;
 
     /// Creates an owning iterator over the series of moved live cell positions on the board in arbitrary order.
+    ///
+    /// # Examples
     ///
     /// ```
     /// # use life_backend::Board;
