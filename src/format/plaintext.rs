@@ -6,7 +6,7 @@ use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
 /// The default index type for Plaintext.
-pub type DefaultIndexType = i16;
+type DefaultIndexType = i16;
 
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]

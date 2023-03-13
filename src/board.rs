@@ -6,7 +6,7 @@ use std::fmt;
 use std::hash::Hash;
 
 /// The default index type of boards.
-pub type DefaultIndexType = i16;
+type DefaultIndexType = i16;
 
 /// A representation of boards.
 #[derive(Debug, Clone, PartialEq, Eq)]
