@@ -25,6 +25,7 @@ where
 }
 
 fn blinker_1k_benchmark(c: &mut Criterion) {
+    // See: https://conwaylife.com/wiki/Blinker
     let id = "blinker-1k";
     let pattern = "\
         !Name: Blinker\n\
