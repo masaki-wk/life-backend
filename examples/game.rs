@@ -52,18 +52,15 @@ fn run(config: Config) -> Result<()> {
 }
 
 fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
-    let mut i = 0;
-    println!("Generation {i}:");
-    println!("{game}");
-    while i < generation {
-        let steps = step_size.min(generation - i);
-        for _ in 0..steps {
-            game.update();
+    for i in 0..generation {
+        if i % step_size == 0 {
+            println!("Generation {i}:");
+            println!("{game}");
         }
-        i += steps;
-        println!("Generation {i}:");
-        println!("{game}");
+        game.update();
     }
+    println!("Generation {generation}:");
+    println!("{game}");
 }
 
 fn main() -> Result<()> {
