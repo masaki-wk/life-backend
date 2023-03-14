@@ -1,4 +1,4 @@
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, Result};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
@@ -43,16 +43,11 @@ impl PlaintextPartial {
     }
     fn parse_content_line(line: &str) -> Result<Vec<usize>> {
         let mut buf = Vec::new();
-        let mut reach_to_max = false;
         for (i, char) in line.chars().enumerate() {
-            ensure!(!reach_to_max, "The pattern contains too wide line");
             match char {
                 '.' => (),
                 'O' => buf.push(i),
                 _ => bail!("Invalid character found in the pattern"),
-            }
-            if i == usize::MAX {
-                reach_to_max = true;
             }
         }
         Ok(buf)
@@ -78,7 +73,6 @@ impl PlaintextPartial {
                 return Ok(());
             }
         }
-        ensure!(self.lines < usize::MAX, "The pattern contains too many lines");
         let content = Self::parse_content_line(line)?;
         if !content.is_empty() {
             self.contents.push((self.lines, content));
