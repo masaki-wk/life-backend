@@ -21,7 +21,7 @@ impl Config {
 fn run(config: &Config) -> Result<()> {
     let path = Path::new(&config.path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let parser = Plaintext::<i16>::new(file)?;
+    let parser = Plaintext::new(file)?;
     println!("{parser}");
     Ok(())
 }

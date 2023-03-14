@@ -44,9 +44,9 @@ impl Config {
 fn run(config: Config) -> Result<()> {
     let path = Path::new(&config.path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let parser = Plaintext::<I>::new(file)?;
-    let board: Board<_> = parser.iter().collect();
-    let game = Game::<_>::new(board);
+    let parser = Plaintext::new(file)?;
+    let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
+    let game = Game::new(board);
     simulate(game, config.generation, config.step_size);
     Ok(())
 }
