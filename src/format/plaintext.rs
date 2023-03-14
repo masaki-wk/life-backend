@@ -1,5 +1,5 @@
 use anyhow::{bail, ensure, Result};
-use num_iter::{range, range_from};
+use num_iter::{range, range_from, range_inclusive};
 use num_traits::bounds::UpperBounded;
 use num_traits::{One, ToPrimitive, Zero};
 use std::fmt;
@@ -11,7 +11,7 @@ type DefaultIndexType = i16;
 /// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
 #[derive(Debug, Clone)]
 pub struct Plaintext<IndexType = DefaultIndexType> {
-    name: String,
+    name: Option<String>,
     comments: Vec<String>,
     contents: Vec<(IndexType, Vec<IndexType>)>,
 }
@@ -39,11 +39,9 @@ impl<IndexType> PlaintextPartial<IndexType> {
             }
         }
     }
-    fn parse_name_line(line: &str) -> Result<&str> {
-        let Some(name) = Self::parse_prefixed_line("!Name: ", line) else {
-            bail!("The header line is in wrong format");
-        };
-        Ok(name)
+    #[inline]
+    fn parse_name_line(line: &str) -> Option<&str> {
+        Self::parse_prefixed_line("!Name: ", line)
     }
     #[inline]
     fn parse_comment_line(line: &str) -> Option<&str> {
@@ -83,23 +81,24 @@ impl<IndexType> PlaintextPartial<IndexType> {
     where
         IndexType: Copy + PartialOrd + Zero + One + UpperBounded,
     {
-        if self.name.is_none() {
-            let name = Self::parse_name_line(line)?;
-            self.name = Some(name.to_string());
-        } else {
-            if self.lines.is_zero() {
-                if let Some(comment) = Self::parse_comment_line(line) {
-                    self.comments.push(comment.to_string());
-                    return Ok(());
-                }
+        if self.comments.is_empty() && self.lines.is_zero() {
+            if let Some(name) = Self::parse_name_line(line) {
+                self.name = Some(name.to_string());
+                return Ok(());
             }
-            ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
-            let content = Self::parse_content_line(line)?;
-            if !content.is_empty() {
-                self.contents.push((self.lines, content));
-            }
-            self.lines = self.lines + IndexType::one();
         }
+        if self.lines.is_zero() {
+            if let Some(comment) = Self::parse_comment_line(line) {
+                self.comments.push(comment.to_string());
+                return Ok(());
+            }
+        }
+        ensure!(self.lines < IndexType::max_value(), "The pattern contains too many lines");
+        let content = Self::parse_content_line(line)?;
+        if !content.is_empty() {
+            self.contents.push((self.lines, content));
+        }
+        self.lines = self.lines + IndexType::one();
         Ok(())
     }
 }
@@ -135,11 +134,8 @@ impl<IndexType> Plaintext<IndexType> {
             }
             buf
         };
-        let Some(name) = partial.name else {
-            bail!("No header line in the pattern");
-        };
         Ok(Self {
-            name,
+            name: partial.name,
             comments: partial.comments,
             contents: partial.contents,
         })
@@ -158,12 +154,11 @@ impl<IndexType> Plaintext<IndexType> {
     ///     OOO\n\
     /// ";
     /// let parser = Plaintext::<i16>::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.name(), "Glider");
+    /// assert_eq!(parser.name(), Some("Glider".to_string()));
     /// ```
     ///
-    #[inline]
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn name(&self) -> Option<String> {
+        self.name.clone()
     }
 
     /// Returns comments of the pattern.
@@ -228,27 +223,34 @@ where
     IndexType: Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "!Name: {}", self.name())?;
+        if let Some(name) = self.name() {
+            writeln!(f, "!Name: {}", name)?;
+        }
         for line in self.comments() {
             writeln!(f, "!{}", line)?;
         }
         if !self.contents.is_empty() {
+            let max_x = {
+                let zero = IndexType::zero();
+                let max = |acc, x| if acc > x { acc } else { x };
+                self.contents.iter().map(|(_, xs)| xs.iter().copied().fold(zero, max)).fold(zero, max)
+            };
+            let pad_line = ".".repeat(range_inclusive(IndexType::zero(), max_x).count());
             let mut prev_y = IndexType::zero();
             for (curr_y, xs) in &self.contents {
                 let curr_y = *curr_y;
                 for _ in range(prev_y, curr_y) {
-                    writeln!(f)?;
+                    writeln!(f, "{pad_line}")?;
                 }
                 let line = {
                     let mut buf = String::new();
                     let mut prev_x = IndexType::zero();
                     for &curr_x in xs {
-                        for _ in range(prev_x, curr_x) {
-                            buf.push('.');
-                        }
+                        buf.push_str(&pad_line[0..(range(prev_x, curr_x).count())]);
                         buf.push('O');
                         prev_x = curr_x + IndexType::one();
                     }
+                    buf.push_str(&pad_line[0..(range_inclusive(prev_x, max_x).count())]);
                     buf
                 };
                 writeln!(f, "{line}")?;
@@ -265,7 +267,13 @@ where
 mod tests {
     use super::*;
     type TargetIndexType = i16;
-    fn test_new(pattern: &str, expected_name: &str, expected_comments: &[&str], expected_contents: &[(TargetIndexType, Vec<TargetIndexType>)]) -> Result<()> {
+    fn test_new(
+        pattern: &str,
+        expected_name: &Option<&str>,
+        expected_comments: &[&str],
+        expected_contents: &[(TargetIndexType, Vec<TargetIndexType>)],
+    ) -> Result<()> {
+        let expected_name = expected_name.map(|s| s.to_string());
         let target = Plaintext::<TargetIndexType>::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
         assert_eq!(target.comments().len(), expected_comments.len());
@@ -279,58 +287,68 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_new_header() -> Result<()> {
-        let pattern = "!Name: test\n";
-        let expected_name = "test";
+    fn test_new_empty() -> Result<()> {
+        let pattern = "";
+        let expected_name = None;
         let expected_comments = Vec::new();
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_header() -> Result<()> {
+        let pattern = "!Name: test\n";
+        let expected_name = Some("test");
+        let expected_comments = Vec::new();
+        let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_no_header_but_comment() -> Result<()> {
+        let pattern = "!comment\n";
+        let expected_name = None;
+        let expected_comments = vec!["comment"];
+        let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comment() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment"];
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents: Vec<(TargetIndexType, _)> = Vec::new();
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
         let pattern = concat!("!Name: test\n", ".O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0 as TargetIndexType, vec![1])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
         let pattern = concat!("!Name: test\n", ".O\n", "O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0 as TargetIndexType, vec![1]), (1 as TargetIndexType, vec![0])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments_contents() -> Result<()> {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O\n");
-        let expected_name = "test";
+        let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0 as TargetIndexType, vec![1]), (1 as TargetIndexType, vec![0])];
-        test_new(pattern, expected_name, &expected_comments, &expected_contents)
-    }
-    #[test]
-    fn test_new_empty() {
-        let pattern = "";
-        let target = Plaintext::<TargetIndexType>::new(pattern.as_bytes());
-        assert!(target.is_err());
+        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_wrong_header() {
