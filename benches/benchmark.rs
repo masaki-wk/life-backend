@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use life_backend::format::Plaintext;
 use life_backend::{Board, Game};
-use num_traits::{Bounded, One, ToPrimitive, Zero};
+use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 
@@ -17,10 +17,13 @@ where
 
 fn do_benchmark<IndexType>(c: &mut Criterion, id: &str, pattern: &str, steps: usize)
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
+    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
 {
     let loader = Plaintext::new(pattern.as_bytes()).unwrap();
-    let board: Board<IndexType> = loader.iter().collect();
+    let board: Board<IndexType> = loader
+        .iter()
+        .map(|(x, y)| (IndexType::from_usize(x).unwrap(), IndexType::from_usize(y).unwrap()))
+        .collect();
     c.bench_function(id, |b| b.iter(|| workload(&board, steps)));
 }
 
