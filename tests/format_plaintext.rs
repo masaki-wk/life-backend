@@ -4,15 +4,13 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use i16 as I;
-
 // Execute the test with the Read implementor and the expected positions.
-fn do_test<R>(read: R, expected_positions: &[(I, I)]) -> Result<()>
+fn do_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
     R: Read,
 {
     // Create the target with the Read implementor
-    let target = Plaintext::<I>::new(read)?;
+    let target = Plaintext::new(read)?;
     println!("Target:");
     println!("{target}");
 
@@ -24,11 +22,11 @@ where
     Ok(())
 }
 
-fn do_test_with_string(input_string: &str, expected_positions: &[(I, I)]) -> Result<()> {
+fn do_test_with_string(input_string: &str, expected_positions: &[(usize, usize)]) -> Result<()> {
     do_test(input_string.as_bytes(), expected_positions)
 }
 
-fn do_test_with_path(input_path_string: &str, expected_positions: &[(I, I)]) -> Result<()> {
+fn do_test_with_path(input_path_string: &str, expected_positions: &[(usize, usize)]) -> Result<()> {
     let path = Path::new(input_path_string);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
     do_test(file, expected_positions)
