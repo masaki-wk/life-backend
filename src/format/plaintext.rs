@@ -235,26 +235,22 @@ where
                 let max = |acc, x| if acc > x { acc } else { x };
                 self.contents.iter().map(|(_, xs)| xs.iter().copied().fold(zero, max)).fold(zero, max)
             };
+            let pad_line = ".".repeat(range_inclusive(IndexType::zero(), max_x).count());
             let mut prev_y = IndexType::zero();
             for (curr_y, xs) in &self.contents {
                 let curr_y = *curr_y;
                 for _ in range(prev_y, curr_y) {
-                    let pad: String = ".".repeat(range_inclusive(IndexType::zero(), max_x).count());
-                    writeln!(f, "{pad}")?;
+                    writeln!(f, "{pad_line}")?;
                 }
                 let line = {
                     let mut buf = String::new();
                     let mut prev_x = IndexType::zero();
                     for &curr_x in xs {
-                        for _ in range(prev_x, curr_x) {
-                            buf.push('.');
-                        }
+                        buf.push_str(&pad_line[0..(range(prev_x, curr_x).count())]);
                         buf.push('O');
                         prev_x = curr_x + IndexType::one();
                     }
-                    for _ in range_inclusive(prev_x, max_x) {
-                        buf.push('.');
-                    }
+                    buf.push_str(&pad_line[0..(range_inclusive(prev_x, max_x).count())]);
                     buf
                 };
                 writeln!(f, "{line}")?;
