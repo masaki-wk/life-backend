@@ -18,7 +18,7 @@ impl Config {
     }
 }
 
-fn run(config: &Config) -> Result<()> {
+fn run(config: Config) -> Result<()> {
     let path = Path::new(&config.path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
     let parser = Plaintext::new(file)?;
@@ -28,5 +28,5 @@ fn run(config: &Config) -> Result<()> {
 
 fn main() -> Result<()> {
     let config = Config::new(env::args())?;
-    run(&config)
+    run(config)
 }
