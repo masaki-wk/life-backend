@@ -19,11 +19,9 @@ fn do_benchmark<IndexType>(c: &mut Criterion, id: &str, pattern: &str, steps: us
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
 {
+    let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
     let loader = Plaintext::new(pattern.as_bytes()).unwrap();
-    let board: Board<IndexType> = loader
-        .iter()
-        .map(|(x, y)| (IndexType::from_usize(x).unwrap(), IndexType::from_usize(y).unwrap()))
-        .collect();
+    let board: Board<_> = loader.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
     c.bench_function(id, |b| b.iter(|| workload(&board, steps)));
 }
 
