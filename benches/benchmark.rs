@@ -36,5 +36,35 @@ fn blinker_1k_benchmark(c: &mut Criterion) {
     do_benchmark::<i8>(c, id, pattern, steps);
 }
 
-criterion_group!(benches, blinker_1k_benchmark);
+fn moldon30p25_1k_benchmark(c: &mut Criterion) {
+    // See: https://conwaylife.com/wiki/30P25#LCM_oscillators, p100 with mold
+    let id = "moldon30p25-1k";
+    let pattern = "\
+        !Name: moldon30p25\n\
+        ..................OO\n\
+        ..................O.\n\
+        ................O.O.\n\
+        ..........O..O..OO..\n\
+        ..........O..O......\n\
+        .........O....O.....\n\
+        .............O......\n\
+        ..........OO.O......\n\
+        ....................\n\
+        ....................\n\
+        ....................\n\
+        ....................\n\
+        ......O.OO..........\n\
+        ......O.............\n\
+        .....O....O.........\n\
+        ......O..O......OOO.\n\
+        ..OO..O..O....O.OOO.\n\
+        .O.O.........O.O.O..\n\
+        .O...........O..O...\n\
+        OO............OO....\n\
+    ";
+    let steps = 1000;
+    do_benchmark::<i8>(c, id, pattern, steps);
+}
+
+criterion_group!(benches, blinker_1k_benchmark, moldon30p25_1k_benchmark);
 criterion_main!(benches);
