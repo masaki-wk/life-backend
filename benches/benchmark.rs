@@ -67,31 +67,9 @@ fn centinal_1k_benchmark(c: &mut Criterion) {
 fn moldon30p25_1k_benchmark(c: &mut Criterion) {
     // See: https://conwaylife.com/wiki/30P25#LCM_oscillators, p100 with mold
     let id = "moldon30p25-1k";
-    let pattern = "\
-        !Name: moldon30p25\n\
-        ..................OO\n\
-        ..................O.\n\
-        ................O.O.\n\
-        ..........O..O..OO..\n\
-        ..........O..O......\n\
-        .........O....O.....\n\
-        .............O......\n\
-        ..........OO.O......\n\
-        ....................\n\
-        ....................\n\
-        ....................\n\
-        ....................\n\
-        ......O.OO..........\n\
-        ......O.............\n\
-        .....O....O.........\n\
-        ......O..O......OOO.\n\
-        ..OO..O..O....O.OOO.\n\
-        .O.O.........O.O.O..\n\
-        .O...........O..O...\n\
-        OO............OO....\n\
-    ";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/moldon30p25.cells");
     let steps = 1000;
-    do_benchmark_with_string::<i8>(c, id, pattern, steps);
+    do_benchmark_with_file::<i8>(c, id, path_str, steps);
 }
 
 criterion_group!(benches, blinker_1k_benchmark, centinal_1k_benchmark, moldon30p25_1k_benchmark);
