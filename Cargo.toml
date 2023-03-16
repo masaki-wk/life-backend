@@ -8,3 +8,10 @@ license = "MIT OR Apache-2.0"
 anyhow = "1.0.69"
 num-iter = "0.1.43"
 num-traits = "0.2.15"
+
+[dev-dependencies]
+criterion = { version = "0.4.0", features = ["html_reports"] }
+
+[[bench]]
+name = "benchmark"
+harness = false
