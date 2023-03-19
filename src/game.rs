@@ -4,6 +4,7 @@ use num_traits::{Bounded, One, ToPrimitive, Zero};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
+use std::mem;
 use std::ops::{Add, Sub};
 
 /// The default index type of boards.
@@ -15,7 +16,9 @@ pub struct Game<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
 {
-    board: Board<IndexType>,
+    curr_board: Board<IndexType>,
+    prev_board: Board<IndexType>,
+    birth_candidates: HashSet<(IndexType, IndexType)>,
 }
 
 impl<IndexType> Game<IndexType>
@@ -32,9 +35,12 @@ where
     /// let game = Game::new(board);
     /// ```
     ///
-    #[inline]
     pub fn new(board: Board<IndexType>) -> Self {
-        Self { board }
+        Self {
+            curr_board: board,
+            prev_board: Board::new(),
+            birth_candidates: HashSet::new(),
+        }
     }
 
     /// Returns the board.
@@ -55,7 +61,7 @@ where
     ///
     #[inline]
     pub fn board(&self) -> &Board<IndexType> {
-        &self.board
+        &self.curr_board
     }
 
     // Creates an iterator over neighbour positions of the specified position, defined as Moore neighbourhood.
@@ -137,10 +143,12 @@ where
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        let birth_candidates: HashSet<_> = Self::birth_candidate_cells(&self.board).collect();
-        let mut next_board: Board<_> = Self::survive_cells(&self.board).collect();
-        next_board.extend(Self::birth_cells(&self.board, &birth_candidates));
-        self.board = next_board;
+        mem::swap(&mut self.curr_board, &mut self.prev_board);
+        self.curr_board.clear();
+        self.birth_candidates.clear();
+        self.birth_candidates.extend(Self::birth_candidate_cells(&self.prev_board));
+        self.curr_board.extend(Self::survive_cells(&self.prev_board));
+        self.curr_board.extend(Self::birth_cells(&self.prev_board, &self.birth_candidates));
     }
 }
 

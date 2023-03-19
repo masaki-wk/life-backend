@@ -103,6 +103,23 @@ where
             (zero, zero, zero, zero)
         }
     }
+
+    /// Removes all live cells in the board.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// board.set(0, 0, true);
+    /// board.clear();
+    /// assert_eq!(board.get(0, 0), false);
+    /// ```
+    ///
+    #[inline]
+    pub fn clear(&mut self) {
+        self.live_cells.clear();
+    }
 }
 
 impl<'a, IndexType> Board<IndexType>
