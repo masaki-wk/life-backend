@@ -83,27 +83,38 @@ where
         Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
 
-    // Returns the next board of the specified board.
-    fn next_board(board: &Board<IndexType>) -> Board<IndexType>
+    // Returns candidate cells that will be born in the next generation of the specific board. These candidates may contain duplicate positions.
+    fn birth_candidate_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        let survive_caondidates = board.iter();
-        let birth_candidates_multiset = board
+        board
             .iter()
             .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
-            .filter(|&(x, y)| !board.get(x, y));
-        let birth_candidates_uniquified: HashSet<(IndexType, IndexType)> = birth_candidates_multiset.collect();
-        let mut next_board = Board::new();
-        next_board.extend(survive_caondidates.filter(|&&(x, y)| {
+            .filter(|&(x, y)| !board.get(x, y))
+    }
+
+    // Returns cells that will be survive in the next generation of the specific board.
+    fn survive_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+    {
+        board.iter().copied().filter(|&(x, y)| {
             let count = Self::live_neighbour_count(board, x, y);
             count == 2 || count == 3
-        }));
-        next_board.extend(birth_candidates_uniquified.into_iter().filter(|&(x, y)| {
+        })
+    }
+
+    // Selects the cells that will actually be born from the specific candidate birth cells.
+    fn birth_cells<'a, 'b>(board: &'a Board<IndexType>, candidates: &'b HashSet<(IndexType, IndexType)>) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        'a: 'b,
+    {
+        candidates.iter().copied().filter(|&(x, y)| {
             let count = Self::live_neighbour_count(board, x, y);
             count == 3
-        }));
-        next_board
+        })
     }
 
     /// Update the state of the game.
@@ -126,7 +137,10 @@ where
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        self.board = Self::next_board(self.board())
+        let birth_candidates: HashSet<_> = Self::birth_candidate_cells(&self.board).collect();
+        let mut next_board: Board<_> = Self::survive_cells(&self.board).collect();
+        next_board.extend(Self::birth_cells(&self.board, &birth_candidates));
+        self.board = next_board;
     }
 }
 
@@ -136,6 +150,6 @@ where
 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.board.fmt(f)
+        self.board().fmt(f)
     }
 }
