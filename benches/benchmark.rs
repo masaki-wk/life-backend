@@ -50,7 +50,6 @@ where
 }
 
 fn blinker_1k_benchmark(c: &mut Criterion) {
-    // See: https://conwaylife.com/wiki/Blinker
     let id = "blinker-1k";
     let pattern = "\
         !Name: Blinker\n\
@@ -60,21 +59,48 @@ fn blinker_1k_benchmark(c: &mut Criterion) {
     do_benchmark_with_string::<i8>(c, id, pattern, steps).unwrap();
 }
 
-fn centinal_1k_benchmark(c: &mut Criterion) {
-    // See: https://conwaylife.com/wiki/Centinal
-    let id = "centinal-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
+fn pentadecathlon_1k_benchmark(c: &mut Criterion) {
+    let id = "pentadecathlon-1k";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/pentadecathlon.cells");
+    let steps = 1000;
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
+}
+
+fn queenbeeshuttle_1k_benchmark(c: &mut Criterion) {
+    let id = "queenbeeshuttle-1k";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/queenbeeshuttle.cells");
+    let steps = 1000;
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
+}
+
+fn p60glidershuttle_1k_benchmark(c: &mut Criterion) {
+    let id = "p60glidershuttle-1k";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/p60glidershuttle.cells");
     let steps = 1000;
     do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
 
 fn moldon30p25_1k_benchmark(c: &mut Criterion) {
-    // See: https://conwaylife.com/wiki/30P25#LCM_oscillators, p100 with mold
     let id = "moldon30p25-1k";
     let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/moldon30p25.cells");
     let steps = 1000;
     do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
 
-criterion_group!(benches, blinker_1k_benchmark, centinal_1k_benchmark, moldon30p25_1k_benchmark);
+fn centinal_1k_benchmark(c: &mut Criterion) {
+    let id = "centinal-1k";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
+    let steps = 1000;
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
+}
+
+criterion_group!(
+    benches,
+    blinker_1k_benchmark,
+    pentadecathlon_1k_benchmark,
+    queenbeeshuttle_1k_benchmark,
+    p60glidershuttle_1k_benchmark,
+    moldon30p25_1k_benchmark,
+    centinal_1k_benchmark
+);
 criterion_main!(benches);
