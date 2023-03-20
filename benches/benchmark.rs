@@ -31,47 +31,23 @@ where
     Ok(())
 }
 
-fn blinker_1k_benchmark(c: &mut Criterion) {
-    let id = "blinker-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/blinker.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
+macro_rules! create_benchmark_function {
+    ($function_name:ident, $id:literal, $relative_path_string:literal, $steps:expr) => {
+        fn $function_name(c: &mut Criterion) {
+            let id = $id;
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let steps = $steps;
+            do_benchmark::<i8>(c, id, path_str, steps).unwrap();
+        }
+    };
 }
 
-fn pentadecathlon_1k_benchmark(c: &mut Criterion) {
-    let id = "pentadecathlon-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/pentadecathlon.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
-}
-
-fn queenbeeshuttle_1k_benchmark(c: &mut Criterion) {
-    let id = "queenbeeshuttle-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/transqueenbeeshuttle.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
-}
-
-fn p60glidershuttle_1k_benchmark(c: &mut Criterion) {
-    let id = "p60glidershuttle-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/p60glidershuttle.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
-}
-
-fn moldon30p25_1k_benchmark(c: &mut Criterion) {
-    let id = "moldon30p25-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/moldon30p25.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
-}
-
-fn centinal_1k_benchmark(c: &mut Criterion) {
-    let id = "centinal-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
-    let steps = 1000;
-    do_benchmark::<i8>(c, id, path_str, steps).unwrap();
-}
+create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker.cells", 1000);
+create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.cells", 1000);
+create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.cells", 1000);
+create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.cells", 1000);
+create_benchmark_function!(moldon30p25_1k_benchmark, "moldon30p25-1k", "patterns/moldon30p25.cells", 1000);
+create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.cells", 1000);
 
 criterion_group!(
     benches,
