@@ -5,8 +5,8 @@ use std::io::Read;
 
 use i16 as I;
 
-// Start from the specific pattern and advance to the specific generation, and check if the final state is the same as the expected pattern.
-fn do_test(init: &Board<I>, steps: usize, expected: &Board<I>) -> Result<()> {
+// Creates a new game from the specific board and advances it to the specific generation.
+fn do_game(board: Board<I>, steps: usize) -> Game<I> {
     // Utility closure
     let print_game_with_header = |header: &str, game: &Game<_>| {
         println!("{header}");
@@ -14,8 +14,8 @@ fn do_test(init: &Board<I>, steps: usize, expected: &Board<I>) -> Result<()> {
         println!("{game}");
     };
 
-    // Create the game with the initial pattern
-    let mut game = Game::new(init.clone());
+    // Create the game with the board
+    let mut game = Game::new(board);
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
@@ -24,10 +24,8 @@ fn do_test(init: &Board<I>, steps: usize, expected: &Board<I>) -> Result<()> {
     }
     print_game_with_header(&format!("Generation {}:", steps), &game);
 
-    // Check the current state of the game
-    print_game_with_header("Expected:", &game);
-    assert_eq!(*game.board(), *expected);
-    Ok(())
+    // Return the game
+    game
 }
 
 fn do_oscillator_test<R>(read: R, period: usize) -> Result<()>
@@ -36,7 +34,9 @@ where
 {
     let loader = Plaintext::new(read)?;
     let board: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
-    do_test(&board, period, &board)
+    let game = do_game(board.clone(), period);
+    assert_eq!(*game.board(), board);
+    Ok(())
 }
 
 fn do_oscillator_test_with_string(pattern: &str, steps: usize) -> Result<()> {
@@ -50,7 +50,9 @@ where
     let loader = Plaintext::new(read)?;
     let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
-    do_test(&init, steps, &expected)
+    let game = do_game(init, steps);
+    assert_eq!(*game.board(), expected);
+    Ok(())
 }
 
 fn do_spaceship_test_with_string(pattern: &str, steps: usize, relative_position: (I, I)) -> Result<()> {
