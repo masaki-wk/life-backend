@@ -51,26 +51,26 @@ fn do_oscillator_test_with_path(path_str: &str, steps: usize) -> Result<()> {
     do_oscillator_test(file, steps)
 }
 
-fn do_spaceship_test<R>(read: R, steps: usize, relative_position: (I, I)) -> Result<()>
+fn do_spaceship_test<R>(read: R, period: usize, relative_position: (I, I)) -> Result<()>
 where
     R: Read,
 {
     let loader = Plaintext::new(read)?;
     let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
-    let game = do_game(init, steps);
+    let game = do_game(init, period);
     assert_eq!(*game.board(), expected);
     Ok(())
 }
 
-fn do_spaceship_test_with_string(pattern: &str, steps: usize, relative_position: (I, I)) -> Result<()> {
-    do_spaceship_test(pattern.as_bytes(), steps, relative_position)
+fn do_spaceship_test_with_string(pattern: &str, period: usize, relative_position: (I, I)) -> Result<()> {
+    do_spaceship_test(pattern.as_bytes(), period, relative_position)
 }
 
-fn do_spaceship_test_with_path(path_str: &str, steps: usize, relative_position: (I, I)) -> Result<()> {
+fn do_spaceship_test_with_path(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
-    do_spaceship_test(file, steps, relative_position)
+    do_spaceship_test(file, period, relative_position)
 }
 
 #[test]
@@ -140,15 +140,15 @@ fn game_glider_test() -> Result<()> {
         ..O\n\
         OOO\n\
     ";
-    let steps = 4;
+    let period = 4;
     let relative_position = (1, 1);
-    do_spaceship_test_with_string(pattern, steps, relative_position)
+    do_spaceship_test_with_string(pattern, period, relative_position)
 }
 
 #[test]
 fn game_lwss_test() -> Result<()> {
     let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/lwss.cells");
-    let steps = 4;
+    let period = 4;
     let relative_position = (-2, 0);
-    do_spaceship_test_with_path(path_str, steps, relative_position)
+    do_spaceship_test_with_path(path_str, period, relative_position)
 }
