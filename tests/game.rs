@@ -63,8 +63,8 @@ fn game_blinker_test() -> Result<()> {
         !Name: Blinker\n\
         OOO\n\
     ";
-    let steps = 2;
-    do_oscillator_test_with_string(pattern, steps)
+    let period = 2;
+    do_oscillator_test_with_string(pattern, period)
 }
 
 #[test]
