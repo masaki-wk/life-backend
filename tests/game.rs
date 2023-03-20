@@ -152,3 +152,19 @@ fn game_lwss_test() -> Result<()> {
     let relative_position = (-2, 0);
     do_spaceship_test_with_path(path_str, period, relative_position)
 }
+
+#[test]
+fn game_loafer_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/loafer.cells");
+    let period = 7;
+    let relative_position = (-1, 0);
+    do_spaceship_test_with_path(path_str, period, relative_position)
+}
+
+#[test]
+fn game_copperhead_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/copperhead.cells");
+    let period = 10;
+    let relative_position = (0, -1);
+    do_spaceship_test_with_path(path_str, period, relative_position)
+}
