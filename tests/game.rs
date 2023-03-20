@@ -91,6 +91,48 @@ fn game_toad_test() -> Result<()> {
 }
 
 #[test]
+fn game_koksgalaxy_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/koksgalaxy.cells");
+    let period = 8;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
+fn game_pentadecathlon_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/pentadecathlon.cells");
+    let period = 15;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
+fn game_queenbeeshuttle_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/transqueenbeeshuttle.cells");
+    let period = 30;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
+fn game_twinbeesshuttle_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/3blocktwinbeesshuttle.cells");
+    let period = 46;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
+fn game_p60glidershuttle_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/p60glidershuttle.cells");
+    let period = 60;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
+fn game_centinal_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
+    let period = 100;
+    do_oscillator_test_with_path(path_str, period)
+}
+
+#[test]
 fn game_glider_test() -> Result<()> {
     let pattern = "\
         !Name: Glider\n\
