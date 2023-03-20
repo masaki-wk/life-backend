@@ -68,7 +68,7 @@ fn pentadecathlon_1k_benchmark(c: &mut Criterion) {
 
 fn queenbeeshuttle_1k_benchmark(c: &mut Criterion) {
     let id = "queenbeeshuttle-1k";
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/queenbeeshuttle.cells");
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/transqueenbeeshuttle.cells");
     let steps = 1000;
     do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
