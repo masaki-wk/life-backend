@@ -39,7 +39,7 @@ where
     Ok(())
 }
 
-fn do_benchmark_with_file<IndexType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
+fn do_benchmark_with_path<IndexType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
 {
@@ -65,7 +65,7 @@ fn centinal_1k_benchmark(c: &mut Criterion) {
     let id = "centinal-1k";
     let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
     let steps = 1000;
-    do_benchmark_with_file::<i8>(c, id, path_str, steps).unwrap();
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
 
 fn moldon30p25_1k_benchmark(c: &mut Criterion) {
@@ -73,7 +73,7 @@ fn moldon30p25_1k_benchmark(c: &mut Criterion) {
     let id = "moldon30p25-1k";
     let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/moldon30p25.cells");
     let steps = 1000;
-    do_benchmark_with_file::<i8>(c, id, path_str, steps).unwrap();
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
 
 criterion_group!(benches, blinker_1k_benchmark, centinal_1k_benchmark, moldon30p25_1k_benchmark);
