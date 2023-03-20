@@ -1,13 +1,14 @@
 use anyhow::Result;
+use life_backend::format::Plaintext;
 use life_backend::{Board, Game};
+use std::io::Read;
 
 use i16 as I;
 
-// Execute the test with the initial pattern, steps to be proceed, and the expected final pattern.
-fn do_test(init_pattern: &[(I, I)], steps: usize, expected_final_pattern: &[(I, I)]) -> Result<()> {
+// Start from the specific pattern and advance to the specific generation, and check if the final state is the same as the expected pattern.
+fn do_test(init: &Board<I>, steps: usize, expected: &Board<I>) -> Result<()> {
     // Create the game with the initial pattern
-    let board: Board = init_pattern.iter().collect();
-    let mut game = Game::new(board);
+    let mut game = Game::new(init.clone());
     println!("Generation 0:");
     println!("(boundary: {:?})", game.board().bounding_box());
     println!("{game}");
@@ -16,30 +17,64 @@ fn do_test(init_pattern: &[(I, I)], steps: usize, expected_final_pattern: &[(I, 
     for _ in 0..steps {
         game.update();
     }
-    println!("Generation {}:", steps - 1);
+    println!("Generation {}:", steps);
     println!("(boundary: {:?})", game.board().bounding_box());
     println!("{game}");
 
     // Check the current state of the game
-    let expected_board: Board = expected_final_pattern.iter().collect();
     println!("Expected:");
-    println!("(boundary: {:?})", expected_board.bounding_box());
-    println!("{expected_board}");
-    assert_eq!(*game.board(), expected_board);
+    println!("(boundary: {:?})", expected.bounding_box());
+    println!("{expected}");
+    assert_eq!(*game.board(), *expected);
     Ok(())
+}
+
+fn do_oscillator_test<R>(read: R, period: usize) -> Result<()>
+where
+    R: Read,
+{
+    let loader = Plaintext::new(read)?;
+    let board: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
+    do_test(&board, period, &board)
+}
+
+fn do_oscillator_test_with_string(pattern: &str, steps: usize) -> Result<()> {
+    do_oscillator_test(pattern.as_bytes(), steps)
+}
+
+fn do_spaceship_test<R>(read: R, steps: usize, relative_position: (I, I)) -> Result<()>
+where
+    R: Read,
+{
+    let loader = Plaintext::new(read)?;
+    let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
+    let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
+    do_test(&init, steps, &expected)
+}
+
+fn do_spaceship_test_with_string(pattern: &str, steps: usize, relative_position: (I, I)) -> Result<()> {
+    do_spaceship_test(pattern.as_bytes(), steps, relative_position)
 }
 
 #[test]
 fn game_blinker_test() -> Result<()> {
-    let init_pattern = vec![(0, 0), (1, 0), (2, 0)]; // Blinker pattern
+    let pattern = "\
+        !Name: Blinker\n\
+        OOO\n\
+    ";
     let steps = 2;
-    do_test(&init_pattern, steps, &init_pattern)
+    do_oscillator_test_with_string(pattern, steps)
 }
 
 #[test]
 fn game_glider_test() -> Result<()> {
-    let init_pattern = vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]; // Glider pattern
+    let pattern = "\
+        !Name: Glider\n\
+        .O.\n\
+        ..O\n\
+        OOO\n\
+    ";
     let steps = 4;
-    let expected_final_pattern: Vec<_> = init_pattern.iter().map(|&(x, y)| (x + 1, y + 1)).collect();
-    do_test(&init_pattern, steps, &expected_final_pattern)
+    let relative_position = (1, 1);
+    do_spaceship_test_with_string(pattern, steps, relative_position)
 }
