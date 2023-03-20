@@ -51,6 +51,16 @@ fn do_oscillator_test_with_path(path_str: &str, steps: usize) -> Result<()> {
     do_oscillator_test(file, steps)
 }
 
+fn do_stilllife_test_with_string(pattern: &str) -> Result<()> {
+    do_oscillator_test(pattern.as_bytes(), 1)
+}
+
+fn do_stilllife_test_with_path(path_str: &str) -> Result<()> {
+    let path = Path::new(path_str);
+    let file = File::open(path)?;
+    do_oscillator_test(file, 1)
+}
+
 fn do_spaceship_test<R>(read: R, period: usize, relative_position: (I, I)) -> Result<()>
 where
     R: Read,
@@ -72,6 +82,32 @@ fn do_spaceship_test_with_path(path_str: &str, period: usize, relative_position:
     let file = File::open(path)?;
     do_spaceship_test(file, period, relative_position)
 }
+
+// Still life tests
+
+#[test]
+fn game_block_test() -> Result<()> {
+    let pattern = "\
+        !Name: Block\n\
+        OO\n\
+        OO\n\
+    ";
+    do_stilllife_test_with_string(pattern)
+}
+
+#[test]
+fn game_boat_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/boat.cells");
+    do_stilllife_test_with_path(path_str)
+}
+
+#[test]
+fn game_spiral_test() -> Result<()> {
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/spiral.cells");
+    do_stilllife_test_with_path(path_str)
+}
+
+// Oscillator tests
 
 #[test]
 fn game_blinker_test() -> Result<()> {
@@ -131,6 +167,8 @@ fn game_centinal_test() -> Result<()> {
     let period = 100;
     do_oscillator_test_with_path(path_str, period)
 }
+
+// Spaceship tests
 
 #[test]
 fn game_glider_test() -> Result<()> {
