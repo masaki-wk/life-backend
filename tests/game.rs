@@ -7,24 +7,25 @@ use i16 as I;
 
 // Start from the specific pattern and advance to the specific generation, and check if the final state is the same as the expected pattern.
 fn do_test(init: &Board<I>, steps: usize, expected: &Board<I>) -> Result<()> {
+    // Utility closure
+    let print_game_with_header = |header: &str, game: &Game<_>| {
+        println!("{header}");
+        println!("(boundary: {:?})", game.board().bounding_box());
+        println!("{game}");
+    };
+
     // Create the game with the initial pattern
     let mut game = Game::new(init.clone());
-    println!("Generation 0:");
-    println!("(boundary: {:?})", game.board().bounding_box());
-    println!("{game}");
+    print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
     for _ in 0..steps {
         game.update();
     }
-    println!("Generation {}:", steps);
-    println!("(boundary: {:?})", game.board().bounding_box());
-    println!("{game}");
+    print_game_with_header(&format!("Generation {}:", steps), &game);
 
     // Check the current state of the game
-    println!("Expected:");
-    println!("(boundary: {:?})", expected.bounding_box());
-    println!("{expected}");
+    print_game_with_header("Expected:", &game);
     assert_eq!(*game.board(), *expected);
     Ok(())
 }
