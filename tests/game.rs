@@ -41,18 +41,10 @@ where
     Ok(())
 }
 
-fn do_oscillator_test_with_string(pattern: &str, steps: usize) -> Result<()> {
-    do_oscillator_test(pattern.as_bytes(), steps)
-}
-
 fn do_oscillator_test_with_path(path_str: &str, steps: usize) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
     do_oscillator_test(file, steps)
-}
-
-fn do_stilllife_test_with_string(pattern: &str) -> Result<()> {
-    do_oscillator_test(pattern.as_bytes(), 1)
 }
 
 fn do_stilllife_test_with_path(path_str: &str) -> Result<()> {
@@ -73,10 +65,6 @@ where
     Ok(())
 }
 
-fn do_spaceship_test_with_string(pattern: &str, period: usize, relative_position: (I, I)) -> Result<()> {
-    do_spaceship_test(pattern.as_bytes(), period, relative_position)
-}
-
 fn do_spaceship_test_with_path(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
@@ -87,12 +75,8 @@ fn do_spaceship_test_with_path(path_str: &str, period: usize, relative_position:
 
 #[test]
 fn game_block_test() -> Result<()> {
-    let pattern = "\
-        !Name: Block\n\
-        OO\n\
-        OO\n\
-    ";
-    do_stilllife_test_with_string(pattern)
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/block.cells");
+    do_stilllife_test_with_path(path_str)
 }
 
 #[test]
@@ -111,12 +95,9 @@ fn game_spiral_test() -> Result<()> {
 
 #[test]
 fn game_blinker_test() -> Result<()> {
-    let pattern = "\
-        !Name: Blinker\n\
-        OOO\n\
-    ";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/blinker.cells");
     let period = 2;
-    do_oscillator_test_with_string(pattern, period)
+    do_oscillator_test_with_path(path_str, period)
 }
 
 #[test]
@@ -172,15 +153,10 @@ fn game_centinal_test() -> Result<()> {
 
 #[test]
 fn game_glider_test() -> Result<()> {
-    let pattern = "\
-        !Name: Glider\n\
-        .O.\n\
-        ..O\n\
-        OOO\n\
-    ";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/glider.cells");
     let period = 4;
     let relative_position = (1, 1);
-    do_spaceship_test_with_string(pattern, period, relative_position)
+    do_spaceship_test_with_path(path_str, period, relative_position)
 }
 
 #[test]
