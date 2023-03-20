@@ -54,114 +54,56 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
     Ok(())
 }
 
+macro_rules! create_stilllife_test_function {
+    ($function_name:ident, $relative_path_string:literal) => {
+        #[test]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_stilllife_test(path_str)
+        }
+    };
+}
+
+macro_rules! create_oscillator_test_function {
+    ($function_name:ident, $relative_path_string:literal, $period:expr) => {
+        #[test]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_oscillator_test(path_str, $period)
+        }
+    };
+}
+
+macro_rules! create_spaceship_test_function {
+    ($function_name:ident, $relative_path_string:literal, $period:expr, $relative_position:expr) => {
+        #[test]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_spaceship_test(path_str, $period, $relative_position)
+        }
+    };
+}
+
 // Still life tests
 
-#[test]
-fn game_block_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/block.cells");
-    do_stilllife_test(path_str)
-}
-
-#[test]
-fn game_boat_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/boat.cells");
-    do_stilllife_test(path_str)
-}
-
-#[test]
-fn game_spiral_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/spiral.cells");
-    do_stilllife_test(path_str)
-}
+create_stilllife_test_function!(game_block_test, "patterns/block.cells");
+create_stilllife_test_function!(game_boat_test, "patterns/boat.cells");
+create_stilllife_test_function!(game_spiral_test, "patterns/spiral.cells");
 
 // Oscillator tests
 
-#[test]
-fn game_blinker_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/blinker.cells");
-    let period = 2;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_toad_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/toad.cells");
-    let period = 2;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_koksgalaxy_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/koksgalaxy.cells");
-    let period = 8;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_pentadecathlon_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/pentadecathlon.cells");
-    let period = 15;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_queenbeeshuttle_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/transqueenbeeshuttle.cells");
-    let period = 30;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_twinbeesshuttle_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/3blocktwinbeesshuttle.cells");
-    let period = 46;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_p60glidershuttle_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/p60glidershuttle.cells");
-    let period = 60;
-    do_oscillator_test(path_str, period)
-}
-
-#[test]
-fn game_centinal_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/centinal.cells");
-    let period = 100;
-    do_oscillator_test(path_str, period)
-}
+create_oscillator_test_function!(game_blinker_test, "patterns/blinker.cells", 2);
+create_oscillator_test_function!(game_toad_test, "patterns/toad.cells", 2);
+create_oscillator_test_function!(game_koksgalaxy_test, "patterns/koksgalaxy.cells", 8);
+create_oscillator_test_function!(game_pentadecathlon_test, "patterns/pentadecathlon.cells", 15);
+create_oscillator_test_function!(game_queenbeeshuttle_test, "patterns/transqueenbeeshuttle.cells", 30);
+create_oscillator_test_function!(game_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.cells", 46);
+create_oscillator_test_function!(game_p60glidershuttle_test, "patterns/p60glidershuttle.cells", 60);
+create_oscillator_test_function!(game_centinal_test, "patterns/centinal.cells", 100);
 
 // Spaceship tests
 
-#[test]
-fn game_glider_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/glider.cells");
-    let period = 4;
-    let relative_position = (1, 1);
-    do_spaceship_test(path_str, period, relative_position)
-}
-
-#[test]
-fn game_lwss_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/lwss.cells");
-    let period = 4;
-    let relative_position = (-2, 0);
-    do_spaceship_test(path_str, period, relative_position)
-}
-
-#[test]
-fn game_loafer_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/loafer.cells");
-    let period = 7;
-    let relative_position = (-1, 0);
-    do_spaceship_test(path_str, period, relative_position)
-}
-
-#[test]
-fn game_copperhead_test() -> Result<()> {
-    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/copperhead.cells");
-    let period = 10;
-    let relative_position = (0, -1);
-    do_spaceship_test(path_str, period, relative_position)
-}
+create_spaceship_test_function!(game_glider_test, "patterns/glider.cells", 4, (1, 1));
+create_spaceship_test_function!(game_lwss_test, "patterns/lwss.cells", 4, (-2, 0));
+create_spaceship_test_function!(game_loafer_test, "patterns/loafer.cells", 7, (-1, 0));
+create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.cells", 10, (0, -1));
