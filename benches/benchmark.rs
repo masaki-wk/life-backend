@@ -31,14 +31,6 @@ where
     Ok(())
 }
 
-fn do_benchmark_with_string<IndexType>(c: &mut Criterion, id: &str, pattern: &str, steps: usize) -> Result<()>
-where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
-{
-    do_benchmark::<i8, _>(c, id, pattern.as_bytes(), steps)?;
-    Ok(())
-}
-
 fn do_benchmark_with_path<IndexType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
@@ -51,12 +43,9 @@ where
 
 fn blinker_1k_benchmark(c: &mut Criterion) {
     let id = "blinker-1k";
-    let pattern = "\
-        !Name: Blinker\n\
-        OOO\n\
-    ";
+    let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/blinker.cells");
     let steps = 1000;
-    do_benchmark_with_string::<i8>(c, id, pattern, steps).unwrap();
+    do_benchmark_with_path::<i8>(c, id, path_str, steps).unwrap();
 }
 
 fn pentadecathlon_1k_benchmark(c: &mut Criterion) {
