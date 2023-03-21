@@ -65,7 +65,11 @@ where
     }
 
     // Creates an iterator over neighbour positions of the specified position, defined as Moore neighbourhood.
-    fn neighbour_positions(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
+    //
+    // - _with_boundary_check: Maximum and minimum bounds of x and y are checked
+    // - _no_boundary_check: Maximum and minimum bounds of x and y are NOT checked
+    //
+    fn neighbour_positions_with_boundary_check(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
@@ -80,45 +84,114 @@ where
             .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| (u, v)))
             .filter(move |&(u, v)| u != x || v != y)
     }
+    fn neighbour_positions_no_boundary_check(x: IndexType, y: IndexType) -> impl Iterator<Item = (IndexType, IndexType)>
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + ToPrimitive,
+    {
+        let one = IndexType::one();
+        let x_start = x - one;
+        let x_stop = x + one;
+        let y_start = y - one;
+        let y_stop = y + one;
+        range_inclusive(y_start, y_stop)
+            .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| (u, v)))
+            .filter(move |&(u, v)| u != x || v != y)
+    }
 
     // Returns the count of live neighbours of the specified position.
-    fn live_neighbour_count(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
+    //
+    // - _with_boundary_check: Maximum and minimum bounds of x and y are checked
+    // - _no_boundary_check: Maximum and minimum bounds of x and y are NOT checked
+    //
+    fn live_neighbour_count_with_boundary_check(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
+        Self::neighbour_positions_with_boundary_check(x, y).filter(|&(u, v)| board.get(u, v)).count()
+    }
+    fn live_neighbour_count_no_boundary_check(board: &Board<IndexType>, x: IndexType, y: IndexType) -> usize
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + ToPrimitive,
+    {
+        Self::neighbour_positions_no_boundary_check(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
 
     // Returns candidate cells that will be born in the next generation of the specific board. These candidates may contain duplicate positions.
-    fn birth_candidate_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    //
+    // - _with_boundary_check: Maximum and minimum bounds of x and y are checked
+    // - _no_boundary_check: Maximum and minimum bounds of x and y are NOT checked
+    //
+    fn birth_candidate_cells_with_boundary_check(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         board
             .iter()
-            .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
+            .flat_map(|&(x, y)| Self::neighbour_positions_with_boundary_check(x, y))
+            .filter(|&(x, y)| !board.get(x, y))
+    }
+    fn birth_candidate_cells_no_boundary_check(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + ToPrimitive,
+    {
+        board
+            .iter()
+            .flat_map(|&(x, y)| Self::neighbour_positions_no_boundary_check(x, y))
             .filter(|&(x, y)| !board.get(x, y))
     }
 
     // Returns cells that will be survive in the next generation of the specific board.
-    fn survive_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    //
+    // - _with_boundary_check: Maximum and minimum bounds of x and y are checked
+    // - _no_boundary_check: Maximum and minimum bounds of x and y are NOT checked
+    //
+    fn survive_cells_with_boundary_check(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
         board.iter().copied().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
+            let count = Self::live_neighbour_count_with_boundary_check(board, x, y);
+            count == 2 || count == 3
+        })
+    }
+    fn survive_cells_no_boundary_check(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + ToPrimitive,
+    {
+        board.iter().copied().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count_no_boundary_check(board, x, y);
             count == 2 || count == 3
         })
     }
 
     // Selects the cells that will actually be born from the specific candidate birth cells.
-    fn birth_cells<'a, 'b>(board: &'a Board<IndexType>, candidates: &'b HashSet<(IndexType, IndexType)>) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
+    //
+    // - _with_boundary_check: Maximum and minimum bounds of x and y are checked
+    // - _no_boundary_check: Maximum and minimum bounds of x and y are NOT checked
+    //
+    fn birth_cells_with_boundary_check<'a, 'b>(
+        board: &'a Board<IndexType>,
+        candidates: &'b HashSet<(IndexType, IndexType)>,
+    ) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
         'a: 'b,
     {
         candidates.iter().copied().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
+            let count = Self::live_neighbour_count_with_boundary_check(board, x, y);
+            count == 3
+        })
+    }
+    fn birth_cells_no_boundary_check<'a, 'b>(
+        board: &'a Board<IndexType>,
+        candidates: &'b HashSet<(IndexType, IndexType)>,
+    ) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
+    where
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + ToPrimitive,
+        'a: 'b,
+    {
+        candidates.iter().copied().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count_no_boundary_check(board, x, y);
             count == 3
         })
     }
@@ -141,14 +214,31 @@ where
     ///
     pub fn update(&mut self)
     where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
+        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
     {
         mem::swap(&mut self.curr_board, &mut self.prev_board);
         self.curr_board.clear();
         self.birth_candidates.clear();
-        self.birth_candidates.extend(Self::birth_candidate_cells(&self.prev_board));
-        self.curr_board.extend(Self::survive_cells(&self.prev_board));
-        self.curr_board.extend(Self::birth_cells(&self.prev_board, &self.birth_candidates));
+        let boundary_check = {
+            let min = IndexType::min_value();
+            let max = IndexType::max_value();
+            let one = IndexType::one();
+            let near_min = min + one;
+            let near_max = max - one;
+            let (min_x, max_x, min_y, max_y) = self.prev_board.bounding_box();
+            (min_x <= near_min) || (max_x >= near_max) || (min_y <= near_min) || (max_y >= near_max)
+        };
+        if boundary_check {
+            self.birth_candidates.extend(Self::birth_candidate_cells_with_boundary_check(&self.prev_board));
+            self.curr_board.extend(Self::survive_cells_with_boundary_check(&self.prev_board));
+            self.curr_board
+                .extend(Self::birth_cells_with_boundary_check(&self.prev_board, &self.birth_candidates));
+        } else {
+            self.birth_candidates.extend(Self::birth_candidate_cells_no_boundary_check(&self.prev_board));
+            self.curr_board.extend(Self::survive_cells_no_boundary_check(&self.prev_board));
+            self.curr_board
+                .extend(Self::birth_cells_no_boundary_check(&self.prev_board, &self.birth_candidates));
+        }
     }
 }
 
