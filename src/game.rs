@@ -1,7 +1,6 @@
 use super::Board;
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive, Zero};
-use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 use std::mem;
@@ -18,7 +17,7 @@ where
 {
     curr_board: Board<IndexType>,
     prev_board: Board<IndexType>,
-    birth_candidates: HashSet<(IndexType, IndexType)>,
+    birth_candidates: Board<IndexType>,
 }
 
 impl<IndexType> Game<IndexType>
@@ -39,7 +38,7 @@ where
         Self {
             curr_board: board,
             prev_board: Board::new(),
-            birth_candidates: HashSet::new(),
+            birth_candidates: Board::new(),
         }
     }
 
@@ -112,13 +111,13 @@ where
     }
 
     // Selects the cells that will actually be born from the specific candidate birth cells.
-    fn birth_cells<'a, 'b>(board: &'a Board<IndexType>, candidates: &'b HashSet<(IndexType, IndexType)>) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
+    fn birth_cells<'a, 'b>(reference: &'a Board<IndexType>, position_candidates: &'b Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
         'a: 'b,
     {
-        candidates.iter().copied().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
+        position_candidates.iter().copied().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count(reference, x, y);
             count == 3
         })
     }
