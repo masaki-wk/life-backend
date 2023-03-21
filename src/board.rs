@@ -120,6 +120,29 @@ where
     pub fn clear(&mut self) {
         self.live_cells.clear();
     }
+
+    /// Retains only the live cell positions specified by the predicate, similar as retain() of HashSet.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// board.set(0, 0, true);
+    /// board.set(1, 0, true);
+    /// board.set(0, 1, true);
+    /// board.retain(|&(x, y)| x == y);
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), false);
+    /// assert_eq!(board.get(0, 1), false);
+    /// ```
+    ///
+    pub fn retain<F>(&mut self, pred: F)
+    where
+        F: FnMut(&(IndexType, IndexType)) -> bool,
+    {
+        self.live_cells.retain(pred);
+    }
 }
 
 impl<'a, IndexType> Board<IndexType>

@@ -17,7 +17,6 @@ where
 {
     curr_board: Board<IndexType>,
     prev_board: Board<IndexType>,
-    birth_candidates: Board<IndexType>,
 }
 
 impl<IndexType> Game<IndexType>
@@ -38,7 +37,6 @@ where
         Self {
             curr_board: board,
             prev_board: Board::new(),
-            birth_candidates: Board::new(),
         }
     }
 
@@ -88,40 +86,6 @@ where
         Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
 
-    // Returns candidate cells that will be born in the next generation of the specific board. These candidates may contain duplicate positions.
-    fn birth_candidate_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
-    where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
-    {
-        board
-            .iter()
-            .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
-            .filter(|&(x, y)| !board.get(x, y))
-    }
-
-    // Returns cells that will be survive in the next generation of the specific board.
-    fn survive_cells(board: &Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + '_
-    where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
-    {
-        board.iter().copied().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
-            count == 2 || count == 3
-        })
-    }
-
-    // Selects the cells that will actually be born from the specific candidate birth cells.
-    fn birth_cells<'a, 'b>(reference: &'a Board<IndexType>, position_candidates: &'b Board<IndexType>) -> impl Iterator<Item = (IndexType, IndexType)> + 'b
-    where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
-        'a: 'b,
-    {
-        position_candidates.iter().copied().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(reference, x, y);
-            count == 3
-        })
-    }
-
     /// Update the state of the game.
     ///
     /// # Examples
@@ -144,10 +108,20 @@ where
     {
         mem::swap(&mut self.curr_board, &mut self.prev_board);
         self.curr_board.clear();
-        self.birth_candidates.clear();
-        self.birth_candidates.extend(Self::birth_candidate_cells(&self.prev_board));
-        self.curr_board.extend(Self::survive_cells(&self.prev_board));
-        self.curr_board.extend(Self::birth_cells(&self.prev_board, &self.birth_candidates));
+        self.curr_board.extend(
+            self.prev_board
+                .iter()
+                .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
+                .filter(|&(x, y)| !self.prev_board.get(x, y)),
+        );
+        self.curr_board.retain(|&(x, y)| {
+            let count = Self::live_neighbour_count(&self.prev_board, x, y);
+            count == 3
+        });
+        self.curr_board.extend(self.prev_board.iter().copied().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count(&self.prev_board, x, y);
+            count == 2 || count == 3
+        }));
     }
 }
 
