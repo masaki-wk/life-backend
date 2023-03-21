@@ -1,7 +1,7 @@
+use fnv::FnvHashSet;
 use num_iter::range_inclusive;
 use num_traits::{One, ToPrimitive, Zero};
 use std::collections::hash_set;
-use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
@@ -14,7 +14,7 @@ pub struct Board<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
 {
-    live_cells: HashSet<(IndexType, IndexType)>,
+    live_cells: FnvHashSet<(IndexType, IndexType)>,
 }
 
 // Inherent methods
@@ -26,7 +26,7 @@ where
     /// Creates an empty board.
     #[inline]
     pub fn new() -> Self {
-        let live_cells = HashSet::new();
+        let live_cells = FnvHashSet::default();
         Self { live_cells }
     }
 
@@ -237,7 +237,7 @@ where
     where
         T: IntoIterator<Item = &'a (IndexType, IndexType)>,
     {
-        let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().copied().collect();
+        let live_cells: FnvHashSet<(IndexType, IndexType)> = iter.into_iter().copied().collect();
         Self { live_cells }
     }
 }
@@ -265,7 +265,7 @@ where
     where
         T: IntoIterator<Item = (IndexType, IndexType)>,
     {
-        let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().collect();
+        let live_cells: FnvHashSet<(IndexType, IndexType)> = iter.into_iter().collect();
         Self { live_cells }
     }
 }
