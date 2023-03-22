@@ -1,3 +1,4 @@
+use fnv::FnvBuildHasher;
 use num_iter::range_inclusive;
 use num_traits::{One, ToPrimitive, Zero};
 use std::collections::hash_set;
@@ -14,7 +15,7 @@ pub struct Board<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
 {
-    live_cells: HashSet<(IndexType, IndexType)>,
+    live_cells: HashSet<(IndexType, IndexType), FnvBuildHasher>,
 }
 
 // Inherent methods
@@ -26,7 +27,7 @@ where
     /// Creates an empty board.
     #[inline]
     pub fn new() -> Self {
-        let live_cells = HashSet::new();
+        let live_cells = HashSet::default();
         Self { live_cells }
     }
 
@@ -102,6 +103,47 @@ where
             let zero = IndexType::zero();
             (zero, zero, zero, zero)
         }
+    }
+
+    /// Removes all live cells in the board.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// board.set(0, 0, true);
+    /// board.clear();
+    /// assert_eq!(board.get(0, 0), false);
+    /// ```
+    ///
+    #[inline]
+    pub fn clear(&mut self) {
+        self.live_cells.clear();
+    }
+
+    /// Retains only the live cell positions specified by the predicate, similar as retain() of HashSet.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Board;
+    /// let mut board = Board::new();
+    /// board.set(0, 0, true);
+    /// board.set(1, 0, true);
+    /// board.set(0, 1, true);
+    /// board.retain(|&(x, y)| x == y);
+    /// assert_eq!(board.get(0, 0), true);
+    /// assert_eq!(board.get(1, 0), false);
+    /// assert_eq!(board.get(0, 1), false);
+    /// ```
+    ///
+    #[inline]
+    pub fn retain<F>(&mut self, pred: F)
+    where
+        F: FnMut(&(IndexType, IndexType)) -> bool,
+    {
+        self.live_cells.retain(pred);
     }
 }
 
@@ -220,7 +262,7 @@ where
     where
         T: IntoIterator<Item = &'a (IndexType, IndexType)>,
     {
-        let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().copied().collect();
+        let live_cells: HashSet<_, _> = iter.into_iter().copied().collect();
         Self { live_cells }
     }
 }
@@ -248,7 +290,7 @@ where
     where
         T: IntoIterator<Item = (IndexType, IndexType)>,
     {
-        let live_cells: HashSet<(IndexType, IndexType)> = iter.into_iter().collect();
+        let live_cells: HashSet<_, _> = iter.into_iter().collect();
         Self { live_cells }
     }
 }

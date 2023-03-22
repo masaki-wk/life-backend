@@ -1,9 +1,9 @@
 use super::Board;
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive, Zero};
-use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
+use std::mem;
 use std::ops::{Add, Sub};
 
 /// The default index type of boards.
@@ -15,7 +15,8 @@ pub struct Game<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
 {
-    board: Board<IndexType>,
+    curr_board: Board<IndexType>,
+    prev_board: Board<IndexType>,
 }
 
 impl<IndexType> Game<IndexType>
@@ -32,9 +33,11 @@ where
     /// let game = Game::new(board);
     /// ```
     ///
-    #[inline]
     pub fn new(board: Board<IndexType>) -> Self {
-        Self { board }
+        Self {
+            curr_board: board,
+            prev_board: Board::new(),
+        }
     }
 
     /// Returns the board.
@@ -55,7 +58,7 @@ where
     ///
     #[inline]
     pub fn board(&self) -> &Board<IndexType> {
-        &self.board
+        &self.curr_board
     }
 
     // Creates an iterator over neighbour positions of the specified position, defined as Moore neighbourhood.
@@ -83,29 +86,6 @@ where
         Self::neighbour_positions(x, y).filter(|&(u, v)| board.get(u, v)).count()
     }
 
-    // Returns the next board of the specified board.
-    fn next_board(board: &Board<IndexType>) -> Board<IndexType>
-    where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
-    {
-        let survive_caondidates = board.iter();
-        let birth_candidates_multiset = board
-            .iter()
-            .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
-            .filter(|&(x, y)| !board.get(x, y));
-        let birth_candidates_uniquified: HashSet<(IndexType, IndexType)> = birth_candidates_multiset.collect();
-        let mut next_board = Board::new();
-        next_board.extend(survive_caondidates.filter(|&&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
-            count == 2 || count == 3
-        }));
-        next_board.extend(birth_candidates_uniquified.into_iter().filter(|&(x, y)| {
-            let count = Self::live_neighbour_count(board, x, y);
-            count == 3
-        }));
-        next_board
-    }
-
     /// Update the state of the game.
     ///
     /// # Examples
@@ -126,7 +106,22 @@ where
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        self.board = Self::next_board(self.board())
+        mem::swap(&mut self.curr_board, &mut self.prev_board);
+        self.curr_board.clear();
+        self.curr_board.extend(
+            self.prev_board
+                .iter()
+                .flat_map(|&(x, y)| Self::neighbour_positions(x, y))
+                .filter(|&(x, y)| !self.prev_board.get(x, y)),
+        );
+        self.curr_board.retain(|&(x, y)| {
+            let count = Self::live_neighbour_count(&self.prev_board, x, y);
+            count == 3
+        });
+        self.curr_board.extend(self.prev_board.iter().copied().filter(|&(x, y)| {
+            let count = Self::live_neighbour_count(&self.prev_board, x, y);
+            count == 2 || count == 3
+        }));
     }
 }
 
@@ -136,6 +131,6 @@ where
 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.board.fmt(f)
+        self.board().fmt(f)
     }
 }

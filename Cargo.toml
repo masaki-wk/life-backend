@@ -5,7 +5,8 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-anyhow = "1.0.69"
+anyhow = "1.0.70"
+fnv = "1.0.7"
 num-iter = "0.1.43"
 num-traits = "0.2.15"
 
