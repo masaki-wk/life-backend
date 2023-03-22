@@ -138,6 +138,7 @@ where
     /// assert_eq!(board.get(0, 1), false);
     /// ```
     ///
+    #[inline]
     pub fn retain<F>(&mut self, pred: F)
     where
         F: FnMut(&(IndexType, IndexType)) -> bool,
