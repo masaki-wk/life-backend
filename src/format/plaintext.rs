@@ -11,16 +11,16 @@ pub struct Plaintext {
 }
 
 // An internal struct, used during constructing of Plaintext
-struct PlaintextPartial {
+struct PlaintextParser {
     name: Option<String>,
     comments: Vec<String>,
     lines: usize,
     contents: Vec<(usize, Vec<usize>)>,
 }
 
-// Inherent methods of PlaintextPartial
+// Inherent methods of PlaintextParser
 
-impl PlaintextPartial {
+impl PlaintextParser {
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -104,8 +104,8 @@ impl Plaintext {
     where
         R: Read,
     {
-        let partial = {
-            let mut buf = PlaintextPartial::new();
+        let parser = {
+            let mut buf = PlaintextParser::new();
             for line in BufReader::new(read).lines() {
                 let line = line?;
                 buf.push(&line)?;
@@ -113,9 +113,9 @@ impl Plaintext {
             buf
         };
         Ok(Self {
-            name: partial.name,
-            comments: partial.comments,
-            contents: partial.contents,
+            name: parser.name,
+            comments: parser.comments,
+            contents: parser.contents,
         })
     }
 
