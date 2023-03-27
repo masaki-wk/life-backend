@@ -5,13 +5,9 @@ use std::io::{BufRead, BufReader, Read};
 /// A representation for RLE file format, described in <https://conwaylife.com/wiki/Run_Length_Encoded>.
 #[derive(Debug, Clone)]
 pub struct Rle {
-    #[allow(dead_code)]
     comments: Vec<String>,
-    #[allow(dead_code)]
     width: usize,
-    #[allow(dead_code)]
     height: usize,
-    #[allow(dead_code)]
     contents: Vec<RleLiveCellRun>,
 }
 
@@ -277,7 +273,33 @@ impl Rle {
 // Trait implementations
 
 impl fmt::Display for Rle {
-    fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
-        todo!()
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let count_tag_to_string = |count: usize, char| {
+            let mut buf = String::new();
+            if count > 1 {
+                buf.push_str(&format!("{}", count));
+            }
+            buf.push(char);
+            buf
+        };
+        for line in self.comments() {
+            writeln!(f, "#{}", line)?;
+        }
+        writeln!(f, "x = {}, y = {}", self.width, self.height)?;
+        let mut buf = String::new();
+        for x in &self.contents {
+            if x.pad_lines > 0 {
+                buf.push_str(&count_tag_to_string(x.pad_lines, '$'));
+            }
+            if x.pad_dead_cells > 0 {
+                buf.push_str(&count_tag_to_string(x.pad_dead_cells, 'b'));
+            }
+            if x.live_cells > 0 {
+                buf.push_str(&count_tag_to_string(x.live_cells, 'o'));
+            }
+        }
+        buf.push('!');
+        writeln!(f, "{buf}")?;
+        Ok(())
     }
 }
