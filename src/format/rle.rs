@@ -165,27 +165,43 @@ impl RleParser {
 impl Rle {
     fn convert_tags_to_livecellruns(tags: &[(usize, RleTag)]) -> Vec<RleLiveCellRun> {
         let mut buf = Vec::new();
-        let mut pad_lines = 0;
-        let mut pad_dead_cells = 0;
+        let mut item = RleLiveCellRun {
+            pad_lines: 0,
+            pad_dead_cells: 0,
+            live_cells: 0,
+        };
         for tag in tags {
             match tag {
-                (n, RleTag::AliveCell) => {
-                    buf.push(RleLiveCellRun {
-                        pad_lines,
-                        pad_dead_cells,
-                        live_cells: *n,
-                    });
-                    pad_lines = 0;
-                    pad_dead_cells = 0;
-                }
+                (n, RleTag::AliveCell) => item.live_cells += *n,
                 (n, RleTag::DeadCell) => {
-                    pad_dead_cells += n;
+                    if item.live_cells > 0 {
+                        buf.push(item);
+                        item = RleLiveCellRun {
+                            pad_lines: 0,
+                            pad_dead_cells: *n,
+                            live_cells: 0,
+                        };
+                    } else {
+                        item.pad_dead_cells += n;
+                    }
                 }
                 (n, RleTag::EndOfLine) => {
-                    pad_lines += n;
-                    pad_dead_cells = 0;
+                    if item.live_cells > 0 {
+                        buf.push(item);
+                        item = RleLiveCellRun {
+                            pad_lines: *n,
+                            pad_dead_cells: 0,
+                            live_cells: 0,
+                        };
+                    } else {
+                        item.pad_lines += *n;
+                        item.pad_dead_cells = 0;
+                    }
                 }
             }
+        }
+        if item.live_cells > 0 {
+            buf.push(item);
         }
         buf
     }
