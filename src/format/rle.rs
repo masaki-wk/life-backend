@@ -159,6 +159,7 @@ impl RleParser {
 // Inherent methods
 
 impl Rle {
+    // Convert the series of (usize, RleTag) into the series of RleLiveCellRun.
     fn convert_tags_to_livecellruns(tags: &[(usize, RleTag)]) -> Vec<RleLiveCellRun> {
         let mut buf = Vec::new();
         let mut item = RleLiveCellRun {
@@ -202,6 +203,30 @@ impl Rle {
         buf
     }
 
+    // Returns (width, height) of the series of RleLiveCellRun.
+    fn livecellruns_size(runs: &[RleLiveCellRun]) -> (usize, usize) {
+        let (width, height, x) = runs.iter().fold(
+            (0, 0, 0),
+            |(mut width, mut height, mut x),
+             &RleLiveCellRun {
+                 pad_lines,
+                 pad_dead_cells,
+                 live_cells,
+             }| {
+                let cells = pad_dead_cells + live_cells;
+                if pad_lines > 0 {
+                    height += pad_lines;
+                    x = cells;
+                } else {
+                    x += cells;
+                }
+                width = width.max(x);
+                (width, height, x)
+            },
+        );
+        (width, height + if x > 0 { 1 } else { 0 })
+    }
+
     /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
@@ -233,6 +258,9 @@ impl Rle {
         };
         ensure!(parser.finished, "The terminal symbol not found");
         let contents = Self::convert_tags_to_livecellruns(&parser.contents);
+        let (actual_width, actual_height) = Self::livecellruns_size(&contents);
+        ensure!(actual_width <= header.width, "The pattern exceeds specified width");
+        ensure!(actual_height <= header.height, "The pattern exceeds specified height");
         Ok(Self {
             comments: parser.comments,
             width: header.width,
