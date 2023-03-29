@@ -314,14 +314,11 @@ impl fmt::Display for Rle {
         writeln!(f, "x = {}, y = {}", self.header.width, self.header.height)?;
         let mut buf = String::new();
         for x in &self.contents {
-            if x.pad_lines > 0 {
-                buf.push_str(&count_tag_to_string(x.pad_lines, '$'));
-            }
-            if x.pad_dead_cells > 0 {
-                buf.push_str(&count_tag_to_string(x.pad_dead_cells, 'b'));
-            }
-            if x.live_cells > 0 {
-                buf.push_str(&count_tag_to_string(x.live_cells, 'o'));
+            for (count, char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
+                if count > 0 {
+                    let s = count_tag_to_string(count, char);
+                    buf.push_str(&s);
+                }
             }
         }
         buf.push('!');
