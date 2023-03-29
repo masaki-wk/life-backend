@@ -300,6 +300,7 @@ impl Rle {
 
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        const MAX_LINE_WIDTH: usize = 70;
         let count_tag_to_string = |count: usize, char| {
             let mut buf = String::new();
             if count > 1 {
@@ -307,6 +308,20 @@ impl fmt::Display for Rle {
             }
             buf.push(char);
             buf
+        };
+        let flush_buf = |f: &mut fmt::Formatter, buf: &mut String| {
+            writeln!(f, "{buf}")?;
+            Ok(())
+        };
+        let write_with_buf = |f: &mut fmt::Formatter, buf: &mut String, s: String| {
+            let buf_len = buf.len();
+            let s_len = s.len();
+            if buf_len + s_len > MAX_LINE_WIDTH {
+                flush_buf(f, buf)?;
+                buf.clear();
+            }
+            buf.push_str(&s);
+            Ok(())
         };
         for line in self.comments() {
             writeln!(f, "#{}", line)?;
@@ -317,12 +332,15 @@ impl fmt::Display for Rle {
             for (count, char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
                 if count > 0 {
                     let s = count_tag_to_string(count, char);
-                    buf.push_str(&s);
+                    write_with_buf(f, &mut buf, s)?;
                 }
             }
         }
-        buf.push('!');
-        writeln!(f, "{buf}")?;
+        {
+            let s = String::from("!");
+            write_with_buf(f, &mut buf, s)?;
+        }
+        flush_buf(f, &mut buf)?;
         Ok(())
     }
 }
