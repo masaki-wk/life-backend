@@ -6,12 +6,16 @@ use std::io::{BufRead, BufReader, Read};
 #[derive(Debug, Clone)]
 pub struct Rle {
     comments: Vec<String>,
-    width: usize,
-    height: usize,
+    header: RleHeader,
     contents: Vec<RleLiveCellRun>,
 }
 
-// Internal struct, used in Rle
+// Internal structs, used in Rle
+#[derive(Debug, Clone)]
+struct RleHeader {
+    width: usize,
+    height: usize,
+}
 #[derive(Debug, Clone)]
 struct RleLiveCellRun {
     pad_lines: usize,
@@ -20,11 +24,6 @@ struct RleLiveCellRun {
 }
 
 // Internal structs, used during constructing of Rle
-struct RleHeader {
-    width: usize,
-    height: usize,
-}
-#[derive(Debug, Clone)]
 enum RleTag {
     DeadCell,
     AliveCell,
@@ -263,8 +262,7 @@ impl Rle {
         ensure!(actual_height <= header.height, "The pattern exceeds specified height");
         Ok(Self {
             comments: parser.comments,
-            width: header.width,
-            height: header.height,
+            header,
             contents,
         })
     }
@@ -313,7 +311,7 @@ impl fmt::Display for Rle {
         for line in self.comments() {
             writeln!(f, "#{}", line)?;
         }
-        writeln!(f, "x = {}, y = {}", self.width, self.height)?;
+        writeln!(f, "x = {}, y = {}", self.header.width, self.header.height)?;
         let mut buf = String::new();
         for x in &self.contents {
             if x.pad_lines > 0 {
