@@ -233,9 +233,9 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Glider\n\
-    ///     x = 3, y = 3\n\
-    ///     bo$2bo$3o!\n\
+    ///     #N Blinker\n\
+    ///     x = 3, y = 1\n\
+    ///     3o!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// ```
@@ -274,18 +274,58 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Glider\n\
-    ///     x = 3, y = 3\n\
-    ///     bo$2bo$3o!\n\
+    ///     #N Blinker\n\
+    ///     x = 3, y = 1\n\
+    ///     3o!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.comments().len(), 1);
-    /// assert_eq!(parser.comments()[0], "N Glider");
+    /// assert_eq!(parser.comments()[0], "N Blinker");
     /// ```
     ///
     #[inline]
     pub fn comments(&self) -> &Vec<String> {
         &self.comments
+    }
+
+    /// Returns the width written in the pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Rle;
+    /// let pattern = "\
+    ///     #N Blinker\n\
+    ///     x = 3, y = 1\n\
+    ///     3o!\n\
+    /// ";
+    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(parser.width(), 3);
+    /// ```
+    ///
+    #[inline]
+    pub fn width(&self) -> usize {
+        self.header.width
+    }
+
+    /// Returns the height written in the pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Rle;
+    /// let pattern = "\
+    ///     #N Blinker\n\
+    ///     x = 3, y = 1\n\
+    ///     3o!\n\
+    /// ";
+    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(parser.height(), 1);
+    /// ```
+    ///
+    #[inline]
+    pub fn height(&self) -> usize {
+        self.header.height
     }
 
     /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
