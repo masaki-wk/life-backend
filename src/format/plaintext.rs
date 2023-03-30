@@ -236,7 +236,7 @@ impl fmt::Display for Plaintext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn test_new(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) -> Result<()> {
+    fn do_test(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) -> Result<()> {
         let expected_name = expected_name.map(|s| s.to_string());
         let target = Plaintext::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
@@ -256,7 +256,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header() -> Result<()> {
@@ -264,7 +264,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_no_header_but_comment() -> Result<()> {
@@ -272,7 +272,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comment() -> Result<()> {
@@ -280,7 +280,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments() -> Result<()> {
@@ -288,7 +288,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
@@ -296,7 +296,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
@@ -304,7 +304,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments_contents() -> Result<()> {
@@ -312,7 +312,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_wrong_header() {
