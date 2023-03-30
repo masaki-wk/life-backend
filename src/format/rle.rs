@@ -314,9 +314,7 @@ impl fmt::Display for Rle {
             Ok(())
         };
         let write_with_buf = |f: &mut fmt::Formatter, buf: &mut String, s: String| {
-            let buf_len = buf.len();
-            let s_len = s.len();
-            if buf_len + s_len > MAX_LINE_WIDTH {
+            if buf.len() + s.len() > MAX_LINE_WIDTH {
                 flush_buf(f, buf)?;
                 buf.clear();
             }
@@ -336,10 +334,7 @@ impl fmt::Display for Rle {
                 }
             }
         }
-        {
-            let s = String::from("!");
-            write_with_buf(f, &mut buf, s)?;
-        }
+        write_with_buf(f, &mut buf, String::from("!"))?;
         flush_buf(f, &mut buf)?;
         Ok(())
     }
