@@ -71,7 +71,7 @@ impl RleParser {
                 }
                 "y" => {
                     let Ok(n) = val_str.parse::<usize>() else {
-                        bail!("Invalid width value");
+                        bail!("Invalid height value");
                     };
                     height = Some(n);
                 }
