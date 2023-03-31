@@ -525,6 +525,20 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
+    fn test_new_header_larger_width() -> Result<()> {
+        let pattern = concat!("x = 2, y = 1\n", "o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_header_larger_height() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
     fn test_new_content_invalid_tag() {
         let pattern = concat!("x = 1, y = 1\n", "_\n");
         let target = Rle::new(pattern.as_bytes());
