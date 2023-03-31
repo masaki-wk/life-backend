@@ -609,4 +609,14 @@ mod tests {
         let expected_contents = vec![(0, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
+    #[test]
+    fn test_display_max_width() -> Result<()> {
+        let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
+            .iter()
+            .map(|&s| String::from(s) + "\n")
+            .collect::<String>();
+        let target = Rle::new(pattern.as_bytes())?;
+        assert_eq!(target.to_string(), pattern);
+        Ok(())
+    }
 }
