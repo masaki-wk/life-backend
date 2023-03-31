@@ -542,8 +542,14 @@ mod tests {
         do_test(pattern, &expected_comments, &expected_contents)
     }
     #[test]
-    fn test_new_content_invalid_tag() {
+    fn test_new_content_invalid_tag_without_count() {
         let pattern = concat!("x = 1, y = 1\n", "_\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_invalid_tag_with_count() {
+        let pattern = concat!("x = 1, y = 1\n", "2_\n");
         let target = Rle::new(pattern.as_bytes());
         assert!(target.is_err());
     }
