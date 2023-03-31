@@ -243,6 +243,7 @@ mod tests {
         for (result, expected) in target.contents.iter().zip(expected_contents.iter()) {
             assert_eq!(result, expected);
         }
+        assert_eq!(target.to_string(), pattern);
         Ok(())
     }
     #[test]
@@ -295,7 +296,7 @@ mod tests {
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
-        let pattern = concat!("!Name: test\n", ".O\n", "O\n");
+        let pattern = concat!("!Name: test\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
@@ -303,7 +304,7 @@ mod tests {
     }
     #[test]
     fn test_new_header_comments_contents() -> Result<()> {
-        let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O\n");
+        let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
