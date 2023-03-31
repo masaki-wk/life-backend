@@ -391,3 +391,32 @@ impl fmt::Display for Rle {
         Ok(())
     }
 }
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn do_test(pattern: &str, expected_comments: &[&str], expected_contents: &[RleLiveCellRun]) -> Result<()> {
+        let target = Rle::new(pattern.as_bytes())?;
+        assert_eq!(target.comments().len(), expected_comments.len());
+        for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
+            assert_eq!(result, expected);
+        }
+        assert_eq!(target.contents.len(), expected_contents.len());
+        for (result, expected) in target.contents.iter().zip(expected_contents.iter()) {
+            assert_eq!(
+                (result.pad_lines, result.pad_dead_cells, result.live_cells),
+                (expected.pad_lines, expected.pad_dead_cells, expected.live_cells)
+            );
+        }
+        Ok(())
+    }
+    #[test]
+    fn test_new_empty() -> Result<()> {
+        let pattern = concat!("x = 0, y = 0\n", "!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = Vec::new();
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+}
