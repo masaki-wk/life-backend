@@ -330,9 +330,21 @@ impl Rle {
 
     /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-        todo!();
-        let v: Vec<(usize, usize)> = Vec::new();
-        v.into_iter()
+        self.contents
+            .iter()
+            .scan((0, 0), |(state_x, state_y), item| {
+                if item.pad_lines > 0 {
+                    *state_y += item.pad_lines;
+                    *state_x = 0;
+                }
+                if item.pad_dead_cells > 0 {
+                    *state_x += item.pad_dead_cells;
+                }
+                let output = (*state_y, *state_x, item.live_cells);
+                *state_x += item.live_cells;
+                Some(output)
+            })
+            .flat_map(|(y, x, num)| (x..(x + num)).map(move |x| (x, y)))
     }
 }
 

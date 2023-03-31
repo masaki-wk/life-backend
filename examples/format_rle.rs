@@ -10,5 +10,7 @@ fn main() -> Result<()> {
     let parser = Rle::new(pattern.as_bytes())?;
     println!("{:?}", parser);
     println!("{parser}");
+    let v = parser.iter().collect::<Vec<_>>();
+    println!("{:?}", v);
     Ok(())
 }
