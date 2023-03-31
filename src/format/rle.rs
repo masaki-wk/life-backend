@@ -207,25 +207,17 @@ impl Rle {
 
     // Returns (width, height) of the series of RleLiveCellRun.
     fn livecellruns_size(runs: &[RleLiveCellRun]) -> (usize, usize) {
-        let (width, height, x) = runs.iter().fold(
-            (0, 0, 0),
-            |(mut width, mut height, mut x),
-             &RleLiveCellRun {
-                 pad_lines,
-                 pad_dead_cells,
-                 live_cells,
-             }| {
-                let cells = pad_dead_cells + live_cells;
-                if pad_lines > 0 {
-                    height += pad_lines;
-                    x = cells;
-                } else {
-                    x += cells;
-                }
-                width = width.max(x);
-                (width, height, x)
-            },
-        );
+        let (width, height, x) = runs.iter().fold((0, 0, 0), |(mut width, mut height, mut x), item| {
+            let cells = item.pad_dead_cells + item.live_cells;
+            if item.pad_lines > 0 {
+                height += item.pad_lines;
+                x = cells;
+            } else {
+                x += cells;
+            }
+            width = width.max(x);
+            (width, height, x)
+        });
         (width, height + if x > 0 { 1 } else { 0 })
     }
 
