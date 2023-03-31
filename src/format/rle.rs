@@ -233,9 +233,9 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Blinker\n\
-    ///     x = 3, y = 1\n\
-    ///     3o!\n\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// ```
@@ -274,13 +274,13 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Blinker\n\
-    ///     x = 3, y = 1\n\
-    ///     3o!\n\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.comments().len(), 1);
-    /// assert_eq!(parser.comments()[0], "N Blinker");
+    /// assert_eq!(parser.comments()[0], "N T-tetromino");
     /// ```
     ///
     #[inline]
@@ -295,9 +295,9 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Blinker\n\
-    ///     x = 3, y = 1\n\
-    ///     3o!\n\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.width(), 3);
@@ -315,12 +315,12 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Blinker\n\
-    ///     x = 3, y = 1\n\
-    ///     3o!\n\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.height(), 1);
+    /// assert_eq!(parser.height(), 2);
     /// ```
     ///
     #[inline]
@@ -335,17 +335,16 @@ impl Rle {
     /// ```
     /// # use life_backend::format::Rle;
     /// let pattern = "\
-    ///     #N Glider\n\
-    ///     x = 3, y = 3\n\
-    ///     bo$2bo$3o!\n\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// let mut iter = parser.iter();
+    /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 1)));
-    /// assert_eq!(iter.next(), Some((0, 2)));
-    /// assert_eq!(iter.next(), Some((1, 2)));
-    /// assert_eq!(iter.next(), Some((2, 2)));
+    /// assert_eq!(iter.next(), Some((2, 0)));
+    /// assert_eq!(iter.next(), Some((1, 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
     ///

@@ -92,10 +92,9 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// ```
@@ -126,13 +125,12 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.name(), Some("Glider".to_string()));
+    /// assert_eq!(parser.name(), Some("T-tetromino".to_string()));
     /// ```
     ///
     pub fn name(&self) -> Option<String> {
@@ -146,12 +144,11 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
+    ///     !Name: T-tetromino\n\
     ///     !comment0\n\
     ///     !comment1\n\
-    ///     .O\n\
-    ///     ..O\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.comments().len(), 2);
@@ -171,18 +168,16 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// let mut iter = parser.iter();
+    /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 1)));
-    /// assert_eq!(iter.next(), Some((0, 2)));
-    /// assert_eq!(iter.next(), Some((1, 2)));
-    /// assert_eq!(iter.next(), Some((2, 2)));
+    /// assert_eq!(iter.next(), Some((2, 0)));
+    /// assert_eq!(iter.next(), Some((1, 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
     ///
