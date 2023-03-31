@@ -11,16 +11,16 @@ pub struct Plaintext {
 }
 
 // An internal struct, used during constructing of Plaintext
-struct PlaintextPartial {
+struct PlaintextParser {
     name: Option<String>,
     comments: Vec<String>,
     lines: usize,
     contents: Vec<(usize, Vec<usize>)>,
 }
 
-// Inherent methods of PlaintextPartial
+// Inherent methods of PlaintextParser
 
-impl PlaintextPartial {
+impl PlaintextParser {
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -92,10 +92,9 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// ```
@@ -104,8 +103,8 @@ impl Plaintext {
     where
         R: Read,
     {
-        let partial = {
-            let mut buf = PlaintextPartial::new();
+        let parser = {
+            let mut buf = PlaintextParser::new();
             for line in BufReader::new(read).lines() {
                 let line = line?;
                 buf.push(&line)?;
@@ -113,9 +112,9 @@ impl Plaintext {
             buf
         };
         Ok(Self {
-            name: partial.name,
-            comments: partial.comments,
-            contents: partial.contents,
+            name: parser.name,
+            comments: parser.comments,
+            contents: parser.contents,
         })
     }
 
@@ -126,13 +125,12 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.name(), Some("Glider".to_string()));
+    /// assert_eq!(parser.name(), Some("T-tetromino".to_string()));
     /// ```
     ///
     pub fn name(&self) -> Option<String> {
@@ -146,12 +144,11 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
+    ///     !Name: T-tetromino\n\
     ///     !comment0\n\
     ///     !comment1\n\
-    ///     .O\n\
-    ///     ..O\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.comments().len(), 2);
@@ -171,18 +168,16 @@ impl Plaintext {
     /// ```
     /// # use life_backend::format::Plaintext;
     /// let pattern = "\
-    ///     !Name: Glider\n\
-    ///     .O\n\
-    ///     ..O\n\
+    ///     !Name: T-tetromino\n\
     ///     OOO\n\
+    ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// let mut iter = parser.iter();
+    /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 1)));
-    /// assert_eq!(iter.next(), Some((0, 2)));
-    /// assert_eq!(iter.next(), Some((1, 2)));
-    /// assert_eq!(iter.next(), Some((2, 2)));
+    /// assert_eq!(iter.next(), Some((2, 0)));
+    /// assert_eq!(iter.next(), Some((1, 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
     ///
@@ -236,7 +231,7 @@ impl fmt::Display for Plaintext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn test_new(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) -> Result<()> {
+    fn do_test(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) -> Result<()> {
         let expected_name = expected_name.map(|s| s.to_string());
         let target = Plaintext::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
@@ -256,7 +251,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header() -> Result<()> {
@@ -264,7 +259,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_no_header_but_comment() -> Result<()> {
@@ -272,7 +267,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comment() -> Result<()> {
@@ -280,7 +275,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments() -> Result<()> {
@@ -288,7 +283,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = Vec::new();
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
@@ -296,7 +291,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
@@ -304,7 +299,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_header_comments_contents() -> Result<()> {
@@ -312,7 +307,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        test_new(pattern, &expected_name, &expected_comments, &expected_contents)
+        do_test(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_wrong_header() {

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use criterion::{criterion_group, criterion_main, Criterion};
-use life_backend::format::Plaintext;
+use life_backend::format::Rle;
 use life_backend::{Board, Game};
 use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
 use std::fs::File;
@@ -25,7 +25,7 @@ where
     let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
     let path = Path::new(path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let loader = Plaintext::new(file)?;
+    let loader = Rle::new(file)?;
     let board: Board<_> = loader.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
     c.bench_function(id, |b| b.iter(|| workload(&board, steps)));
     Ok(())
@@ -42,12 +42,12 @@ macro_rules! create_benchmark_function {
     };
 }
 
-create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker.cells", 1000);
-create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.cells", 1000);
-create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.cells", 1000);
-create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.cells", 1000);
-create_benchmark_function!(moldon30p25_1k_benchmark, "moldon30p25-1k", "patterns/moldon30p25.cells", 1000);
-create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.cells", 1000);
+create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker.rle", 1000);
+create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.rle", 1000);
+create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.rle", 1000);
+create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.rle", 1000);
+create_benchmark_function!(moldon30p25_1k_benchmark, "moldon30p25-1k", "patterns/moldon30p25.rle", 1000);
+create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.rle", 1000);
 
 criterion_group!(
     benches,

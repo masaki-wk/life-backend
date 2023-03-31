@@ -1,5 +1,5 @@
 use anyhow::Result;
-use life_backend::format::Plaintext;
+use life_backend::format::Rle;
 use life_backend::{Board, Game};
 use std::fs::File;
 use std::path::Path;
@@ -32,7 +32,7 @@ fn do_game(board: Board<I>, steps: usize) -> Game<I> {
 fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
-    let loader = Plaintext::new(file)?;
+    let loader = Rle::new(file)?;
     let board: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
     let game = do_game(board.clone(), period);
     assert_eq!(*game.board(), board);
@@ -46,7 +46,7 @@ fn do_stilllife_test(path_str: &str) -> Result<()> {
 fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
-    let loader = Plaintext::new(file)?;
+    let loader = Rle::new(file)?;
     let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
     let game = do_game(init, period);
@@ -86,24 +86,24 @@ macro_rules! create_spaceship_test_function {
 
 // Still life tests
 
-create_stilllife_test_function!(game_block_test, "patterns/block.cells");
-create_stilllife_test_function!(game_boat_test, "patterns/boat.cells");
-create_stilllife_test_function!(game_spiral_test, "patterns/spiral.cells");
+create_stilllife_test_function!(game_block_test, "patterns/block.rle");
+create_stilllife_test_function!(game_boat_test, "patterns/boat.rle");
+create_stilllife_test_function!(game_spiral_test, "patterns/spiral.rle");
 
 // Oscillator tests
 
-create_oscillator_test_function!(game_blinker_test, "patterns/blinker.cells", 2);
-create_oscillator_test_function!(game_toad_test, "patterns/toad.cells", 2);
-create_oscillator_test_function!(game_koksgalaxy_test, "patterns/koksgalaxy.cells", 8);
-create_oscillator_test_function!(game_pentadecathlon_test, "patterns/pentadecathlon.cells", 15);
-create_oscillator_test_function!(game_queenbeeshuttle_test, "patterns/transqueenbeeshuttle.cells", 30);
-create_oscillator_test_function!(game_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.cells", 46);
-create_oscillator_test_function!(game_p60glidershuttle_test, "patterns/p60glidershuttle.cells", 60);
-create_oscillator_test_function!(game_centinal_test, "patterns/centinal.cells", 100);
+create_oscillator_test_function!(game_blinker_test, "patterns/blinker.rle", 2);
+create_oscillator_test_function!(game_toad_test, "patterns/toad.rle", 2);
+create_oscillator_test_function!(game_koksgalaxy_test, "patterns/koksgalaxy.rle", 8);
+create_oscillator_test_function!(game_pentadecathlon_test, "patterns/pentadecathlon.rle", 15);
+create_oscillator_test_function!(game_queenbeeshuttle_test, "patterns/transqueenbeeshuttle.rle", 30);
+create_oscillator_test_function!(game_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.rle", 46);
+create_oscillator_test_function!(game_p60glidershuttle_test, "patterns/p60glidershuttle.rle", 60);
+create_oscillator_test_function!(game_centinal_test, "patterns/centinal.rle", 100);
 
 // Spaceship tests
 
-create_spaceship_test_function!(game_glider_test, "patterns/glider.cells", 4, (1, 1));
-create_spaceship_test_function!(game_lwss_test, "patterns/lwss.cells", 4, (-2, 0));
-create_spaceship_test_function!(game_loafer_test, "patterns/loafer.cells", 7, (-1, 0));
-create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.cells", 10, (0, -1));
+create_spaceship_test_function!(game_glider_test, "patterns/glider.rle", 4, (1, 1));
+create_spaceship_test_function!(game_lwss_test, "patterns/lwss.rle", 4, (-2, 0));
+create_spaceship_test_function!(game_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
+create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
