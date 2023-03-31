@@ -65,13 +65,13 @@ impl RleParser {
             match name {
                 "x" => {
                     let Ok(n) = val_str.parse::<usize>() else {
-                        bail!("Invalid width value");
+                        bail!("Invalid x value");
                     };
                     width = Some(n);
                 }
                 "y" => {
                     let Ok(n) = val_str.parse::<usize>() else {
-                        bail!("Invalid height value");
+                        bail!("Invalid y value");
                     };
                     height = Some(n);
                 }
@@ -79,10 +79,13 @@ impl RleParser {
                 _ => bail!(format!("The header line includes unknown variable {}", name)),
             }
         }
-        match (width, height) {
-            (Some(w), Some(h)) => Ok(RleHeader { width: w, height: h }),
-            _ => bail!("The header line is invalid"),
-        }
+        let Some(width) = width else {
+            bail!("Variable x not found in the header line");
+        };
+        let Some(height) = height else {
+            bail!("Variable y not found in the header line");
+        };
+        Ok(RleHeader { width, height })
     }
     fn parse_content_line(mut line: &str) -> Result<(Vec<(usize, RleTag)>, bool)> {
         let mut buf = Vec::new();
