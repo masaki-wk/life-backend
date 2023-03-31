@@ -417,26 +417,173 @@ impl fmt::Display for Rle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_test(pattern: &str, expected_comments: &[&str], expected_contents: &[RleLiveCellRun]) -> Result<()> {
+    fn do_test(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)]) -> Result<()> {
         let target = Rle::new(pattern.as_bytes())?;
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
             assert_eq!(result, expected);
         }
         assert_eq!(target.contents.len(), expected_contents.len());
-        for (result, expected) in target.contents.iter().zip(expected_contents.iter()) {
-            assert_eq!(
-                (result.pad_lines, result.pad_dead_cells, result.live_cells),
-                (expected.pad_lines, expected.pad_dead_cells, expected.live_cells)
-            );
+        for (result, &expected) in target.contents.iter().zip(expected_contents.iter()) {
+            assert_eq!((result.pad_lines, result.pad_dead_cells, result.live_cells), expected);
         }
         Ok(())
     }
     #[test]
-    fn test_new_empty() -> Result<()> {
+    fn test_new_header() -> Result<()> {
         let pattern = concat!("x = 0, y = 0\n", "!\n");
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_comment_header() -> Result<()> {
+        let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
+        let expected_comments = vec!["comment"];
+        let expected_contents = Vec::new();
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_comments_header() -> Result<()> {
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
+        let expected_comments = vec!["comment0", "comment1"];
+        let expected_contents = Vec::new();
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_header_content() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_header_contents() -> Result<()> {
+        let pattern = concat!("x = 2, y = 2\n", "o$bo!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_comments_header_contents() -> Result<()> {
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
+        let expected_comments = vec!["comment0", "comment1"];
+        let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_empty() {
+        let pattern = "";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_invalid_format() {
+        let pattern = "_\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_unknown_variable() {
+        let pattern = "z = 0\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_invalid_width() {
+        let pattern = "x = _, y = 0\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_invalid_height() {
+        let pattern = "x = 0, y = _\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_without_width() {
+        let pattern = "y = 0\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_without_height() {
+        let pattern = "x = 0\n";
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_exceed_width() {
+        let pattern = concat!("x = 0, y = 1\n", "o!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_header_exceed_height() {
+        let pattern = concat!("x = 1, y = 0\n", "o!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_invalid_tag() {
+        let pattern = concat!("x = 1, y = 1\n", "_\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_terminator_with_count() {
+        let pattern = concat!("x = 1, y = 1\n", "2!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_nonoptimal_dead_cells() -> Result<()> {
+        let pattern = concat!("x = 4, y = 1\n", "bbbo!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 3, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_nonoptimal_live_cells() -> Result<()> {
+        let pattern = concat!("x = 3, y = 1\n", "ooo!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 3)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_nonoptimal_end_of_lines() -> Result<()> {
+        let pattern = concat!("x = 1, y = 4\n", "$$$o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(3, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "2b$o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(1, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "o2b!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_trailing_ignored_content() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "o!_\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents)
+    }
+    #[test]
+    fn test_new_trailing_ignored_line() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "o!\n", "ignored line\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents)
     }
 }
