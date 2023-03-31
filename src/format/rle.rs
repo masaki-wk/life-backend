@@ -329,6 +329,26 @@ impl Rle {
     }
 
     /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Rle;
+    /// let pattern = "\
+    ///     #N Glider\n\
+    ///     x = 3, y = 3\n\
+    ///     bo$2bo$3o!\n\
+    /// ";
+    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let mut iter = parser.iter();
+    /// assert_eq!(iter.next(), Some((1, 0)));
+    /// assert_eq!(iter.next(), Some((2, 1)));
+    /// assert_eq!(iter.next(), Some((0, 2)));
+    /// assert_eq!(iter.next(), Some((1, 2)));
+    /// assert_eq!(iter.next(), Some((2, 2)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    ///
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         self.contents
             .iter()
