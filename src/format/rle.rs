@@ -573,6 +573,30 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
+    fn test_new_content_exceeds_width_with_dead_cell() {
+        let pattern = concat!("x = 1, y = 1\n", "ob!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_exceeds_width_with_dead_cells() {
+        let pattern = concat!("x = 2, y = 2\n", "2o$o2b!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_exceeds_height_with_end_of_line() {
+        let pattern = concat!("x = 1, y = 1\n", "o$!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_new_content_exceeds_height_with_end_of_lines() {
+        let pattern = concat!("x = 1, y = 2\n", "o2$!\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
     fn test_new_nonoptimal_dead_cells() -> Result<()> {
         let pattern = concat!("x = 4, y = 1\n", "bbbo!\n");
         let expected_comments = Vec::new();
