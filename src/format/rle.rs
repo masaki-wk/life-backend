@@ -144,7 +144,7 @@ impl RleParser {
                 x = 0;
                 ensure!(y <= header.height, "The pattern exceeds specified height");
             } else {
-                ensure!(y < header.height, "The pattern exceeds specified height");
+                ensure!(y < header.height, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
                 x += count;
                 ensure!(x <= header.width, "The pattern exceeds specified width");
             }
