@@ -601,8 +601,29 @@ mod tests {
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
+    fn test_new_nonoptimal_trailing_dead_cell() -> Result<()> {
+        let pattern = concat!("x = 2, y = 1\n", "ob!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 1\n", "o2b!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_line_end() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "o$!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_line_ends() -> Result<()> {
+        let pattern = concat!("x = 1, y = 3\n", "o2$!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
