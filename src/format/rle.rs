@@ -561,6 +561,12 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
+    fn test_new_content_without_terminator() {
+        let pattern = concat!("x = 1, y = 1\n", "o\n");
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
+    #[test]
     fn test_new_content_terminator_with_count() {
         let pattern = concat!("x = 1, y = 1\n", "2!\n");
         let target = Rle::new(pattern.as_bytes());
