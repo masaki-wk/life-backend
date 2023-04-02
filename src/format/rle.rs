@@ -111,7 +111,6 @@ impl RleParser {
             };
             let tag = match line.chars().next() {
                 Some('b') => RleTag::DeadCell,
-                Some('o') => RleTag::AliveCell,
                 Some('$') => RleTag::EndOfLine,
                 Some('!') => {
                     if run_count.is_none() {
@@ -121,15 +120,13 @@ impl RleParser {
                         bail!("The pattern is in wrong format");
                     }
                 }
+                Some('o') | Some(_) => RleTag::AliveCell,
                 None => {
                     if run_count.is_none() {
                         break;
                     } else {
                         bail!("The pattern is in wrong format");
                     }
-                }
-                _ => {
-                    bail!("The pattern is in wrong format");
                 }
             };
             let run_count = run_count.unwrap_or(1);
@@ -544,16 +541,18 @@ mod tests {
         do_test(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
-    fn test_new_content_invalid_tag_without_count() {
-        let pattern = concat!("x = 1, y = 1\n", "_\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+    fn test_new_content_acceptable_tag_without_count() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "_!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
-    fn test_new_content_invalid_tag_with_count() {
-        let pattern = concat!("x = 1, y = 1\n", "2_\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+    fn test_new_content_acceptable_tag_with_count() -> Result<()> {
+        let pattern = concat!("x = 2, y = 1\n", "2_!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 2)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_content_alone_count() {
