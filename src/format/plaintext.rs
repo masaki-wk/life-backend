@@ -251,6 +251,10 @@ mod tests {
         assert_eq!(target.to_string(), pattern);
         Ok(())
     }
+    fn do_new_test_to_be_failed(pattern: &str) {
+        let target = Plaintext::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
     #[test]
     fn test_new_empty() -> Result<()> {
         let pattern = "";
@@ -318,19 +322,16 @@ mod tests {
     #[test]
     fn test_new_wrong_header() {
         let pattern = "_\n";
-        let target = Plaintext::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_wrong_content_without_comment() {
         let pattern = concat!("!Name: test\n", "_\n");
-        let target = Plaintext::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_wrong_content_with_comment() {
         let pattern = concat!("!Name: test\n", "!\n", "_\n");
-        let target = Plaintext::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
 }
