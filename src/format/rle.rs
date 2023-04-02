@@ -33,6 +33,7 @@ struct RleParser {
     comments: Vec<String>,
     header: Option<RleHeader>,
     contents: Vec<(usize, RleTag)>,
+    position: (usize, usize),
     finished: bool,
 }
 
@@ -135,44 +136,48 @@ impl RleParser {
         }
         Ok((buf, finished))
     }
+    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[(usize, RleTag)]) -> Result<(usize, usize)> {
+        let (mut x, mut y) = current_position;
+        for (count, tag) in contents_to_be_append {
+            if matches!(tag, RleTag::EndOfLine) {
+                y += count;
+                x = 0;
+                ensure!(y <= header.height, "The pattern exceeds specified height");
+            } else {
+                ensure!(y < header.height, "The pattern exceeds specified height");
+                x += count;
+                ensure!(x <= header.width, "The pattern exceeds specified width");
+            }
+        }
+        Ok((x, y))
+    }
     fn new() -> Self {
         Self {
             comments: Vec::new(),
             header: None,
             contents: Vec::new(),
+            position: (0, 0),
             finished: false,
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
         if !self.finished {
-            if self.header.is_none() {
+            if let Some(header) = &self.header {
+                let (mut contents, finished) = Self::parse_content_line(line)?;
+                let advanced_position = Self::advanced_position(header, self.position, &contents)?;
+                self.contents.append(&mut contents);
+                self.position = advanced_position;
+                self.finished = finished;
+            } else {
                 if let Some(comment) = Self::parse_comment_line(line) {
                     self.comments.push(comment.to_string());
                     return Ok(());
                 }
                 let header = Self::parse_header_line(line)?;
                 self.header = Some(header);
-            } else {
-                let (mut content, finished) = Self::parse_content_line(line)?;
-                self.contents.append(&mut content);
-                self.finished = finished;
             }
         }
         Ok(())
-    }
-    fn contents_size(contents: &[(usize, RleTag)]) -> (usize, usize) {
-        let (width, height, x) = contents.iter().fold((0, 0, 0), |(mut width, mut height, mut x), item| {
-            let (count, tag) = item;
-            if matches!(tag, RleTag::EndOfLine) {
-                height += count;
-                x = 0;
-            } else {
-                x += count;
-                width = width.max(x);
-            }
-            (width, height, x)
-        });
-        (width, height + if x > 0 { 1 } else { 0 })
     }
 }
 
@@ -253,9 +258,6 @@ impl Rle {
             bail!("Header line not found in the pattern");
         };
         ensure!(parser.finished, "The terminal symbol not found");
-        let (actual_width, actual_height) = RleParser::contents_size(&parser.contents);
-        ensure!(actual_width <= header.width, "The pattern exceeds specified width");
-        ensure!(actual_height <= header.height, "The pattern exceeds specified height");
         let contents = Self::convert_tags_to_livecellruns(&parser.contents);
         Ok(Self {
             comments: parser.comments,
