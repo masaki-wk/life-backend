@@ -137,14 +137,16 @@ impl RleParser {
         Ok((buf, finished))
     }
     fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[(usize, RleTag)]) -> Result<(usize, usize)> {
+        if !contents_to_be_append.is_empty() {
+            ensure!(header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
+        }
         let (mut x, mut y) = current_position;
         for (count, tag) in contents_to_be_append {
             if matches!(tag, RleTag::EndOfLine) {
                 y += count;
-                x = 0;
                 ensure!(y < header.height, "The pattern exceeds specified height");
+                x = 0;
             } else {
-                ensure!(y < header.height, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
                 x += count;
                 ensure!(x <= header.width, "The pattern exceeds specified width");
             }
