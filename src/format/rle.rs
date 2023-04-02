@@ -142,7 +142,7 @@ impl RleParser {
             if matches!(tag, RleTag::EndOfLine) {
                 y += count;
                 x = 0;
-                ensure!(y <= header.height, "The pattern exceeds specified height");
+                ensure!(y < header.height, "The pattern exceeds specified height");
             } else {
                 ensure!(y < header.height, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
                 x += count;
