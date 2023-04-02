@@ -432,6 +432,10 @@ mod tests {
         }
         Ok(())
     }
+    fn do_new_test_to_be_failed(pattern: &str) {
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
     #[test]
     fn test_new_header() -> Result<()> {
         let pattern = concat!("x = 0, y = 0\n", "!\n");
@@ -477,56 +481,47 @@ mod tests {
     #[test]
     fn test_new_empty() {
         let pattern = "";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_format() {
         let pattern = "_\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_unknown_variable() {
         let pattern = "z = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_width() {
         let pattern = "x = _, y = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_height() {
         let pattern = "x = 0, y = _\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_without_width() {
         let pattern = "y = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_without_height() {
         let pattern = "x = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_exceed_width() {
         let pattern = concat!("x = 0, y = 1\n", "o!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_exceed_height() {
         let pattern = concat!("x = 1, y = 0\n", "o!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_larger_width() -> Result<()> {
@@ -559,44 +554,37 @@ mod tests {
     #[test]
     fn test_new_content_alone_count() {
         let pattern = concat!("x = 1, y = 1\n", "2\n", "!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_without_terminator() {
         let pattern = concat!("x = 1, y = 1\n", "o\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_terminator_with_count() {
         let pattern = concat!("x = 1, y = 1\n", "2!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_exceeds_width_with_dead_cell() {
         let pattern = concat!("x = 1, y = 1\n", "ob!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_exceeds_width_with_dead_cells() {
         let pattern = concat!("x = 2, y = 2\n", "2o$o2b!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_exceeds_height_with_end_of_line() {
         let pattern = concat!("x = 1, y = 1\n", "o$!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_exceeds_height_with_end_of_lines() {
         let pattern = concat!("x = 1, y = 2\n", "o2$!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_nonoptimal_dead_cells() -> Result<()> {
