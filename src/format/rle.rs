@@ -595,23 +595,23 @@ mod tests {
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 2, y = 2\n", "2b$o!\n");
+        let pattern = concat!("x = 2, y = 2\n", "2b$2o!\n");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(1, 0, 1)];
+        let expected_contents = vec![(1, 0, 2)];
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cell() -> Result<()> {
-        let pattern = concat!("x = 2, y = 1\n", "ob!\n");
+        let pattern = concat!("x = 2, y = 2\n", "2o$ob!\n");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
+        let expected_contents = vec![(0, 0, 2), (1, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 3, y = 1\n", "o2b!\n");
+        let pattern = concat!("x = 3, y = 2\n", "3o$o2b!\n");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
+        let expected_contents = vec![(0, 0, 3), (1, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
