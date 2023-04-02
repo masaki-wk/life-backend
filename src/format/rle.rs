@@ -33,6 +33,7 @@ struct RleParser {
     comments: Vec<String>,
     header: Option<RleHeader>,
     contents: Vec<(usize, RleTag)>,
+    position: (usize, usize),
     finished: bool,
 }
 
@@ -56,35 +57,42 @@ impl RleParser {
         Self::parse_prefixed_line("#", line)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
-        let mut width: Option<usize> = None;
-        let mut height: Option<usize> = None;
-        for s in line.split(',') {
-            let Some((name, val_str)) = s.find('=').map(|pos| (s[..pos].trim(), s[(pos + 1)..].trim())) else {
-                bail!("Parse error in the header line");
-            };
-            match name {
-                "x" => {
-                    let Ok(n) = val_str.parse::<usize>() else {
-                        bail!("Invalid x value");
-                    };
-                    width = Some(n);
-                }
-                "y" => {
-                    let Ok(n) = val_str.parse::<usize>() else {
-                        bail!("Invalid y value");
-                    };
-                    height = Some(n);
-                }
-                "rule" => (),
-                _ => bail!(format!("The header line includes unknown variable {}", name)),
+        let fields = {
+            let mut buf = Vec::new();
+            for (index, str) in line.split(',').enumerate() {
+                ensure!(index <= 2, "Too many fields in the header line");
+                let Some((name, val_str)) = str.find('=').map(|pos| (str[..pos].trim(), str[(pos + 1)..].trim())) else {
+                    bail!("Parse error in the header line");
+                };
+                buf.push((name, val_str));
             }
+            buf
+        };
+        ensure!(fields.len() >= 2, "Too few fields in the header line");
+        let width = {
+            const EXPECTED_NAME: &str = "x";
+            let (name, val_str) = fields[0];
+            ensure!(name == EXPECTED_NAME, format!("1st variable in the header line is not \"{EXPECTED_NAME}\""));
+            let Ok(n) = val_str.parse::<usize>() else {
+                bail!(format!("Invalid {EXPECTED_NAME} value"));
+            };
+            n
+        };
+        let height = {
+            const EXPECTED_NAME: &str = "y";
+            let (name, val_str) = fields[1];
+            ensure!(name == EXPECTED_NAME, format!("2nd variable in the header line is not \"{EXPECTED_NAME}\""));
+            let Ok(n) = val_str.parse::<usize>() else {
+                bail!(format!("Invalid {EXPECTED_NAME} value"));
+            };
+            n
+        };
+        if fields.len() > 2 {
+            const EXPECTED_NAME: &str = "rule";
+            let (name, _) = fields[2];
+            ensure!(name == EXPECTED_NAME, format!("3rd variable in the header line is not \"{EXPECTED_NAME}\""));
+            // TODO: rule parser is not implemented yet
         }
-        let Some(width) = width else {
-            bail!("Variable x not found in the header line");
-        };
-        let Some(height) = height else {
-            bail!("Variable y not found in the header line");
-        };
         Ok(RleHeader { width, height })
     }
     fn parse_content_line(mut line: &str) -> Result<(Vec<(usize, RleTag)>, bool)> {
@@ -104,7 +112,6 @@ impl RleParser {
             };
             let tag = match line.chars().next() {
                 Some('b') => RleTag::DeadCell,
-                Some('o') => RleTag::AliveCell,
                 Some('$') => RleTag::EndOfLine,
                 Some('!') => {
                     if run_count.is_none() {
@@ -114,15 +121,13 @@ impl RleParser {
                         bail!("The pattern is in wrong format");
                     }
                 }
+                Some('o') | Some(_) => RleTag::AliveCell,
                 None => {
                     if run_count.is_none() {
                         break;
                     } else {
                         bail!("The pattern is in wrong format");
                     }
-                }
-                _ => {
-                    bail!("The pattern is in wrong format");
                 }
             };
             let run_count = run_count.unwrap_or(1);
@@ -131,27 +136,47 @@ impl RleParser {
         }
         Ok((buf, finished))
     }
+    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[(usize, RleTag)]) -> Result<(usize, usize)> {
+        if !contents_to_be_append.is_empty() {
+            ensure!(header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
+        }
+        let (mut x, mut y) = current_position;
+        for (count, tag) in contents_to_be_append {
+            if matches!(tag, RleTag::EndOfLine) {
+                y += count;
+                ensure!(y < header.height, "The pattern exceeds specified height");
+                x = 0;
+            } else {
+                x += count;
+                ensure!(x <= header.width, "The pattern exceeds specified width");
+            }
+        }
+        Ok((x, y))
+    }
     fn new() -> Self {
         Self {
             comments: Vec::new(),
             header: None,
             contents: Vec::new(),
+            position: (0, 0),
             finished: false,
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
         if !self.finished {
-            if self.header.is_none() {
+            if let Some(header) = &self.header {
+                let (mut contents, finished) = Self::parse_content_line(line)?;
+                let advanced_position = Self::advanced_position(header, self.position, &contents)?;
+                self.contents.append(&mut contents);
+                self.position = advanced_position;
+                self.finished = finished;
+            } else {
                 if let Some(comment) = Self::parse_comment_line(line) {
                     self.comments.push(comment.to_string());
                     return Ok(());
                 }
                 let header = Self::parse_header_line(line)?;
                 self.header = Some(header);
-            } else {
-                let (mut content, finished) = Self::parse_content_line(line)?;
-                self.contents.append(&mut content);
-                self.finished = finished;
             }
         }
         Ok(())
@@ -205,22 +230,6 @@ impl Rle {
         buf
     }
 
-    // Returns (width, height) of the series of RleLiveCellRun.
-    fn livecellruns_size(runs: &[RleLiveCellRun]) -> (usize, usize) {
-        let (width, height, x) = runs.iter().fold((0, 0, 0), |(mut width, mut height, mut x), item| {
-            let cells = item.pad_dead_cells + item.live_cells;
-            if item.pad_lines > 0 {
-                height += item.pad_lines;
-                x = cells;
-            } else {
-                x += cells;
-            }
-            width = width.max(x);
-            (width, height, x)
-        });
-        (width, height + if x > 0 { 1 } else { 0 })
-    }
-
     /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
@@ -252,9 +261,6 @@ impl Rle {
         };
         ensure!(parser.finished, "The terminal symbol not found");
         let contents = Self::convert_tags_to_livecellruns(&parser.contents);
-        let (actual_width, actual_height) = Self::livecellruns_size(&contents);
-        ensure!(actual_width <= header.width, "The pattern exceeds specified width");
-        ensure!(actual_height <= header.height, "The pattern exceeds specified height");
         Ok(Self {
             comments: parser.comments,
             header,
@@ -411,7 +417,7 @@ impl fmt::Display for Rle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_test(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
+    fn do_new_test_to_be_passed(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
         let target = Rle::new(pattern.as_bytes())?;
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
@@ -426,188 +432,236 @@ mod tests {
         }
         Ok(())
     }
+    fn do_new_test_to_be_failed(pattern: &str) {
+        let target = Rle::new(pattern.as_bytes());
+        assert!(target.is_err());
+    }
     #[test]
     fn test_new_header() -> Result<()> {
         let pattern = concat!("x = 0, y = 0\n", "!\n");
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comment_header() -> Result<()> {
         let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comments_header() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = Vec::new();
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "o$bo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comments_header_contents() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_empty() {
         let pattern = "";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_format() {
         let pattern = "_\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_unknown_variable() {
         let pattern = "z = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_width() {
         let pattern = "x = _, y = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_invalid_height() {
         let pattern = "x = 0, y = _\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_without_width() {
         let pattern = "y = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_without_height() {
         let pattern = "x = 0\n";
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_exceed_width() {
         let pattern = concat!("x = 0, y = 1\n", "o!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_exceed_height() {
         let pattern = concat!("x = 1, y = 0\n", "o!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_header_larger_width() -> Result<()> {
         let pattern = concat!("x = 2, y = 1\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_larger_height() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
-    fn test_new_content_invalid_tag_without_count() {
-        let pattern = concat!("x = 1, y = 1\n", "_\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+    fn test_new_content_acceptable_tag_without_count() -> Result<()> {
+        let pattern = concat!("x = 1, y = 1\n", "_!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
-    fn test_new_content_invalid_tag_with_count() {
-        let pattern = concat!("x = 1, y = 1\n", "2_\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+    fn test_new_content_acceptable_tag_with_count() -> Result<()> {
+        let pattern = concat!("x = 2, y = 1\n", "2_!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 2)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_content_alone_count() {
         let pattern = concat!("x = 1, y = 1\n", "2\n", "!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_without_terminator() {
+        let pattern = concat!("x = 1, y = 1\n", "o\n");
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_content_terminator_with_count() {
         let pattern = concat!("x = 1, y = 1\n", "2!\n");
-        let target = Rle::new(pattern.as_bytes());
-        assert!(target.is_err());
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_exceeds_width_with_dead_cell() {
+        let pattern = concat!("x = 1, y = 1\n", "ob!\n");
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_exceeds_width_with_dead_cells() {
+        let pattern = concat!("x = 2, y = 2\n", "2o$o2b!\n");
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_exceeds_height_with_end_of_line() {
+        let pattern = concat!("x = 1, y = 1\n", "o$!\n");
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_exceeds_height_with_end_of_lines() {
+        let pattern = concat!("x = 1, y = 2\n", "o2$!\n");
+        do_new_test_to_be_failed(pattern)
     }
     #[test]
     fn test_new_nonoptimal_dead_cells() -> Result<()> {
         let pattern = concat!("x = 4, y = 1\n", "bbbo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 3, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_live_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 1\n", "ooo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 3)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_end_of_lines() -> Result<()> {
         let pattern = concat!("x = 1, y = 4\n", "$$$o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(3, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_line_end_dead_cell() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "b$o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(1, 0, 1)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 1, y = 2\n", "2b$o!\n");
+        let pattern = concat!("x = 2, y = 2\n", "2b$2o!\n");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(1, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        let expected_contents = vec![(1, 0, 2)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_dead_cell() -> Result<()> {
+        let pattern = concat!("x = 2, y = 2\n", "2o$ob!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 2), (1, 0, 1)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 1, y = 1\n", "o2b!\n");
+        let pattern = concat!("x = 3, y = 2\n", "3o$o2b!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 3), (1, 0, 1)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_line_end() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "o$!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_new_nonoptimal_trailing_line_ends() -> Result<()> {
+        let pattern = concat!("x = 1, y = 3\n", "o2$!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 1)];
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_trailing_ignored_content() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!_\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_trailing_ignored_line() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!\n", "ignored line\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_test(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_display_max_width() -> Result<()> {
