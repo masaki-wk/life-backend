@@ -417,7 +417,7 @@ impl fmt::Display for Rle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_new_test_to_be_succeeded(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
+    fn do_new_test_to_be_passed(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
         let target = Rle::new(pattern.as_bytes())?;
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
@@ -441,42 +441,42 @@ mod tests {
         let pattern = concat!("x = 0, y = 0\n", "!\n");
         let expected_comments = Vec::new();
         let expected_contents = Vec::new();
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comment_header() -> Result<()> {
         let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
         let expected_comments = vec!["comment"];
         let expected_contents = Vec::new();
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comments_header() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = Vec::new();
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "o$bo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comments_header_contents() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_empty() {
@@ -528,28 +528,28 @@ mod tests {
         let pattern = concat!("x = 2, y = 1\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_header_larger_height() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_content_acceptable_tag_without_count() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "_!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_content_acceptable_tag_with_count() -> Result<()> {
         let pattern = concat!("x = 2, y = 1\n", "2_!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 2)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_content_alone_count() {
@@ -591,77 +591,77 @@ mod tests {
         let pattern = concat!("x = 4, y = 1\n", "bbbo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 3, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_live_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 1\n", "ooo!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 3)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_end_of_lines() -> Result<()> {
         let pattern = concat!("x = 1, y = 4\n", "$$$o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(3, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cell() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "b$o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(1, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "2b$2o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(1, 0, 2)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cell() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "2o$ob!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 2), (1, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 2\n", "3o$o2b!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 3), (1, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_line_end() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "o$!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_line_ends() -> Result<()> {
         let pattern = concat!("x = 1, y = 3\n", "o2$!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_trailing_ignored_content() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!_\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_trailing_ignored_line() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!\n", "ignored line\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_succeeded(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_display_max_width() -> Result<()> {
