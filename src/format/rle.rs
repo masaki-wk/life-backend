@@ -594,6 +594,13 @@ mod tests {
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
+    fn test_new_nonoptimal_line_end_dead_cell() -> Result<()> {
+        let pattern = concat!("x = 1, y = 2\n", "b$o!\n");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(1, 0, 1)];
+        do_test(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "2b$2o!\n");
         let expected_comments = Vec::new();
