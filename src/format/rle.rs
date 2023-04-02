@@ -160,6 +160,20 @@ impl RleParser {
         }
         Ok(())
     }
+    fn contents_size(contents: &[(usize, RleTag)]) -> (usize, usize) {
+        let (width, height, x) = contents.iter().fold((0, 0, 0), |(mut width, mut height, mut x), item| {
+            let (count, tag) = item;
+            if matches!(tag, RleTag::EndOfLine) {
+                height += count;
+                x = 0;
+            } else {
+                x += count;
+                width = width.max(x);
+            }
+            (width, height, x)
+        });
+        (width, height + if x > 0 { 1 } else { 0 })
+    }
 }
 
 // Inherent methods
@@ -209,22 +223,6 @@ impl Rle {
         buf
     }
 
-    // Returns (width, height) of the series of RleLiveCellRun.
-    fn livecellruns_size(runs: &[RleLiveCellRun]) -> (usize, usize) {
-        let (width, height, x) = runs.iter().fold((0, 0, 0), |(mut width, mut height, mut x), item| {
-            let cells = item.pad_dead_cells + item.live_cells;
-            if item.pad_lines > 0 {
-                height += item.pad_lines;
-                x = cells;
-            } else {
-                x += cells;
-            }
-            width = width.max(x);
-            (width, height, x)
-        });
-        (width, height + if x > 0 { 1 } else { 0 })
-    }
-
     /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
@@ -255,10 +253,10 @@ impl Rle {
             bail!("Header line not found in the pattern");
         };
         ensure!(parser.finished, "The terminal symbol not found");
-        let contents = Self::convert_tags_to_livecellruns(&parser.contents);
-        let (actual_width, actual_height) = Self::livecellruns_size(&contents);
+        let (actual_width, actual_height) = RleParser::contents_size(&parser.contents);
         ensure!(actual_width <= header.width, "The pattern exceeds specified width");
         ensure!(actual_height <= header.height, "The pattern exceeds specified height");
+        let contents = Self::convert_tags_to_livecellruns(&parser.contents);
         Ok(Self {
             comments: parser.comments,
             header,
@@ -595,14 +593,14 @@ mod tests {
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 1, y = 2\n", "2b$o!\n");
+        let pattern = concat!("x = 2, y = 2\n", "2b$o!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(1, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
-        let pattern = concat!("x = 1, y = 1\n", "o2b!\n");
+        let pattern = concat!("x = 3, y = 1\n", "o2b!\n");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
         do_test(pattern, &expected_comments, &expected_contents, false)
