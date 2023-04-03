@@ -41,7 +41,7 @@ struct RleParser {
 
 impl RleParser {
     fn is_comment_line(line: &str) -> bool {
-        matches!(line.chars().next(), Some('#'))
+        matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
         let fields = {
@@ -441,6 +441,13 @@ mod tests {
     fn test_new_comments_header() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
         let expected_comments = vec!["#comment0", "#comment1"];
+        let expected_contents = Vec::new();
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+    }
+    #[test]
+    fn test_new_comments_with_blank_header() -> Result<()> {
+        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0\n", "!\n");
+        let expected_comments = vec!["#comment", ""];
         let expected_contents = Vec::new();
         do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
