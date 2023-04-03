@@ -2,7 +2,7 @@ use anyhow::{bail, ensure, Result};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
-/// A representation for RLE file format, described in <https://conwaylife.com/wiki/Run_Length_Encoded>.
+/// A representation for RLE file format, described in <https://conwaylife.com/wiki/Run_Length_Encoded> and <https://golly.sourceforge.net/Help/formats.html#rle>.
 #[derive(Debug, Clone)]
 pub struct Rle {
     comments: Vec<String>,
