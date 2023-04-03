@@ -195,14 +195,14 @@ impl Rle {
             live_cells: 0,
         };
         for tag in tags {
-            match tag {
-                (n, RleTag::AliveCell) => item.live_cells += *n,
+            match *tag {
+                (n, RleTag::AliveCell) => item.live_cells += n,
                 (n, RleTag::DeadCell) => {
                     if item.live_cells > 0 {
                         buf.push(item);
                         item = RleLiveCellRun {
                             pad_lines: 0,
-                            pad_dead_cells: *n,
+                            pad_dead_cells: n,
                             live_cells: 0,
                         };
                     } else {
@@ -213,12 +213,12 @@ impl Rle {
                     if item.live_cells > 0 {
                         buf.push(item);
                         item = RleLiveCellRun {
-                            pad_lines: *n,
+                            pad_lines: n,
                             pad_dead_cells: 0,
                             live_cells: 0,
                         };
                     } else {
-                        item.pad_lines += *n;
+                        item.pad_lines += n;
                         item.pad_dead_cells = 0;
                     }
                 }
