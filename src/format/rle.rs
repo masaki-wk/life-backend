@@ -40,21 +40,8 @@ struct RleParser {
 // Inherent methods of RleParser
 
 impl RleParser {
-    fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
-        if line.len() < prefix.len() {
-            None
-        } else {
-            let (first, last) = line.split_at(prefix.len());
-            if first == prefix {
-                Some(last)
-            } else {
-                None
-            }
-        }
-    }
-    #[inline]
-    fn parse_comment_line(line: &str) -> Option<&str> {
-        Self::parse_prefixed_line("#", line)
+    fn is_comment_line(line: &str) -> bool {
+        matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
         let fields = {
@@ -171,8 +158,8 @@ impl RleParser {
                 self.position = advanced_position;
                 self.finished = finished;
             } else {
-                if let Some(comment) = Self::parse_comment_line(line) {
-                    self.comments.push(comment.to_string());
+                if Self::is_comment_line(line) {
+                    self.comments.push(line.to_string());
                     return Ok(());
                 }
                 let header = Self::parse_header_line(line)?;
@@ -195,14 +182,14 @@ impl Rle {
             live_cells: 0,
         };
         for tag in tags {
-            match tag {
-                (n, RleTag::AliveCell) => item.live_cells += *n,
+            match *tag {
+                (n, RleTag::AliveCell) => item.live_cells += n,
                 (n, RleTag::DeadCell) => {
                     if item.live_cells > 0 {
                         buf.push(item);
                         item = RleLiveCellRun {
                             pad_lines: 0,
-                            pad_dead_cells: *n,
+                            pad_dead_cells: n,
                             live_cells: 0,
                         };
                     } else {
@@ -213,12 +200,12 @@ impl Rle {
                     if item.live_cells > 0 {
                         buf.push(item);
                         item = RleLiveCellRun {
-                            pad_lines: *n,
+                            pad_lines: n,
                             pad_dead_cells: 0,
                             live_cells: 0,
                         };
                     } else {
-                        item.pad_lines += *n;
+                        item.pad_lines += n;
                         item.pad_dead_cells = 0;
                     }
                 }
@@ -281,7 +268,7 @@ impl Rle {
     /// ";
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// assert_eq!(parser.comments().len(), 1);
-    /// assert_eq!(parser.comments()[0], "N T-tetromino");
+    /// assert_eq!(parser.comments()[0], "#N T-tetromino");
     /// ```
     ///
     #[inline]
@@ -394,7 +381,7 @@ impl fmt::Display for Rle {
             Ok(())
         };
         for line in self.comments() {
-            writeln!(f, "#{}", line)?;
+            writeln!(f, "{line}")?;
         }
         writeln!(f, "x = {}, y = {}", self.header.width, self.header.height)?;
         let mut buf = String::new();
@@ -446,14 +433,21 @@ mod tests {
     #[test]
     fn test_new_comment_header() -> Result<()> {
         let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
-        let expected_comments = vec!["comment"];
+        let expected_comments = vec!["#comment"];
         let expected_contents = Vec::new();
         do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
     #[test]
     fn test_new_comments_header() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
-        let expected_comments = vec!["comment0", "comment1"];
+        let expected_comments = vec!["#comment0", "#comment1"];
+        let expected_contents = Vec::new();
+        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+    }
+    #[test]
+    fn test_new_comments_with_blank_header() -> Result<()> {
+        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0\n", "!\n");
+        let expected_comments = vec!["#comment", ""];
         let expected_contents = Vec::new();
         do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
@@ -474,7 +468,7 @@ mod tests {
     #[test]
     fn test_new_comments_header_contents() -> Result<()> {
         let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
-        let expected_comments = vec!["comment0", "comment1"];
+        let expected_comments = vec!["#comment0", "#comment1"];
         let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
         do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
     }
