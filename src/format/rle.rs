@@ -1,6 +1,6 @@
 use anyhow::{bail, ensure, Result};
 use std::fmt;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead as _, BufReader, Read};
 
 /// A representation for RLE file format, described in <https://conwaylife.com/wiki/Run_Length_Encoded>.
 #[derive(Debug, Clone)]

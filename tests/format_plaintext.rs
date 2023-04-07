@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{Context as _, Result};
 use life_backend::format::Plaintext;
 use std::fs::File;
 use std::io::Read;
