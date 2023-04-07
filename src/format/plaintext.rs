@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::{BufRead, BufReader, Read};
 
@@ -21,6 +22,14 @@ struct PlaintextParser {
     comments: Vec<String>,
     lines: usize,
     contents: Vec<(usize, Vec<usize>)>,
+}
+
+/// A builder of Plaintext.
+#[derive(Debug, Clone)]
+pub struct PlaintextBuilder {
+    name: Option<String>,
+    comment: Option<String>,
+    contents: HashSet<(usize, usize)>,
 }
 
 // Inherent methods of PlaintextParser
@@ -87,7 +96,139 @@ impl PlaintextParser {
     }
 }
 
-// Inherent methods
+// Inherent methods of PlaintextBuilder
+
+impl PlaintextBuilder {
+    /// Builds the Plaintext.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().build();
+    /// ```
+    ///
+    pub fn build(self) -> Plaintext {
+        let comments = match self.comment {
+            Some(str) => str.lines().map(|s| s.to_string()).collect(),
+            None => Vec::new(),
+        };
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+            acc.entry(y).or_insert_with(Vec::new).push(x);
+            acc
+        });
+        let mut contents: Vec<_> = contents_group_by_y.into_iter().collect();
+        contents.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // note: this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+        for (_, xs) in &mut contents {
+            xs.sort();
+        }
+        Plaintext {
+            name: self.name,
+            comments,
+            contents,
+        }
+    }
+
+    /// Set the name.
+    ///
+    /// If name() is called twice or more, build() will fail.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").build();
+    /// assert_eq!(plaintext.name(), Some(String::from("foo")));
+    /// ```
+    ///
+    pub fn name(mut self, str: &str) -> Self {
+        self.name = Some(str.to_string());
+        self
+    }
+
+    /// Set the comment.
+    ///
+    /// If comment() is called twice or more, build() will fail.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build();
+    /// assert_eq!(plaintext.comments().len(), 2);
+    /// assert_eq!(plaintext.comments()[0], "comment0");
+    /// assert_eq!(plaintext.comments()[1], "comment1");
+    /// ```
+    ///
+    pub fn comment(mut self, str: &str) -> Self {
+        self.comment = Some(str.to_string());
+        self
+    }
+}
+
+// Trait implementations of PlaintextBuilder
+
+impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder {
+    /// Conversion from a non-owning iterator over a series of &(usize, usize).
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let builder = pattern.iter().collect::<PlaintextBuilder>();
+    /// let plaintext = builder.build();
+    /// ```
+    ///
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = &'a (usize, usize)>,
+    {
+        let contents = iter.into_iter().copied().collect();
+        Self {
+            name: None,
+            comment: None,
+            contents,
+        }
+    }
+}
+
+impl FromIterator<(usize, usize)> for PlaintextBuilder {
+    /// Conversion from an owning iterator over a series of (usize, usize).
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
+    /// let plaintext = builder.build();
+    /// ```
+    ///
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (usize, usize)>,
+    {
+        let contents = iter.into_iter().collect();
+        Self {
+            name: None,
+            comment: None,
+            contents,
+        }
+    }
+}
+
+// Inherent methods of Plaintext
 
 impl Plaintext {
     /// Creates from the specified implementor of Read, such as File or `&[u8]`.
@@ -191,7 +332,7 @@ impl Plaintext {
     }
 }
 
-// Trait implementations
+// Trait implementations of Plaintext
 
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -236,14 +377,8 @@ impl fmt::Display for Plaintext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_new_test_to_be_passed(
-        pattern: &str,
-        expected_name: &Option<&str>,
-        expected_comments: &[&str],
-        expected_contents: &[(usize, Vec<usize>)],
-    ) -> Result<()> {
+    fn do_check(target: &Plaintext, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) {
         let expected_name = expected_name.map(|s| s.to_string());
-        let target = Plaintext::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
@@ -253,6 +388,15 @@ mod tests {
         for (result, expected) in target.contents.iter().zip(expected_contents.iter()) {
             assert_eq!(result, expected);
         }
+    }
+    fn do_new_test_to_be_passed(
+        pattern: &str,
+        expected_name: &Option<&str>,
+        expected_comments: &[&str],
+        expected_contents: &[(usize, Vec<usize>)],
+    ) -> Result<()> {
+        let target = Plaintext::new(pattern.as_bytes())?;
+        do_check(&target, expected_name, expected_comments, expected_contents);
         assert_eq!(target.to_string(), pattern);
         Ok(())
     }
@@ -338,5 +482,55 @@ mod tests {
     fn test_new_wrong_content_with_comment() {
         let pattern = concat!("!Name: test\n", "!\n", "_\n");
         do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_build() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = None;
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().build();
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_build_name() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = Some("test");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").build();
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comment() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = None;
+        let expected_comments = vec!["comment"];
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment").build();
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comments() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = None;
+        let expected_comments = vec!["comment0", "comment1"];
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build();
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_build_name_comment() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = Some("test");
+        let expected_comments = vec!["comment"];
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").comment("comment").build();
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
     }
 }
