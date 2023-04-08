@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{Context as _, Result};
 use criterion::{criterion_group, criterion_main, Criterion};
 use life_backend::format::Rle;
 use life_backend::{Board, Game};

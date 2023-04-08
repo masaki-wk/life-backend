@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead as _, BufReader, Read};
 
 /// A representation for Plaintext file format.
 ///

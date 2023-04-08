@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Context as _, Result};
 use life_backend::format::Plaintext;
 use life_backend::{Board, Game};
 use std::env;
