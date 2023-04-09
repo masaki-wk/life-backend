@@ -207,7 +207,7 @@ impl<Name> PlaintextBuilder<Name, PlaintextBuilderNoComment>
 where
     Name: PlaintextBuilderName,
 {
-    /// Set the comment.
+    /// Set the comment.  If the argument includes newlines, the instance of Plaintext built by build() includes multiple comment lines.
     ///
     /// # Examples
     ///
