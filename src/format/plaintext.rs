@@ -139,7 +139,7 @@ where
     Name: PlaintextBuilderName,
     Comment: PlaintextBuilderComment,
 {
-    // Builds the Plaintext.
+    /// Builds the Plaintext.
     ///
     /// # Examples
     ///
