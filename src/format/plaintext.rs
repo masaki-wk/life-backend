@@ -188,6 +188,17 @@ where
     /// assert_eq!(plaintext.name(), Some(String::from("foo")));
     /// ```
     ///
+    /// # Note
+    ///
+    /// Code that calls name() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build(); // Compile will fail
+    /// ```
+    ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
         let name = PlaintextBuilderWithName(str.to_string());
         PlaintextBuilder::<PlaintextBuilderWithName, Comment> {
@@ -214,6 +225,17 @@ where
     /// assert_eq!(plaintext.comments().len(), 2);
     /// assert_eq!(plaintext.comments()[0], "comment0");
     /// assert_eq!(plaintext.comments()[1], "comment1");
+    /// ```
+    ///
+    /// # Note
+    ///
+    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::Plaintext;
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build(); // Compile will fail
     /// ```
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
