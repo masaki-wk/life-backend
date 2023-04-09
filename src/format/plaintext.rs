@@ -36,7 +36,7 @@ where
     contents: HashSet<(usize, usize)>,
 }
 
-// Internal traits and types for PlaintextBuilder's typestate
+// Traits and Types for PlaintextBuilder's typestate
 pub trait PlaintextBuilderName {
     fn drain(self) -> Option<String>;
 }
@@ -196,7 +196,7 @@ where
     /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build(); // Compile will fail
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build(); // Compile error
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
@@ -235,7 +235,7 @@ where
     /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build(); // Compile will fail
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build(); // Compile error
     /// ```
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
