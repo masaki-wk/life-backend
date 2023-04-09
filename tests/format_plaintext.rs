@@ -33,15 +33,15 @@ fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, 
     do_new_test(file, expected_positions)
 }
 
-fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Option<String>) {
+fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Option<String>) -> Result<()> {
     // Create the target with the pattern, the name and the comment
     let target = {
         let builder = pattern.iter().collect::<PlaintextBuilder>();
         match (&name, &comment) {
-            (None, None) => builder.build(),
-            (Some(name), None) => builder.name(name).build(),
-            (None, Some(comment)) => builder.comment(comment).build(),
-            (Some(name), Some(comment)) => builder.name(name).comment(comment).build(),
+            (None, None) => builder.build()?,
+            (Some(name), None) => builder.name(name).build()?,
+            (None, Some(comment)) => builder.comment(comment).build()?,
+            (Some(name), Some(comment)) => builder.name(name).comment(comment).build()?,
         }
     };
     println!("Target:");
@@ -58,6 +58,7 @@ fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Opti
         let comments: Vec<_> = comment.lines().map(|s| s.to_string()).collect();
         assert_eq!(target.comments(), &comments);
     }
+    Ok(())
 }
 
 #[test]
@@ -80,9 +81,9 @@ fn format_plaintext_new_with_file_test() -> Result<()> {
 }
 
 #[test]
-fn format_plaintext_build_test() {
+fn format_plaintext_build_test() -> Result<()> {
     let pattern = vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)];
     let name = Some(String::from("Glider"));
     let comment = Some(String::from("----"));
-    do_build_test(&pattern, name, comment);
+    do_build_test(&pattern, name, comment)
 }

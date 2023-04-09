@@ -146,10 +146,10 @@ where
     /// ```
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().build();
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().build().unwrap();
     /// ```
     ///
-    pub fn build(self) -> Plaintext {
+    pub fn build(self) -> Result<Plaintext> {
         let name = self.name.drain();
         let comments = match self.comment.drain() {
             Some(str) => str.lines().map(|s| s.to_string()).collect(),
@@ -164,7 +164,7 @@ where
         for (_, xs) in &mut contents {
             xs.sort();
         }
-        Plaintext { name, comments, contents }
+        Ok(Plaintext { name, comments, contents })
     }
 }
 
@@ -179,7 +179,7 @@ where
     /// ```
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").build();
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").build().unwrap();
     /// assert_eq!(plaintext.name(), Some(String::from("foo")));
     /// ```
     ///
@@ -190,7 +190,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build(); // Compile error
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
@@ -214,7 +214,7 @@ where
     /// ```
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build();
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build().unwrap();
     /// assert_eq!(plaintext.comments().len(), 2);
     /// assert_eq!(plaintext.comments()[0], "comment0");
     /// assert_eq!(plaintext.comments()[1], "comment1");
@@ -227,7 +227,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build(); // Compile error
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
@@ -252,7 +252,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.iter().collect::<PlaintextBuilder>();
-    /// let plaintext = builder.build();
+    /// let plaintext = builder.build().unwrap();
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self
@@ -278,7 +278,7 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
-    /// let plaintext = builder.build();
+    /// let plaintext = builder.build().unwrap();
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self
@@ -555,7 +555,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        let target = pattern.iter().collect::<PlaintextBuilder>().build();
+        let target = pattern.iter().collect::<PlaintextBuilder>().build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
@@ -565,7 +565,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").build();
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
@@ -575,7 +575,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = vec!["comment"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment").build();
+        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
@@ -585,7 +585,7 @@ mod tests {
         let expected_name = None;
         let expected_comments = vec!["comment0", "comment1"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build();
+        let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
@@ -595,7 +595,7 @@ mod tests {
         let expected_name = Some("test");
         let expected_comments = vec!["comment"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
-        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").comment("comment").build();
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("test").comment("comment").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
