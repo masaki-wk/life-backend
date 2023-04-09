@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
@@ -151,6 +151,9 @@ where
     ///
     pub fn build(self) -> Result<Plaintext> {
         let name = self.name.drain();
+        if let Some(str) = &name {
+            ensure!(str.lines().count() <= 1, "str passed by name(str) includes multiple lines");
+        };
         let comments = match self.comment.drain() {
             Some(str) => str.lines().map(|s| s.to_string()).collect(),
             None => Vec::new(),
@@ -560,7 +563,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_build_name() -> Result<()> {
+    fn test_build_singleline_name() -> Result<()> {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = Some("test");
         let expected_comments = Vec::new();
@@ -568,6 +571,22 @@ mod tests {
         let target = pattern.iter().collect::<PlaintextBuilder>().name("test").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
+    }
+    #[test]
+    fn test_build_empty_name() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = Some("");
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("").build()?;
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_build_multiline_name() {
+        let pattern = [(1, 0), (0, 1)];
+        let target = pattern.iter().collect::<PlaintextBuilder>().name("name\nname").build();
+        assert!(target.is_err());
     }
     #[test]
     fn test_build_comment() -> Result<()> {
