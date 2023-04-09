@@ -144,7 +144,6 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().build();
@@ -178,7 +177,6 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").build();
@@ -190,7 +188,6 @@ where
     /// Code that calls name() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build(); // Compile error
@@ -215,7 +212,6 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build();
@@ -229,7 +225,6 @@ where
     /// Code that calls comment() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build(); // Compile error
@@ -254,7 +249,6 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.iter().collect::<PlaintextBuilder>();
@@ -281,7 +275,6 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
