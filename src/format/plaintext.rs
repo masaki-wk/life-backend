@@ -186,7 +186,7 @@ where
     /// assert_eq!(plaintext.name(), Some(String::from("foo")));
     /// ```
     ///
-    /// # Note
+    /// # Errors
     ///
     /// Code that calls name() twice or more will fail at compile time.  For example:
     ///
@@ -194,6 +194,14 @@ where
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
+    /// ```
+    ///
+    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    ///
+    /// ```should_panic
+    /// # use life_backend::format::PlaintextBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build().unwrap();
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
@@ -223,7 +231,7 @@ where
     /// assert_eq!(plaintext.comments()[1], "comment1");
     /// ```
     ///
-    /// # Note
+    /// # Errors
     ///
     /// Code that calls comment() twice or more will fail at compile time.  For example:
     ///
