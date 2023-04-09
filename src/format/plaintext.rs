@@ -155,7 +155,14 @@ where
             ensure!(str.lines().count() <= 1, "str passed by name(str) includes multiple lines");
         };
         let comments = match self.comment.drain() {
-            Some(str) => str.lines().map(|s| s.to_string()).collect(),
+            Some(str) => {
+                let buf: Vec<_> = str.lines().map(|s| s.to_string()).collect();
+                if buf.is_empty() {
+                    vec![String::new()]
+                } else {
+                    buf
+                }
+            }
             None => Vec::new(),
         };
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
@@ -581,7 +588,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_build_empty_name() -> Result<()> {
+    fn test_build_blank_name() -> Result<()> {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = Some("");
         let expected_comments = Vec::new();
@@ -603,6 +610,16 @@ mod tests {
         let expected_comments = vec!["comment"];
         let expected_contents = vec![(0, vec![1]), (1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment").build()?;
+        do_check(&target, &expected_name, &expected_comments, &expected_contents);
+        Ok(())
+    }
+    #[test]
+    fn test_blank_comment() -> Result<()> {
+        let pattern = [(1, 0), (0, 1)];
+        let expected_name = None;
+        let expected_comments = vec![""];
+        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let target = pattern.iter().collect::<PlaintextBuilder>().comment("").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
     }
