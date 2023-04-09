@@ -151,6 +151,7 @@ where
     /// ```
     ///
     pub fn build(self) -> Plaintext {
+        let name = self.name.drain();
         let comments = match self.comment.drain() {
             Some(str) => str.lines().map(|s| s.to_string()).collect(),
             None => Vec::new(),
@@ -164,11 +165,7 @@ where
         for (_, xs) in &mut contents {
             xs.sort();
         }
-        Plaintext {
-            name: self.name.drain(),
-            comments,
-            contents,
-        }
+        Plaintext { name, comments, contents }
     }
 }
 
