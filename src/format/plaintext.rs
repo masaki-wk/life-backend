@@ -26,10 +26,46 @@ struct PlaintextParser {
 
 /// A builder of Plaintext.
 #[derive(Debug, Clone)]
-pub struct PlaintextBuilder {
-    name: Option<String>,
-    comment: Option<String>,
+pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    name: Name,
+    comment: Comment,
     contents: HashSet<(usize, usize)>,
+}
+
+// Internal traits and types for PlaintextBuilder's typestate
+pub trait PlaintextBuilderName {
+    fn drain(self) -> Option<String>;
+}
+pub trait PlaintextBuilderComment {
+    fn drain(self) -> Option<String>;
+}
+pub struct PlaintextBuilderNoName;
+impl PlaintextBuilderName for PlaintextBuilderNoName {
+    fn drain(self) -> Option<String> {
+        None
+    }
+}
+pub struct PlaintextBuilderWithName(String);
+impl PlaintextBuilderName for PlaintextBuilderWithName {
+    fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
+}
+pub struct PlaintextBuilderNoComment;
+pub struct PlaintextBuilderWithComment(String);
+impl PlaintextBuilderComment for PlaintextBuilderNoComment {
+    fn drain(self) -> Option<String> {
+        None
+    }
+}
+impl PlaintextBuilderComment for PlaintextBuilderWithComment {
+    fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
 }
 
 // Inherent methods of PlaintextParser
@@ -98,8 +134,12 @@ impl PlaintextParser {
 
 // Inherent methods of PlaintextBuilder
 
-impl PlaintextBuilder {
-    /// Builds the Plaintext.
+impl<Name, Comment> PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    // Builds the Plaintext.
     ///
     /// # Examples
     ///
@@ -111,7 +151,7 @@ impl PlaintextBuilder {
     /// ```
     ///
     pub fn build(self) -> Plaintext {
-        let comments = match self.comment {
+        let comments = match self.comment.drain() {
             Some(str) => str.lines().map(|s| s.to_string()).collect(),
             None => Vec::new(),
         };
@@ -125,15 +165,18 @@ impl PlaintextBuilder {
             xs.sort();
         }
         Plaintext {
-            name: self.name,
+            name: self.name.drain(),
             comments,
             contents,
         }
     }
+}
 
+impl<Comment> PlaintextBuilder<PlaintextBuilderNoName, Comment>
+where
+    Comment: PlaintextBuilderComment,
+{
     /// Set the name.
-    ///
-    /// If name() is called twice or more, build() will fail.
     ///
     /// # Examples
     ///
@@ -145,14 +188,21 @@ impl PlaintextBuilder {
     /// assert_eq!(plaintext.name(), Some(String::from("foo")));
     /// ```
     ///
-    pub fn name(mut self, str: &str) -> Self {
-        self.name = Some(str.to_string());
-        self
+    pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
+        let name = PlaintextBuilderWithName(str.to_string());
+        PlaintextBuilder::<PlaintextBuilderWithName, Comment> {
+            name,
+            comment: self.comment,
+            contents: self.contents,
+        }
     }
+}
 
+impl<Name> PlaintextBuilder<Name, PlaintextBuilderNoComment>
+where
+    Name: PlaintextBuilderName,
+{
     /// Set the comment.
-    ///
-    /// If comment() is called twice or more, build() will fail.
     ///
     /// # Examples
     ///
@@ -166,15 +216,19 @@ impl PlaintextBuilder {
     /// assert_eq!(plaintext.comments()[1], "comment1");
     /// ```
     ///
-    pub fn comment(mut self, str: &str) -> Self {
-        self.comment = Some(str.to_string());
-        self
+    pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
+        let comment = PlaintextBuilderWithComment(str.to_string());
+        PlaintextBuilder::<Name, PlaintextBuilderWithComment> {
+            name: self.name,
+            comment,
+            contents: self.contents,
+        }
     }
 }
 
 // Trait implementations of PlaintextBuilder
 
-impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder {
+impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
     /// Conversion from a non-owning iterator over a series of &(usize, usize).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
@@ -194,14 +248,14 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder {
     {
         let contents = iter.into_iter().copied().collect();
         Self {
-            name: None,
-            comment: None,
+            name: PlaintextBuilderNoName,
+            comment: PlaintextBuilderNoComment,
             contents,
         }
     }
 }
 
-impl FromIterator<(usize, usize)> for PlaintextBuilder {
+impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
     /// Conversion from an owning iterator over a series of (usize, usize).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
@@ -221,8 +275,8 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder {
     {
         let contents = iter.into_iter().collect();
         Self {
-            name: None,
-            comment: None,
+            name: PlaintextBuilderNoName,
+            comment: PlaintextBuilderNoComment,
             contents,
         }
     }

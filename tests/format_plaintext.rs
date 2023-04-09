@@ -36,14 +36,13 @@ fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, 
 fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Option<String>) {
     // Create the target with the pattern, the name and the comment
     let target = {
-        let mut builder = pattern.iter().collect::<PlaintextBuilder>();
-        if let Some(name) = &name {
-            builder = builder.name(name);
+        let builder = pattern.iter().collect::<PlaintextBuilder>();
+        match (&name, &comment) {
+            (None, None) => builder.build(),
+            (Some(name), None) => builder.name(name).build(),
+            (None, Some(comment)) => builder.comment(comment).build(),
+            (Some(name), Some(comment)) => builder.name(name).comment(comment).build(),
         }
-        if let Some(comment) = &comment {
-            builder = builder.comment(comment);
-        }
-        builder.build()
     };
     println!("Target:");
     println!("{target}");
