@@ -282,7 +282,7 @@ where
             {
                 let name = self.name.drain();
                 if let Some(str) = &name {
-                    ensure!(str.lines().count() <= 1, "the string passed by name() includes multiple lines");
+                    ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
                 }
                 buf.append(&mut parse_to_comments(name, "#N"));
             }

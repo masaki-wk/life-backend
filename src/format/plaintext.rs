@@ -152,7 +152,7 @@ where
     pub fn build(self) -> Result<Plaintext> {
         let name = self.name.drain();
         if let Some(str) = &name {
-            ensure!(str.lines().count() <= 1, "the string passed by name() includes multiple lines");
+            ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
         };
         let comments = match self.comment.drain() {
             Some(str) => {
