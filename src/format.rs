@@ -4,3 +4,4 @@ mod rle;
 pub use plaintext::Plaintext;
 pub use plaintext::PlaintextBuilder;
 pub use rle::Rle;
+pub use rle::RleBuilder;
