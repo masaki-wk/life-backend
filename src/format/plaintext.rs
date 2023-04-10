@@ -152,7 +152,7 @@ where
     pub fn build(self) -> Result<Plaintext> {
         let name = self.name.drain();
         if let Some(str) = &name {
-            ensure!(str.lines().count() <= 1, "str passed by name(str) includes multiple lines");
+            ensure!(str.lines().count() <= 1, "the string passed by name() includes multiple lines");
         };
         let comments = match self.comment.drain() {
             Some(str) => {
@@ -288,7 +288,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
 
 impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
     /// Conversion from an owning iterator over a series of (usize, usize).
-    /// Each item in the series represents an immutable reference of a live cell position.
+    /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
     ///
