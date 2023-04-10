@@ -1020,6 +1020,99 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn test_build_singleline_name() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("name").build()?;
+        let expected_comments = vec!["#N name"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_blank_name() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("").build()?;
+        let expected_comments = vec!["#N"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_multiline_name() {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("name\nname").build();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_build_created() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("created").build()?;
+        let expected_comments = vec!["#O created"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_blank_created() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("").build()?;
+        let expected_comments = vec!["#O"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_createds() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("created0\ncreated1").build()?;
+        let expected_comments = vec!["#O created0", "#O created1"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("comment").build()?;
+        let expected_comments = vec!["#C comment"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_blank_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("").build()?;
+        let expected_comments = vec!["#C"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comments() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
+        let expected_comments = vec!["#C comment0", "#C comment1"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_name_created_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern
+            .iter()
+            .collect::<RleBuilder>()
+            .name("name")
+            .created("created")
+            .comment("comment")
+            .build()?;
+        let expected_comments = vec!["#N name", "#O created", "#C comment"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
     fn test_display_max_width() -> Result<()> {
         let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
             .iter()
