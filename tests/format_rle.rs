@@ -81,5 +81,6 @@ fn format_rle_new_with_file_test() -> Result<()> {
 fn format_rle_build_test() -> Result<()> {
     let pattern = vec![(0, 0), (1, 0), (2, 0), (1, 1)];
     let name = Some(String::from("T-tetromino"));
-    do_build_test(&pattern, name, None, None)
+    let comment = Some(String::from("----"));
+    do_build_test(&pattern, name, None, comment)
 }
