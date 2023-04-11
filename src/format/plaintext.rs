@@ -325,6 +325,14 @@ mod tests {
         do_new_test_to_be_failed(pattern)
     }
     #[test]
+    fn test_new_duplicate_header() -> Result<()> {
+        let pattern = concat!("!Name: name0\n", "!Name: name1\n");
+        let expected_name = Some("name0");
+        let expected_comments = vec!["Name: name1"];
+        let expected_contents = Vec::new();
+        do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
+    }
+    #[test]
     fn test_new_wrong_content_without_comment() {
         let pattern = concat!("!Name: test\n", "_\n");
         do_new_test_to_be_failed(pattern)
