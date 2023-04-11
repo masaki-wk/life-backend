@@ -436,9 +436,10 @@ where
     /// ```
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().comment("foo").build().unwrap();
-    /// assert_eq!(rle.comments().len(), 1);
-    /// assert_eq!(rle.comments()[0], String::from("#C foo"));
+    /// let rle = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
+    /// assert_eq!(rle.comments().len(), 2);
+    /// assert_eq!(rle.comments()[0], String::from("#C comment0"));
+    /// assert_eq!(rle.comments()[1], String::from("#C comment1"));
     /// ```
     ///
     /// # Errors
@@ -448,7 +449,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().comment("foo").comment("bar").build().unwrap(); // Compile error
+    /// let rle = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
     ///
     pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
