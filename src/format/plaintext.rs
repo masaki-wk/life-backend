@@ -61,7 +61,7 @@ impl PlaintextParser {
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
-        if self.comments.is_empty() && self.lines == 0 {
+        if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
             if let Some(name) = Self::parse_name_line(line) {
                 self.name = Some(name.to_string());
                 return Ok(());
