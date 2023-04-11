@@ -278,16 +278,14 @@ where
                     None => Vec::new(),
                 }
             };
-            let mut buf = Vec::new();
-            {
-                let name = self.name.drain();
-                if let Some(str) = &name {
-                    ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
-                }
-                buf.append(&mut parse_to_comments(name, "#N"));
+            let name = self.name.drain();
+            if let Some(str) = &name {
+                ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
             }
-            buf.append(&mut parse_to_comments(self.created.drain(), "#O"));
-            buf.append(&mut parse_to_comments(self.comment.drain(), "#C"));
+            let mut buf = Vec::new();
+            for (str, prefix) in [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")] {
+                buf.extend(parse_to_comments(str, prefix).into_iter());
+            }
             buf
         };
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
