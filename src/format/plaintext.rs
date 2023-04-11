@@ -445,7 +445,7 @@ impl fmt::Display for Plaintext {
                 let line = {
                     let mut buf = String::new();
                     let mut prev_x = 0;
-                    for &curr_x in xs {
+                    for curr_x in xs {
                         buf.push_str(&pad_line[0..(curr_x - prev_x)]);
                         buf.push('O');
                         prev_x = curr_x + 1;
