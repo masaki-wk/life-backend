@@ -61,7 +61,7 @@ impl PlaintextParser {
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
-        if self.comments.is_empty() && self.lines == 0 {
+        if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
             if let Some(name) = Self::parse_name_line(line) {
                 self.name = Some(name.to_string());
                 return Ok(());
@@ -323,6 +323,14 @@ mod tests {
     fn test_new_wrong_header() {
         let pattern = "_\n";
         do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_duplicate_header() -> Result<()> {
+        let pattern = concat!("!Name: name0\n", "!Name: name1\n");
+        let expected_name = Some("name0");
+        let expected_comments = vec!["Name: name1"];
+        let expected_contents = Vec::new();
+        do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
     fn test_new_wrong_content_without_comment() {
