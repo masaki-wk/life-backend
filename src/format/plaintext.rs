@@ -169,12 +169,19 @@ where
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
         });
-        let mut contents: Vec<_> = contents_group_by_y.into_iter().collect();
-        contents.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // note: this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
-        for (_, xs) in &mut contents {
-            xs.sort();
-        }
-        Ok(Plaintext { name, comments, contents })
+        let contents_sorted = {
+            let mut buf: Vec<_> = contents_group_by_y.into_iter().collect();
+            buf.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // note: this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+            for (_, xs) in &mut buf {
+                xs.sort();
+            }
+            buf
+        };
+        Ok(Plaintext {
+            name,
+            comments,
+            contents: contents_sorted,
+        })
     }
 }
 
