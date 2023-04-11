@@ -282,11 +282,10 @@ where
             if let Some(str) = &name {
                 ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
             }
-            let mut buf = Vec::new();
-            for (str, prefix) in [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")] {
-                buf.extend(parse_to_comments(str, prefix).into_iter());
-            }
-            buf
+            [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")]
+                .into_iter()
+                .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
+                .collect::<Vec<_>>()
         };
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
