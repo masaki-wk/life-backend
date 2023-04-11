@@ -1053,7 +1053,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_blank_created() -> Result<()> {
+    fn test_build_blank_created() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().created("").build()?;
         let expected_comments = vec!["#O"];
@@ -1080,7 +1080,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_blank_comment() -> Result<()> {
+    fn test_build_blank_comment() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().comment("").build()?;
         let expected_comments = vec!["#C"];

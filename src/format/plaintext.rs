@@ -614,7 +614,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_blank_comment() -> Result<()> {
+    fn test_build_blank_comment() -> Result<()> {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = None;
         let expected_comments = vec![""];
