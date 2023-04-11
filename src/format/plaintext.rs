@@ -36,7 +36,7 @@ where
     contents: HashSet<(usize, usize)>,
 }
 
-// Traits and Types for PlaintextBuilder's typestate
+// Traits and types for PlaintextBuilder's typestate
 pub trait PlaintextBuilderName {
     fn drain(self) -> Option<String>;
 }

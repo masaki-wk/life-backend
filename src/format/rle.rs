@@ -58,7 +58,7 @@ where
     contents: HashSet<(usize, usize)>,
 }
 
-// Traits and Types for RleBuilder's typestate
+// Traits and types for RleBuilder's typestate
 pub trait RleBuilderName {
     fn drain(self) -> Option<String>;
 }
@@ -391,7 +391,7 @@ where
     Name: RleBuilderName,
     Comment: RleBuilderComment,
 {
-    /// Set the information when and whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
     ///
     /// # Examples
     ///
