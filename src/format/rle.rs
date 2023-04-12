@@ -361,12 +361,13 @@ impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         const MAX_LINE_WIDTH: usize = 70;
         let count_tag_to_string = |count: usize, char| {
-            let mut buf = String::new();
             if count > 1 {
-                buf.push_str(&format!("{}", count));
+                let mut buf = count.to_string();
+                buf.push(char);
+                buf
+            } else {
+                char.to_string()
             }
-            buf.push(char);
-            buf
         };
         let flush_buf = |f: &mut fmt::Formatter, buf: &mut String| {
             writeln!(f, "{buf}")?;
