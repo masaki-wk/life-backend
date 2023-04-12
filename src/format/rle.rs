@@ -372,12 +372,12 @@ impl fmt::Display for Rle {
             writeln!(f, "{buf}")?;
             Ok(())
         };
-        let write_with_buf = |f: &mut fmt::Formatter, buf: &mut String, s: String| {
+        let write_with_buf = |f: &mut fmt::Formatter, buf: &mut String, s: &str| {
             if buf.len() + s.len() > MAX_LINE_WIDTH {
                 flush_buf(f, buf)?;
                 buf.clear();
             }
-            buf.push_str(&s);
+            buf.push_str(s);
             Ok(())
         };
         for line in self.comments() {
@@ -389,11 +389,11 @@ impl fmt::Display for Rle {
             for (count, char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
                 if count > 0 {
                     let s = count_tag_to_string(count, char);
-                    write_with_buf(f, &mut buf, s)?;
+                    write_with_buf(f, &mut buf, &s)?;
                 }
             }
         }
-        write_with_buf(f, &mut buf, String::from("!"))?;
+        write_with_buf(f, &mut buf, "!")?;
         flush_buf(f, &mut buf)?;
         Ok(())
     }
