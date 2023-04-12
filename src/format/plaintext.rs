@@ -197,7 +197,7 @@ impl fmt::Display for Plaintext {
             writeln!(f, "!{}", line)?;
         }
         if !self.contents.is_empty() {
-            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // note: this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
+            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
             let pad_line = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format
             let mut prev_y = 0;
             for (curr_y, xs) in &self.contents {
