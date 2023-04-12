@@ -175,42 +175,47 @@ impl RleParser {
 impl Rle {
     // Convert the series of (usize, RleTag) into the series of RleLiveCellRun.
     fn convert_tags_to_livecellruns(tags: &[(usize, RleTag)]) -> Vec<RleLiveCellRun> {
-        let mut buf = Vec::new();
-        let mut item = RleLiveCellRun {
-            pad_lines: 0,
-            pad_dead_cells: 0,
-            live_cells: 0,
-        };
-        for tag in tags {
-            match *tag {
-                (n, RleTag::AliveCell) => item.live_cells += n,
-                (n, RleTag::DeadCell) => {
-                    if item.live_cells > 0 {
-                        buf.push(item);
-                        item = RleLiveCellRun {
-                            pad_lines: 0,
-                            pad_dead_cells: n,
-                            live_cells: 0,
-                        };
-                    } else {
-                        item.pad_dead_cells += n;
+        let (mut buf, item) = tags.iter().fold(
+            (
+                Vec::new(),
+                RleLiveCellRun {
+                    pad_lines: 0,
+                    pad_dead_cells: 0,
+                    live_cells: 0,
+                },
+            ),
+            |(mut buf, mut item), tag| {
+                match *tag {
+                    (n, RleTag::AliveCell) => item.live_cells += n,
+                    (n, RleTag::DeadCell) => {
+                        if item.live_cells > 0 {
+                            buf.push(item);
+                            item = RleLiveCellRun {
+                                pad_lines: 0,
+                                pad_dead_cells: n,
+                                live_cells: 0,
+                            };
+                        } else {
+                            item.pad_dead_cells += n;
+                        }
+                    }
+                    (n, RleTag::EndOfLine) => {
+                        if item.live_cells > 0 {
+                            buf.push(item);
+                            item = RleLiveCellRun {
+                                pad_lines: n,
+                                pad_dead_cells: 0,
+                                live_cells: 0,
+                            };
+                        } else {
+                            item.pad_lines += n;
+                            item.pad_dead_cells = 0;
+                        }
                     }
                 }
-                (n, RleTag::EndOfLine) => {
-                    if item.live_cells > 0 {
-                        buf.push(item);
-                        item = RleLiveCellRun {
-                            pad_lines: n,
-                            pad_dead_cells: 0,
-                            live_cells: 0,
-                        };
-                    } else {
-                        item.pad_lines += n;
-                        item.pad_dead_cells = 0;
-                    }
-                }
-            }
-        }
+                (buf, item)
+            },
+        );
         if item.live_cells > 0 {
             buf.push(item);
         }
