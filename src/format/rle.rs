@@ -661,7 +661,7 @@ mod tests {
     fn test_display_max_width() -> Result<()> {
         let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
             .iter()
-            .map(|&s| String::from(s) + "\n")
+            .map(|&s| s.to_string() + "\n")
             .collect::<String>();
         let target = Rle::new(pattern.as_bytes())?;
         assert_eq!(target.to_string(), pattern);
