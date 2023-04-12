@@ -316,20 +316,18 @@ where
                     })
                 };
             };
-            let mut buf = Vec::new();
-            let (mut prev_x, mut prev_y) = (0, 0);
-            let (mut curr_x, mut curr_y) = (0, 0);
-            let mut live_cells = 0;
-            for (next_x, next_y) in contents_sorted.into_iter().flat_map(|(y, xs)| xs.into_iter().map(move |x| (x, y))) {
-                if next_y > curr_y || next_x > curr_x + 2 {
-                    flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
-                    (prev_x, prev_y) = (curr_x + live_cells, curr_y);
-                    (curr_x, curr_y) = (next_x, next_y);
-                    live_cells = 1;
-                } else {
-                    live_cells += 1;
-                }
-            }
+            let (mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells) =
+                contents_sorted.into_iter().flat_map(|(y, xs)| xs.into_iter().map(move |x| (x, y))).fold(
+                    (Vec::new(), (0, 0), (0, 0), 0),
+                    |(mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells), (next_x, next_y)| {
+                        if next_y == curr_y && next_x == curr_x + live_cells {
+                            (buf, (prev_x, prev_y), (curr_x, curr_y), live_cells + 1)
+                        } else {
+                            flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
+                            (buf, (curr_x + live_cells, curr_y), (next_x, next_y), 1)
+                        }
+                    },
+                );
             flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
             buf
         };
@@ -714,8 +712,8 @@ impl fmt::Display for Rle {
         let count_tag_to_string = |count: usize, char| {
             if count > 1 {
                 let mut buf = count.to_string();
-            buf.push(char);
-            buf
+                buf.push(char);
+                buf
             } else {
                 char.to_string()
             }
