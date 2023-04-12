@@ -83,7 +83,7 @@ fn format_plaintext_new_with_file_test() -> Result<()> {
 #[test]
 fn format_plaintext_build_test() -> Result<()> {
     let pattern = vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)];
-    let name = Some(String::from("Glider"));
-    let comment = Some(String::from("----"));
+    let name = Some("Glider".to_string());
+    let comment = Some("----".to_string());
     do_build_test(&pattern, name, comment)
 }

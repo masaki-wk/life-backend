@@ -198,7 +198,7 @@ where
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let plaintext = pattern.iter().collect::<PlaintextBuilder>().name("foo").build().unwrap();
-    /// assert_eq!(plaintext.name(), Some(String::from("foo")));
+    /// assert_eq!(plaintext.name(), Some("foo".to_string()));
     /// ```
     ///
     /// # Errors

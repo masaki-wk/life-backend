@@ -259,8 +259,8 @@ where
     pub fn build(self) -> Result<Rle> {
         let comments = {
             let parse_to_comments = |str: Option<String>, prefix: &str| {
-                let prefixed_str = |str: &str, prefix| {
-                    let mut buf = String::from(prefix);
+                let prefixed_str = |str: &str, prefix: &str| {
+                    let mut buf = prefix.to_string();
                     if !str.is_empty() {
                         buf.push(' ');
                         buf.push_str(str);
@@ -270,7 +270,7 @@ where
                 match str {
                     Some(str) => {
                         if str.is_empty() {
-                            vec![String::from(prefix)]
+                            vec![prefix.to_string()]
                         } else {
                             str.lines().map(|s| prefixed_str(s, prefix)).collect::<Vec<_>>()
                         }
@@ -351,7 +351,7 @@ where
     /// let pattern = [(1, 0), (0, 1)];
     /// let rle = pattern.iter().collect::<RleBuilder>().name("foo").build().unwrap();
     /// assert_eq!(rle.comments().len(), 1);
-    /// assert_eq!(rle.comments()[0], String::from("#N foo"));
+    /// assert_eq!(rle.comments()[0], "#N foo".to_string());
     /// ```
     ///
     /// # Errors
@@ -397,7 +397,7 @@ where
     /// let pattern = [(1, 0), (0, 1)];
     /// let rle = pattern.iter().collect::<RleBuilder>().created("foo").build().unwrap();
     /// assert_eq!(rle.comments().len(), 1);
-    /// assert_eq!(rle.comments()[0], String::from("#O foo"));
+    /// assert_eq!(rle.comments()[0], "#O foo".to_string());
     /// ```
     ///
     /// # Errors
@@ -435,8 +435,8 @@ where
     /// let pattern = [(1, 0), (0, 1)];
     /// let rle = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
     /// assert_eq!(rle.comments().len(), 2);
-    /// assert_eq!(rle.comments()[0], String::from("#C comment0"));
-    /// assert_eq!(rle.comments()[1], String::from("#C comment1"));
+    /// assert_eq!(rle.comments()[0], "#C comment0".to_string());
+    /// assert_eq!(rle.comments()[1], "#C comment1".to_string());
     /// ```
     ///
     /// # Errors
@@ -1119,7 +1119,7 @@ mod tests {
     fn test_display_max_width() -> Result<()> {
         let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
             .iter()
-            .map(|&s| String::from(s) + "\n")
+            .map(|&s| s.to_string() + "\n")
             .collect::<String>();
         let target = Rle::new(pattern.as_bytes())?;
         assert_eq!(target.to_string(), pattern);

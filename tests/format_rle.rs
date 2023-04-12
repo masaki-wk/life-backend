@@ -80,7 +80,7 @@ fn format_rle_new_with_file_test() -> Result<()> {
 #[test]
 fn format_rle_build_test() -> Result<()> {
     let pattern = vec![(0, 0), (1, 0), (2, 0), (1, 1)];
-    let name = Some(String::from("T-tetromino"));
-    let comment = Some(String::from("----"));
+    let name = Some("T-tetromino".to_string());
+    let comment = Some("----".to_string());
     do_build_test(&pattern, name, None, comment)
 }
