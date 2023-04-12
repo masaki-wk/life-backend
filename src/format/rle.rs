@@ -91,7 +91,7 @@ impl RleParser {
                 Some(c) if c.is_ascii_digit() => {
                     let (num_str, rest) = line.split_at(line.find(|c: char| !c.is_ascii_digit()).unwrap_or(line.len()));
                     ensure!(!rest.is_empty(), "The pattern is in wrong format");
-                    let num: usize = num_str.parse().unwrap_or_default();
+                    let num: usize = num_str.parse().unwrap(); // this unwrap never panic because num_str only includes ascii digits
                     line = rest;
                     Some(num)
                 }
