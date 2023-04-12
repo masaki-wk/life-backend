@@ -172,7 +172,7 @@ where
         });
         let contents_sorted = {
             let mut buf: Vec<_> = contents_group_by_y.into_iter().collect();
-            buf.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // note: this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+            buf.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
             for (_, xs) in &mut buf {
                 xs.sort();
             }
@@ -435,7 +435,7 @@ impl fmt::Display for Plaintext {
             writeln!(f, "!{}", line)?;
         }
         if !self.contents.is_empty() {
-            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // note: this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
+            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
             let pad_line = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format
             let mut prev_y = 0;
             for (curr_y, xs) in &self.contents {

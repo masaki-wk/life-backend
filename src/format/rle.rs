@@ -293,7 +293,7 @@ where
         });
         let contents_sorted = {
             let mut contents_sorted: Vec<_> = contents_group_by_y.into_iter().collect();
-            contents_sorted.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // note: this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+            contents_sorted.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
             for (_, xs) in &mut contents_sorted {
                 xs.sort();
             }
