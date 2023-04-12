@@ -206,13 +206,11 @@ impl fmt::Display for Plaintext {
                     writeln!(f, "{pad_line}")?;
                 }
                 let line = {
-                    let mut buf = String::new();
-                    let mut prev_x = 0;
-                    for &curr_x in xs {
+                    let (mut buf, prev_x) = xs.iter().fold((String::new(), 0), |(mut buf, prev_x), &curr_x| {
                         buf.push_str(&pad_line[0..(curr_x - prev_x)]);
                         buf.push('O');
-                        prev_x = curr_x + 1;
-                    }
+                        (buf, curr_x + 1)
+                    });
                     if prev_x <= max_x {
                         buf.push_str(&pad_line[0..(max_x - prev_x + 1)]);
                     }
