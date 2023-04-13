@@ -13,7 +13,7 @@ use std::io::{BufRead as _, BufReader, Read};
 pub struct Rle {
     comments: Vec<String>,
     header: RleHeader,
-    contents: Vec<RleLiveCellRun>,
+    contents: Vec<RleRunsTriple>,
 }
 
 // Internal structs, used in Rle
@@ -23,7 +23,7 @@ struct RleHeader {
     height: usize,
 }
 #[derive(Debug, Clone)]
-struct RleLiveCellRun {
+struct RleRunsTriple {
     pad_lines: usize,
     pad_dead_cells: usize,
     live_cells: usize,
@@ -179,51 +179,51 @@ impl RleParser {
 // Inherent methods
 
 impl Rle {
-    // Convert the series of (usize, RleTag) into the series of RleLiveCellRun.
-    fn convert_tags_to_livecellruns(tags: &[(usize, RleTag)]) -> Vec<RleLiveCellRun> {
-        let (mut buf, item) = tags.iter().fold(
+    // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
+    fn convert_runs_to_triples(runs: &[(usize, RleTag)]) -> Vec<RleRunsTriple> {
+        let (mut buf, triple) = runs.iter().fold(
             (
                 Vec::new(),
-                RleLiveCellRun {
+                RleRunsTriple {
                     pad_lines: 0,
                     pad_dead_cells: 0,
                     live_cells: 0,
                 },
             ),
-            |(mut buf, mut item), tag| {
-                match *tag {
-                    (n, RleTag::AliveCell) => item.live_cells += n,
+            |(mut buf, mut triple), run| {
+                match *run {
+                    (n, RleTag::AliveCell) => triple.live_cells += n,
                     (n, RleTag::DeadCell) => {
-                        if item.live_cells > 0 {
-                            buf.push(item);
-                            item = RleLiveCellRun {
+                        if triple.live_cells > 0 {
+                            buf.push(triple);
+                            triple = RleRunsTriple {
                                 pad_lines: 0,
                                 pad_dead_cells: n,
                                 live_cells: 0,
                             };
                         } else {
-                            item.pad_dead_cells += n;
+                            triple.pad_dead_cells += n;
                         }
                     }
                     (n, RleTag::EndOfLine) => {
-                        if item.live_cells > 0 {
-                            buf.push(item);
-                            item = RleLiveCellRun {
+                        if triple.live_cells > 0 {
+                            buf.push(triple);
+                            triple = RleRunsTriple {
                                 pad_lines: n,
                                 pad_dead_cells: 0,
                                 live_cells: 0,
                             };
                         } else {
-                            item.pad_lines += n;
-                            item.pad_dead_cells = 0;
+                            triple.pad_lines += n;
+                            triple.pad_dead_cells = 0;
                         }
                     }
                 }
-                (buf, item)
+                (buf, triple)
             },
         );
-        if item.live_cells > 0 {
-            buf.push(item);
+        if triple.live_cells > 0 {
+            buf.push(triple);
         }
         buf
     }
@@ -258,7 +258,7 @@ impl Rle {
             bail!("Header line not found in the pattern");
         };
         ensure!(parser.finished, "The terminal symbol not found");
-        let contents = Self::convert_tags_to_livecellruns(&parser.contents);
+        let contents = Self::convert_runs_to_triples(&parser.contents);
         Ok(Self {
             comments: parser.comments,
             header,
