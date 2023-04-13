@@ -181,47 +181,30 @@ impl RleParser {
 impl Rle {
     // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
     fn convert_runs_to_triples(runs: &[(usize, RleTag)]) -> Vec<RleRunsTriple> {
-        let (mut buf, triple) = runs.iter().fold(
-            (
-                Vec::new(),
-                RleRunsTriple {
-                    pad_lines: 0,
-                    pad_dead_cells: 0,
-                    live_cells: 0,
-                },
-            ),
-            |(mut buf, mut triple), run| {
-                match *run {
-                    (n, RleTag::AliveCell) => triple.live_cells += n,
-                    (n, RleTag::DeadCell) => {
-                        if triple.live_cells > 0 {
-                            buf.push(triple);
-                            triple = RleRunsTriple {
-                                pad_lines: 0,
-                                pad_dead_cells: n,
-                                live_cells: 0,
-                            };
-                        } else {
-                            triple.pad_dead_cells += n;
-                        }
-                    }
-                    (n, RleTag::EndOfLine) => {
-                        if triple.live_cells > 0 {
-                            buf.push(triple);
-                            triple = RleRunsTriple {
-                                pad_lines: n,
-                                pad_dead_cells: 0,
-                                live_cells: 0,
-                            };
-                        } else {
-                            triple.pad_lines += n;
-                            triple.pad_dead_cells = 0;
-                        }
-                    }
+        const TRIPLE_ZERO: RleRunsTriple = RleRunsTriple {
+            pad_lines: 0,
+            pad_dead_cells: 0,
+            live_cells: 0,
+        };
+        let (mut buf, triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
+            let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, (_, RleTag::AliveCell)) {
+                buf.push(curr_triple);
+                TRIPLE_ZERO
+            } else {
+                curr_triple
+            };
+            match run {
+                (n, RleTag::AliveCell) => next_triple.live_cells += n,
+                (n, RleTag::DeadCell) => {
+                    next_triple.pad_dead_cells += n;
                 }
-                (buf, triple)
-            },
-        );
+                (n, RleTag::EndOfLine) => {
+                    next_triple.pad_lines += n;
+                    next_triple.pad_dead_cells = 0;
+                }
+            }
+            (buf, next_triple)
+        });
         if triple.live_cells > 0 {
             buf.push(triple);
         }
