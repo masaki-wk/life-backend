@@ -35,10 +35,11 @@ enum RleTag {
     AliveCell,
     EndOfLine,
 }
+struct RleRun(usize, RleTag);
 struct RleParser {
     comments: Vec<String>,
     header: Option<RleHeader>,
-    contents: Vec<(usize, RleTag)>,
+    contents: Vec<RleRun>,
     position: (usize, usize),
     finished: bool,
 }
@@ -88,7 +89,7 @@ impl RleParser {
         }
         Ok(RleHeader { width, height })
     }
-    fn parse_content_line(mut line: &str) -> Result<(Vec<(usize, RleTag)>, bool)> {
+    fn parse_content_line(mut line: &str) -> Result<(Vec<RleRun>, bool)> {
         let mut buf = Vec::new();
         let mut finished = false;
         loop {
@@ -124,17 +125,17 @@ impl RleParser {
                 }
             };
             let run_count = run_count.unwrap_or(1);
-            buf.push((run_count, tag));
+            buf.push(RleRun(run_count, tag));
             line = &line[1..];
         }
         Ok((buf, finished))
     }
-    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[(usize, RleTag)]) -> Result<(usize, usize)> {
+    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[RleRun]) -> Result<(usize, usize)> {
         if !contents_to_be_append.is_empty() {
             ensure!(header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
         }
         let (mut x, mut y) = current_position;
-        for (count, tag) in contents_to_be_append {
+        for RleRun(count, tag) in contents_to_be_append {
             if matches!(tag, RleTag::EndOfLine) {
                 y += count;
                 ensure!(y < header.height, "The pattern exceeds specified height");
@@ -180,25 +181,25 @@ impl RleParser {
 
 impl Rle {
     // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
-    fn convert_runs_to_triples(runs: &[(usize, RleTag)]) -> Vec<RleRunsTriple> {
+    fn convert_runs_to_triples(runs: &[RleRun]) -> Vec<RleRunsTriple> {
         const TRIPLE_ZERO: RleRunsTriple = RleRunsTriple {
             pad_lines: 0,
             pad_dead_cells: 0,
             live_cells: 0,
         };
         let (mut buf, triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
-            let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, (_, RleTag::AliveCell)) {
+            let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, RleRun(_, RleTag::AliveCell)) {
                 buf.push(curr_triple);
                 TRIPLE_ZERO
             } else {
                 curr_triple
             };
             match run {
-                (n, RleTag::AliveCell) => next_triple.live_cells += n,
-                (n, RleTag::DeadCell) => {
+                RleRun(n, RleTag::AliveCell) => next_triple.live_cells += n,
+                RleRun(n, RleTag::DeadCell) => {
                     next_triple.pad_dead_cells += n;
                 }
-                (n, RleTag::EndOfLine) => {
+                RleRun(n, RleTag::EndOfLine) => {
                     next_triple.pad_lines += n;
                     next_triple.pad_dead_cells = 0;
                 }
