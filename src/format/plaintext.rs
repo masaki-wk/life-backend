@@ -2,7 +2,12 @@ use anyhow::{bail, Result};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
 
-/// A representation for Plaintext file format, described in <https://conwaylife.com/wiki/Plaintext>.
+/// A representation for Plaintext file format.
+///
+/// The detail of this format is described in:
+///
+/// - [Plaintext - LifeWiki](https://conwaylife.com/wiki/Plaintext)
+///
 #[derive(Debug, Clone)]
 pub struct Plaintext {
     name: Option<String>,
