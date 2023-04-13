@@ -389,7 +389,7 @@ impl fmt::Display for Rle {
                 flush_buf(f, buf)?;
                 buf.clear();
             }
-            buf.push_str(s);
+            *buf += s;
             Ok(())
         };
         for line in self.comments() {

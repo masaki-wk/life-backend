@@ -212,12 +212,12 @@ impl fmt::Display for Plaintext {
                 }
                 let line = {
                     let (mut buf, prev_x) = xs.iter().fold((String::new(), 0), |(mut buf, prev_x), &curr_x| {
-                        buf.push_str(&pad_line[0..(curr_x - prev_x)]);
-                        buf.push('O');
+                        buf += &pad_line[0..(curr_x - prev_x)];
+                        buf += "O";
                         (buf, curr_x + 1)
                     });
                     if prev_x <= max_x {
-                        buf.push_str(&pad_line[0..(max_x - prev_x + 1)]);
+                        buf += &pad_line[0..(max_x - prev_x + 1)];
                     }
                     buf
                 };
