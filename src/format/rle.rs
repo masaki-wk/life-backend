@@ -338,13 +338,13 @@ impl Rle {
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         const MAX_LINE_WIDTH: usize = 70;
-        let count_tag_to_string = |count: usize, char| {
-            if count > 1 {
-                let mut buf = count.to_string();
-                buf.push(char);
+        let convert_count_tag_to_string = |run_count: usize, tag_char| {
+            if run_count > 1 {
+                let mut buf = run_count.to_string();
+                buf.push(tag_char);
                 buf
             } else {
-                char.to_string()
+                tag_char.to_string()
             }
         };
         let flush_buf = |f: &mut fmt::Formatter, buf: &mut String| {
@@ -362,12 +362,12 @@ impl fmt::Display for Rle {
         for line in self.comments() {
             writeln!(f, "{line}")?;
         }
-        writeln!(f, "x = {}, y = {}", self.header.width, self.header.height)?;
+        writeln!(f, "x = {}, y = {}", self.width(), self.height())?;
         let mut buf = String::new();
         for x in &self.contents {
-            for (count, char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
-                if count > 0 {
-                    let s = count_tag_to_string(count, char);
+            for (run_count, tag_char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
+                if run_count > 0 {
+                    let s = convert_count_tag_to_string(run_count, tag_char);
                     write_with_buf(f, &mut buf, &s)?;
                 }
             }
