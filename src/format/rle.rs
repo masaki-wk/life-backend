@@ -535,7 +535,7 @@ mod tests {
     }
     #[test]
     fn test_new_content_alone_count() {
-        let pattern = concat!("x = 1, y = 1\n", "2\n", "!\n");
+        let pattern = concat!("x = 1, y = 1\n", "1\n", "!\n");
         do_new_test_to_be_failed(pattern)
     }
     #[test]
