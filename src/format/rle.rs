@@ -85,48 +85,38 @@ impl RleParser {
     }
     fn parse_content_line(mut line: &str) -> Result<(Vec<RleRun>, bool)> {
         let mut buf = Vec::new();
-        let mut finished = false;
-        loop {
-            line = line.trim_start();
-            let run_count = match line.chars().next() {
-                Some(c) if c.is_ascii_digit() => {
-                    let (num_str, rest) = line.split_at(line.find(|c: char| !c.is_ascii_digit()).unwrap_or(line.len()));
-                    ensure!(!rest.is_empty(), "The pattern is in wrong format");
-                    let num: usize = num_str.parse().unwrap(); // this unwrap never panic because num_str only includes ascii digits
-                    line = rest;
-                    Some(num)
-                }
-                _ => None,
+        let terminated = loop {
+            let (run_count_str, tag_char, line_remain) = {
+                let line_remain = line.trim_start();
+                let (run_count_str, line_remain) = line_remain.split_at(line_remain.find(|c: char| !c.is_ascii_digit()).unwrap_or(line_remain.len()));
+                let Some(tag_char) = line_remain.chars().next() else {
+                    ensure!(run_count_str.is_empty(), "The pattern is in wrong format");
+                    break false;
+                };
+                (run_count_str, tag_char, &line_remain[1..])
             };
-            let tag = match line.chars().next() {
-                Some('b') => RleTag::DeadCell,
-                Some('$') => RleTag::EndOfLine,
-                Some('!') => {
-                    if run_count.is_none() {
-                        finished = true;
-                        break;
-                    } else {
-                        bail!("The pattern is in wrong format");
-                    }
+            let run_count = if !run_count_str.is_empty() {
+                Some(run_count_str.parse().unwrap()) // this unwrap never panic because num_str only includes ascii digits
+            } else {
+                None
+            };
+            let tag = match tag_char {
+                '!' => {
+                    ensure!(run_count.is_none(), "The pattern is in wrong format");
+                    break true;
                 }
-                Some('o') => RleTag::AliveCell,
-                Some(c) => {
+                'o' => RleTag::AliveCell,
+                'b' => RleTag::DeadCell,
+                '$' => RleTag::EndOfLine,
+                c => {
                     ensure!(!c.is_whitespace(), "The pattern is in wrong format");
                     RleTag::AliveCell
                 }
-                None => {
-                    if run_count.is_none() {
-                        break;
-                    } else {
-                        bail!("The pattern is in wrong format");
-                    }
-                }
             };
-            let run_count = run_count.unwrap_or(1);
-            buf.push(RleRun(run_count, tag));
-            line = &line[1..];
-        }
-        Ok((buf, finished))
+            buf.push(RleRun(run_count.unwrap_or(1), tag));
+            line = line_remain;
+        };
+        Ok((buf, terminated))
     }
     fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[RleRun]) -> Result<(usize, usize)> {
         if !contents_to_be_append.is_empty() {
