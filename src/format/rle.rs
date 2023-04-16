@@ -51,40 +51,34 @@ impl RleParser {
         matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
-        let fields = {
-            let mut buf = Vec::new();
-            for (index, str) in line.split(',').enumerate() {
+        let check_variable_name = |expected_name, name, label| {
+            ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
+            Ok(())
+        };
+        let parse_number = |(name, val_str): (&str, &str)| {
+            let Ok(n) = val_str.parse() else {
+                bail!(format!("Invalid {name} value"));
+            };
+            Ok(n)
+        };
+        let fields = line
+            .split(',')
+            .enumerate()
+            .map(|(index, str)| {
                 ensure!(index <= 2, "Too many fields in the header line");
                 let Some((name, val_str)) = str.find('=').map(|pos| (str[..pos].trim(), str[(pos + 1)..].trim())) else {
                     bail!("Parse error in the header line");
                 };
-                buf.push((name, val_str));
-            }
-            buf
-        };
+                Ok((name, val_str))
+            })
+            .collect::<Result<Vec<_>>>()?;
         ensure!(fields.len() >= 2, "Too few fields in the header line");
-        let width = {
-            const EXPECTED_NAME: &str = "x";
-            let (name, val_str) = fields[0];
-            ensure!(name == EXPECTED_NAME, format!("1st variable in the header line is not \"{EXPECTED_NAME}\""));
-            let Ok(n) = val_str.parse::<usize>() else {
-                bail!(format!("Invalid {EXPECTED_NAME} value"));
-            };
-            n
-        };
-        let height = {
-            const EXPECTED_NAME: &str = "y";
-            let (name, val_str) = fields[1];
-            ensure!(name == EXPECTED_NAME, format!("2nd variable in the header line is not \"{EXPECTED_NAME}\""));
-            let Ok(n) = val_str.parse::<usize>() else {
-                bail!(format!("Invalid {EXPECTED_NAME} value"));
-            };
-            n
-        };
+        check_variable_name("x", fields[0].0, "1st")?;
+        let width = parse_number(fields[0])?;
+        check_variable_name("y", fields[1].0, "2nd")?;
+        let height = parse_number(fields[1])?;
         if fields.len() > 2 {
-            const EXPECTED_NAME: &str = "rule";
-            let (name, _) = fields[2];
-            ensure!(name == EXPECTED_NAME, format!("3rd variable in the header line is not \"{EXPECTED_NAME}\""));
+            check_variable_name("rule", fields[2].0, "3rd")?;
             // TODO: rule parser is not implemented yet
         }
         Ok(RleHeader { width, height })
