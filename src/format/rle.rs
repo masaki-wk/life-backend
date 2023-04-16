@@ -151,21 +151,19 @@ impl RleParser {
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
-        if !self.finished {
-            if let Some(header) = &self.header {
-                let (mut contents, finished) = Self::parse_content_line(line)?;
+        if let Some(header) = &self.header {
+            if !self.finished {
+                let (contents, terminated) = Self::parse_content_line(line)?;
                 let advanced_position = Self::advanced_position(header, self.position, &contents)?;
-                self.contents.append(&mut contents);
+                self.contents.extend(contents.into_iter());
                 self.position = advanced_position;
-                self.finished = finished;
-            } else {
-                if Self::is_comment_line(line) {
-                    self.comments.push(line.to_string());
-                    return Ok(());
-                }
-                let header = Self::parse_header_line(line)?;
-                self.header = Some(header);
+                self.finished = terminated;
             }
+        } else if Self::is_comment_line(line) {
+            self.comments.push(line.to_string());
+        } else {
+            let header = Self::parse_header_line(line)?;
+            self.header = Some(header);
         }
         Ok(())
     }
