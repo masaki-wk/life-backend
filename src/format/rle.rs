@@ -109,7 +109,11 @@ impl RleParser {
                         bail!("The pattern is in wrong format");
                     }
                 }
-                Some('o') | Some(_) => RleTag::AliveCell,
+                Some('o') => RleTag::AliveCell,
+                Some(c) => {
+                    ensure!(!c.is_whitespace(), "The pattern is in wrong format");
+                    RleTag::AliveCell
+                }
                 None => {
                     if run_count.is_none() {
                         break;
@@ -536,6 +540,11 @@ mod tests {
     #[test]
     fn test_new_content_alone_count() {
         let pattern = concat!("x = 1, y = 1\n", "1\n", "!\n");
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_count_with_whitespace() {
+        let pattern = concat!("x = 1, y = 1\n", "1 \n", "!\n");
         do_new_test_to_be_failed(pattern)
     }
     #[test]
