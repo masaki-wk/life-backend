@@ -356,7 +356,7 @@ where
     ///
     pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {
         let name = RleBuilderWithName(str.to_string());
-        RleBuilder::<RleBuilderWithName, Created, Comment> {
+        RleBuilder {
             name,
             created: self.created,
             comment: self.comment,
@@ -394,7 +394,7 @@ where
     ///
     pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment> {
         let created = RleBuilderWithCreated(str.to_string());
-        RleBuilder::<Name, RleBuilderWithCreated, Comment> {
+        RleBuilder {
             name: self.name,
             created,
             comment: self.comment,
@@ -433,7 +433,7 @@ where
     ///
     pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
         let comment = RleBuilderWithComment(str.to_string());
-        RleBuilder::<Name, Created, RleBuilderWithComment> {
+        RleBuilder {
             name: self.name,
             created: self.created,
             comment,
