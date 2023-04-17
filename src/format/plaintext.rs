@@ -155,7 +155,7 @@ where
         };
         let comments = match self.comment.drain() {
             Some(str) => {
-                let buf: Vec<_> = str.lines().map(|s| s.to_string()).collect();
+                let buf: Vec<_> = str.lines().map(String::from).collect();
                 if buf.is_empty() {
                     // buf is empty only if str == "" || str == "\n"
                     vec![String::new()]
