@@ -237,7 +237,7 @@ where
     /// ```
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().build().unwrap();
+    /// let target = pattern.iter().collect::<RleBuilder>().build().unwrap();
     /// ```
     ///
     pub fn build(self) -> Result<Rle> {
@@ -331,9 +331,9 @@ where
     /// ```
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().name("foo").build().unwrap();
-    /// assert_eq!(rle.comments().len(), 1);
-    /// assert_eq!(rle.comments()[0], "#N foo".to_string());
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").build().unwrap();
+    /// assert_eq!(target.comments().len(), 1);
+    /// assert_eq!(target.comments()[0], "#N foo".to_string());
     /// ```
     ///
     /// # Errors
@@ -343,7 +343,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
     /// ```
     ///
     /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
@@ -351,7 +351,7 @@ where
     /// ```should_panic
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap();
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap();
     /// ```
     ///
     pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {
@@ -377,9 +377,9 @@ where
     /// ```
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().created("foo").build().unwrap();
-    /// assert_eq!(rle.comments().len(), 1);
-    /// assert_eq!(rle.comments()[0], "#O foo".to_string());
+    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").build().unwrap();
+    /// assert_eq!(target.comments().len(), 1);
+    /// assert_eq!(target.comments()[0], "#O foo".to_string());
     /// ```
     ///
     /// # Errors
@@ -389,7 +389,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
+    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
     /// ```
     ///
     pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment> {
@@ -415,10 +415,10 @@ where
     /// ```
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
-    /// assert_eq!(rle.comments().len(), 2);
-    /// assert_eq!(rle.comments()[0], "#C comment0".to_string());
-    /// assert_eq!(rle.comments()[1], "#C comment1".to_string());
+    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
+    /// assert_eq!(target.comments().len(), 2);
+    /// assert_eq!(target.comments()[0], "#C comment0".to_string());
+    /// assert_eq!(target.comments()[1], "#C comment1".to_string());
     /// ```
     ///
     /// # Errors
@@ -428,7 +428,7 @@ where
     /// ```compile_fail
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let rle = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
+    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
     ///
     pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
@@ -454,7 +454,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.iter().collect::<RleBuilder>();
-    /// let rle = builder.build().unwrap();
+    /// let target = builder.build().unwrap();
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self
@@ -481,7 +481,7 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.into_iter().collect::<RleBuilder>();
-    /// let rle = builder.build().unwrap();
+    /// let target = builder.build().unwrap();
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self
