@@ -235,7 +235,7 @@ mod tests {
         expected_comments: &[&str],
         expected_contents: &[(usize, Vec<usize>)],
     ) -> Result<()> {
-        let expected_name = expected_name.map(|s| s.to_string());
+        let expected_name = expected_name.map(String::from);
         let target = Plaintext::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
         assert_eq!(target.comments().len(), expected_comments.len());
