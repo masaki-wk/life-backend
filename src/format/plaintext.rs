@@ -1,4 +1,4 @@
-use anyhow::{bail, ensure, Result};
+use anyhow::{anyhow, ensure, Result};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
@@ -92,15 +92,14 @@ impl PlaintextParser {
         Self::parse_prefixed_line("!", line)
     }
     fn parse_content_line(line: &str) -> Result<Vec<usize>> {
-        let mut buf = Vec::new();
-        for (i, char) in line.chars().enumerate() {
-            match char {
-                '.' => (),
-                'O' => buf.push(i),
-                _ => bail!("Invalid character found in the pattern"),
-            }
-        }
-        Ok(buf)
+        line.chars()
+            .enumerate()
+            .filter_map(|(i, char)| match char {
+                '.' => None,
+                'O' => Some(Ok(i)),
+                _ => Some(Err(anyhow!("Invalid character found in the pattern"))),
+            })
+            .collect()
     }
     fn new() -> Self {
         Self {
