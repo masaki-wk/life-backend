@@ -14,7 +14,7 @@ use std::io::{BufRead as _, BufReader, Read};
 pub struct Rle {
     comments: Vec<String>,
     header: RleHeader,
-    contents: Vec<RleLiveCellRun>,
+    contents: Vec<RleRunsTriple>,
 }
 
 // Internal structs, used in Rle
@@ -24,7 +24,7 @@ struct RleHeader {
     height: usize,
 }
 #[derive(Debug, Clone)]
-struct RleLiveCellRun {
+struct RleRunsTriple {
     pad_lines: usize,
     pad_dead_cells: usize,
     live_cells: usize,
@@ -36,10 +36,11 @@ enum RleTag {
     AliveCell,
     EndOfLine,
 }
+struct RleRun(usize, RleTag);
 struct RleParser {
     comments: Vec<String>,
     header: Option<RleHeader>,
-    contents: Vec<(usize, RleTag)>,
+    contents: Vec<RleRun>,
     position: (usize, usize),
     finished: bool,
 }
@@ -112,101 +113,86 @@ impl RleParser {
         matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
-        let fields = {
-            let mut buf = Vec::new();
-            for (index, str) in line.split(',').enumerate() {
+        let check_variable_name = |expected_name, name, label| {
+            ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
+            Ok(())
+        };
+        let parse_number = |(name, val_str): (&str, &str)| {
+            let Ok(n) = val_str.parse() else {
+                bail!(format!("Invalid {name} value"));
+            };
+            Ok(n)
+        };
+        let fields = line
+            .split(',')
+            .enumerate()
+            .map(|(index, str)| {
                 ensure!(index <= 2, "Too many fields in the header line");
                 let Some((name, val_str)) = str.find('=').map(|pos| (str[..pos].trim(), str[(pos + 1)..].trim())) else {
                     bail!("Parse error in the header line");
                 };
-                buf.push((name, val_str));
-            }
-            buf
-        };
+                Ok((name, val_str))
+            })
+            .collect::<Result<Vec<_>>>()?;
         ensure!(fields.len() >= 2, "Too few fields in the header line");
-        let width = {
-            const EXPECTED_NAME: &str = "x";
-            let (name, val_str) = fields[0];
-            ensure!(name == EXPECTED_NAME, format!("1st variable in the header line is not \"{EXPECTED_NAME}\""));
-            let Ok(n) = val_str.parse::<usize>() else {
-                bail!(format!("Invalid {EXPECTED_NAME} value"));
-            };
-            n
-        };
-        let height = {
-            const EXPECTED_NAME: &str = "y";
-            let (name, val_str) = fields[1];
-            ensure!(name == EXPECTED_NAME, format!("2nd variable in the header line is not \"{EXPECTED_NAME}\""));
-            let Ok(n) = val_str.parse::<usize>() else {
-                bail!(format!("Invalid {EXPECTED_NAME} value"));
-            };
-            n
-        };
+        check_variable_name("x", fields[0].0, "1st")?;
+        let width = parse_number(fields[0])?;
+        check_variable_name("y", fields[1].0, "2nd")?;
+        let height = parse_number(fields[1])?;
         if fields.len() > 2 {
-            const EXPECTED_NAME: &str = "rule";
-            let (name, _) = fields[2];
-            ensure!(name == EXPECTED_NAME, format!("3rd variable in the header line is not \"{EXPECTED_NAME}\""));
+            check_variable_name("rule", fields[2].0, "3rd")?;
             // TODO: rule parser is not implemented yet
         }
         Ok(RleHeader { width, height })
     }
-    fn parse_content_line(mut line: &str) -> Result<(Vec<(usize, RleTag)>, bool)> {
+    fn parse_content_line(mut line: &str) -> Result<(Vec<RleRun>, bool)> {
         let mut buf = Vec::new();
-        let mut finished = false;
-        loop {
-            line = line.trim_start();
-            let run_count = match line.chars().next() {
-                Some(c) if c.is_ascii_digit() => {
-                    let (num_str, rest) = line.split_at(line.find(|c: char| !c.is_ascii_digit()).unwrap_or(line.len()));
-                    ensure!(!rest.is_empty(), "The pattern is in wrong format");
-                    let num: usize = num_str.parse().unwrap(); // this unwrap never panic because num_str only includes ascii digits
-                    line = rest;
-                    Some(num)
-                }
-                _ => None,
+        let terminated = loop {
+            let (run_count_str, tag_char, line_remain) = {
+                let line_remain = line.trim_start();
+                let (run_count_str, line_remain) = line_remain.split_at(line_remain.find(|c: char| !c.is_ascii_digit()).unwrap_or(line_remain.len()));
+                let Some(tag_char) = line_remain.chars().next() else {
+                    ensure!(run_count_str.is_empty(), "The pattern is in wrong format");
+                    break false;
+                };
+                (run_count_str, tag_char, &line_remain[1..])
             };
-            let tag = match line.chars().next() {
-                Some('b') => RleTag::DeadCell,
-                Some('$') => RleTag::EndOfLine,
-                Some('!') => {
-                    if run_count.is_none() {
-                        finished = true;
-                        break;
-                    } else {
-                        bail!("The pattern is in wrong format");
-                    }
-                }
-                Some('o') | Some(_) => RleTag::AliveCell,
-                None => {
-                    if run_count.is_none() {
-                        break;
-                    } else {
-                        bail!("The pattern is in wrong format");
-                    }
-                }
-            };
-            let run_count = run_count.unwrap_or(1);
-            buf.push((run_count, tag));
-            line = &line[1..];
-        }
-        Ok((buf, finished))
-    }
-    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[(usize, RleTag)]) -> Result<(usize, usize)> {
-        if !contents_to_be_append.is_empty() {
-            ensure!(header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
-        }
-        let (mut x, mut y) = current_position;
-        for (count, tag) in contents_to_be_append {
-            if matches!(tag, RleTag::EndOfLine) {
-                y += count;
-                ensure!(y < header.height, "The pattern exceeds specified height");
-                x = 0;
+            let run_count = if !run_count_str.is_empty() {
+                Some(run_count_str.parse().unwrap()) // this unwrap never panic because num_str only includes ascii digits
             } else {
-                x += count;
-                ensure!(x <= header.width, "The pattern exceeds specified width");
+                None
+            };
+            let tag = match tag_char {
+                '!' => {
+                    ensure!(run_count.is_none(), "The pattern is in wrong format");
+                    break true;
+                }
+                'o' => RleTag::AliveCell,
+                'b' => RleTag::DeadCell,
+                '$' => RleTag::EndOfLine,
+                c => {
+                    ensure!(!c.is_whitespace(), "The pattern is in wrong format");
+                    RleTag::AliveCell
+                }
+            };
+            buf.push(RleRun(run_count.unwrap_or(1), tag));
+            line = line_remain;
+        };
+        Ok((buf, terminated))
+    }
+    fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[RleRun]) -> Result<(usize, usize)> {
+        ensure!(contents_to_be_append.is_empty() || header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
+        contents_to_be_append.iter().try_fold(current_position, |(curr_x, curr_y), RleRun(count, tag)| {
+            if matches!(tag, RleTag::EndOfLine) {
+                let next_y = curr_y + count;
+                ensure!(next_y < header.height, "The pattern exceeds specified height");
+                Ok((0, next_y))
+            } else {
+                let next_x = curr_x + count;
+                ensure!(next_x <= header.width, "The pattern exceeds specified width");
+                Ok((next_x, curr_y))
             }
-        }
-        Ok((x, y))
+        })
     }
     fn new() -> Self {
         Self {
@@ -218,21 +204,19 @@ impl RleParser {
         }
     }
     fn push(&mut self, line: &str) -> Result<()> {
-        if !self.finished {
-            if let Some(header) = &self.header {
-                let (mut contents, finished) = Self::parse_content_line(line)?;
+        if let Some(header) = &self.header {
+            if !self.finished {
+                let (contents, terminated) = Self::parse_content_line(line)?;
                 let advanced_position = Self::advanced_position(header, self.position, &contents)?;
-                self.contents.append(&mut contents);
+                self.contents.extend(contents.into_iter());
                 self.position = advanced_position;
-                self.finished = finished;
-            } else {
-                if Self::is_comment_line(line) {
-                    self.comments.push(line.to_string());
-                    return Ok(());
-                }
-                let header = Self::parse_header_line(line)?;
-                self.header = Some(header);
+                self.finished = terminated;
             }
+        } else if Self::is_comment_line(line) {
+            self.comments.push(line.to_string());
+        } else {
+            let header = Self::parse_header_line(line)?;
+            self.header = Some(header);
         }
         Ok(())
     }
@@ -305,11 +289,11 @@ where
             RleHeader { width, height }
         };
         let contents = {
-            let flush_to_buf = |buf: &mut Vec<RleLiveCellRun>, (prev_x, prev_y), (curr_x, curr_y), live_cells| {
+            let flush_to_buf = |buf: &mut Vec<RleRunsTriple>, (prev_x, prev_y), (curr_x, curr_y), live_cells| {
                 if live_cells > 0 {
                     let pad_lines = curr_y - prev_y;
                     let pad_dead_cells = if pad_lines > 0 { curr_x } else { curr_x - prev_x };
-                    buf.push(RleLiveCellRun {
+                    buf.push(RleRunsTriple {
                         pad_lines,
                         pad_dead_cells,
                         live_cells,
@@ -517,51 +501,34 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
 // Inherent methods of Rle
 
 impl Rle {
-    // Convert the series of (usize, RleTag) into the series of RleLiveCellRun.
-    fn convert_tags_to_livecellruns(tags: &[(usize, RleTag)]) -> Vec<RleLiveCellRun> {
-        let (mut buf, item) = tags.iter().fold(
-            (
-                Vec::new(),
-                RleLiveCellRun {
-                    pad_lines: 0,
-                    pad_dead_cells: 0,
-                    live_cells: 0,
-                },
-            ),
-            |(mut buf, mut item), tag| {
-                match *tag {
-                    (n, RleTag::AliveCell) => item.live_cells += n,
-                    (n, RleTag::DeadCell) => {
-                        if item.live_cells > 0 {
-                            buf.push(item);
-                            item = RleLiveCellRun {
-                                pad_lines: 0,
-                                pad_dead_cells: n,
-                                live_cells: 0,
-                            };
-                        } else {
-                            item.pad_dead_cells += n;
-                        }
-                    }
-                    (n, RleTag::EndOfLine) => {
-                        if item.live_cells > 0 {
-                            buf.push(item);
-                            item = RleLiveCellRun {
-                                pad_lines: n,
-                                pad_dead_cells: 0,
-                                live_cells: 0,
-                            };
-                        } else {
-                            item.pad_lines += n;
-                            item.pad_dead_cells = 0;
-                        }
-                    }
+    // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
+    fn convert_runs_to_triples(runs: &[RleRun]) -> Vec<RleRunsTriple> {
+        const TRIPLE_ZERO: RleRunsTriple = RleRunsTriple {
+            pad_lines: 0,
+            pad_dead_cells: 0,
+            live_cells: 0,
+        };
+        let (mut buf, triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
+            let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, RleRun(_, RleTag::AliveCell)) {
+                buf.push(curr_triple);
+                TRIPLE_ZERO
+            } else {
+                curr_triple
+            };
+            match run {
+                RleRun(n, RleTag::AliveCell) => next_triple.live_cells += n,
+                RleRun(n, RleTag::DeadCell) => {
+                    next_triple.pad_dead_cells += n;
                 }
-                (buf, item)
-            },
-        );
-        if item.live_cells > 0 {
-            buf.push(item);
+                RleRun(n, RleTag::EndOfLine) => {
+                    next_triple.pad_lines += n;
+                    next_triple.pad_dead_cells = 0;
+                }
+            }
+            (buf, next_triple)
+        });
+        if triple.live_cells > 0 {
+            buf.push(triple);
         }
         buf
     }
@@ -596,7 +563,7 @@ impl Rle {
             bail!("Header line not found in the pattern");
         };
         ensure!(parser.finished, "The terminal symbol not found");
-        let contents = Self::convert_tags_to_livecellruns(&parser.contents);
+        let contents = Self::convert_runs_to_triples(&parser.contents);
         Ok(Self {
             comments: parser.comments,
             header,
@@ -709,13 +676,13 @@ impl Rle {
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         const MAX_LINE_WIDTH: usize = 70;
-        let count_tag_to_string = |count: usize, char| {
-            if count > 1 {
-                let mut buf = count.to_string();
-                buf.push(char);
+        let convert_count_tag_to_string = |run_count: usize, tag_char| {
+            if run_count > 1 {
+                let mut buf = run_count.to_string();
+                buf.push(tag_char);
                 buf
             } else {
-                char.to_string()
+                tag_char.to_string()
             }
         };
         let flush_buf = |f: &mut fmt::Formatter, buf: &mut String| {
@@ -727,18 +694,18 @@ impl fmt::Display for Rle {
                 flush_buf(f, buf)?;
                 buf.clear();
             }
-            buf.push_str(s);
+            *buf += s;
             Ok(())
         };
         for line in self.comments() {
             writeln!(f, "{line}")?;
         }
-        writeln!(f, "x = {}, y = {}", self.header.width, self.header.height)?;
+        writeln!(f, "x = {}, y = {}", self.width(), self.height())?;
         let mut buf = String::new();
         for x in &self.contents {
-            for (count, char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
-                if count > 0 {
-                    let s = count_tag_to_string(count, char);
+            for (run_count, tag_char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
+                if run_count > 0 {
+                    let s = convert_count_tag_to_string(run_count, tag_char);
                     write_with_buf(f, &mut buf, &s)?;
                 }
             }
@@ -900,7 +867,12 @@ mod tests {
     }
     #[test]
     fn test_new_content_alone_count() {
-        let pattern = concat!("x = 1, y = 1\n", "2\n", "!\n");
+        let pattern = concat!("x = 1, y = 1\n", "1\n", "!\n");
+        do_new_test_to_be_failed(pattern)
+    }
+    #[test]
+    fn test_new_content_count_with_whitespace() {
+        let pattern = concat!("x = 1, y = 1\n", "1 \n", "!\n");
         do_new_test_to_be_failed(pattern)
     }
     #[test]

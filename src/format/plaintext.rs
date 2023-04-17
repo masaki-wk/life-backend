@@ -436,23 +436,20 @@ impl fmt::Display for Plaintext {
         }
         if !self.contents.is_empty() {
             let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
-            let pad_line = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format
+            let dead_cell_chars = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format of self.contents
             let mut prev_y = 0;
             for (curr_y, xs) in &self.contents {
-                let curr_y = *curr_y;
-                for _ in prev_y..curr_y {
-                    writeln!(f, "{pad_line}")?;
+                for _ in prev_y..(*curr_y) {
+                    writeln!(f, "{dead_cell_chars}")?;
                 }
                 let line = {
-                    let mut buf = String::new();
-                    let mut prev_x = 0;
-                    for curr_x in xs {
-                        buf.push_str(&pad_line[0..(curr_x - prev_x)]);
-                        buf.push('O');
-                        prev_x = curr_x + 1;
-                    }
+                    let (mut buf, prev_x) = xs.iter().fold((String::with_capacity(max_x + 1), 0), |(mut buf, prev_x), &curr_x| {
+                        buf += &dead_cell_chars[0..(curr_x - prev_x)];
+                        buf += "O";
+                        (buf, curr_x + 1)
+                    });
                     if prev_x <= max_x {
-                        buf.push_str(&pad_line[0..(max_x - prev_x + 1)]);
+                        buf += &dead_cell_chars[0..((max_x + 1) - prev_x)];
                     }
                     buf
                 };
