@@ -220,7 +220,7 @@ where
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
         let name = PlaintextBuilderWithName(str.to_string());
-        PlaintextBuilder::<PlaintextBuilderWithName, Comment> {
+        PlaintextBuilder {
             name,
             comment: self.comment,
             contents: self.contents,
@@ -257,7 +257,7 @@ where
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
         let comment = PlaintextBuilderWithComment(str.to_string());
-        PlaintextBuilder::<Name, PlaintextBuilderWithComment> {
+        PlaintextBuilder {
             name: self.name,
             comment,
             contents: self.contents,
