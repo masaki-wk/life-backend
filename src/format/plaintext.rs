@@ -107,14 +107,11 @@ impl Plaintext {
     where
         R: Read,
     {
-        let parser = {
-            let mut buf = PlaintextParser::new();
-            for line in BufReader::new(read).lines() {
-                let line = line?;
-                buf.push(&line)?;
-            }
-            buf
-        };
+        let parser = BufReader::new(read).lines().try_fold(PlaintextParser::new(), |mut buf, line| {
+            let line = line?;
+            buf.push(&line)?;
+            Ok::<_, anyhow::Error>(buf)
+        })?;
         Ok(Self {
             name: parser.name,
             comments: parser.comments,
