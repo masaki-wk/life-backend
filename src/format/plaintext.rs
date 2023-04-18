@@ -12,15 +12,19 @@ use std::io::{BufRead as _, BufReader, Read};
 pub struct Plaintext {
     name: Option<String>,
     comments: Vec<String>,
-    contents: Vec<(usize, Vec<usize>)>,
+    contents: Vec<PlaintextLine>,
 }
+
+// An internal struct, used in Plaintext
+#[derive(Debug, Clone, PartialEq)]
+struct PlaintextLine(usize, Vec<usize>);
 
 // An internal struct, used during constructing of Plaintext
 struct PlaintextParser {
     name: Option<String>,
     comments: Vec<String>,
     lines: usize,
-    contents: Vec<(usize, Vec<usize>)>,
+    contents: Vec<PlaintextLine>,
 }
 
 // Inherent methods of PlaintextParser
@@ -79,7 +83,7 @@ impl PlaintextParser {
         }
         let content = Self::parse_content_line(line)?;
         if !content.is_empty() {
-            self.contents.push((self.lines, content));
+            self.contents.push(PlaintextLine(self.lines, content));
         }
         self.lines += 1;
         Ok(())
@@ -183,7 +187,7 @@ impl Plaintext {
     /// ```
     ///
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-        self.contents.iter().flat_map(|(y, xs)| xs.iter().map(|x| (*x, *y)))
+        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
 }
 
@@ -198,10 +202,10 @@ impl fmt::Display for Plaintext {
             writeln!(f, "!{}", line)?;
         }
         if !self.contents.is_empty() {
-            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
+            let max_x = self.contents.iter().flat_map(|PlaintextLine(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
             let dead_cell_chars = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format of self.contents
             let mut prev_y = 0;
-            for (curr_y, xs) in &self.contents {
+            for PlaintextLine(curr_y, xs) in &self.contents {
                 for _ in prev_y..(*curr_y) {
                     writeln!(f, "{dead_cell_chars}")?;
                 }
@@ -229,12 +233,7 @@ impl fmt::Display for Plaintext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_new_test_to_be_passed(
-        pattern: &str,
-        expected_name: &Option<&str>,
-        expected_comments: &[&str],
-        expected_contents: &[(usize, Vec<usize>)],
-    ) -> Result<()> {
+    fn do_new_test_to_be_passed(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) -> Result<()> {
         let expected_name = expected_name.map(String::from);
         let target = Plaintext::new(pattern.as_bytes())?;
         assert_eq!(target.name(), expected_name);
@@ -298,7 +297,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", ".O\n");
         let expected_name = Some("test");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1])];
+        let expected_contents = vec![PlaintextLine(0, vec![1])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
@@ -306,7 +305,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
@@ -314,7 +313,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
