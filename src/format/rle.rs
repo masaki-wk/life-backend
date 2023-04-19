@@ -1,4 +1,4 @@
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, ensure, Context as _, Result};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
 
@@ -55,28 +55,22 @@ impl RleParser {
             ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
             Ok(())
         };
-        let parse_number = |(name, val_str): (&str, &str)| {
-            let Ok(n) = val_str.parse() else {
-                bail!(format!("Invalid {name} value"));
-            };
-            Ok(n)
-        };
+        let parse_as_number = |(name, val_str): (&str, &str)| val_str.parse().with_context(|| format!("Invalid {name} value"));
         let fields = line
             .split(',')
             .enumerate()
             .map(|(index, str)| {
                 ensure!(index <= 2, "Too many fields in the header line");
-                let Some((name, val_str)) = str.find('=').map(|pos| (str[..pos].trim(), str[(pos + 1)..].trim())) else {
-                    bail!("Parse error in the header line");
-                };
-                Ok((name, val_str))
+                str.find('=')
+                    .map(|pos| (str[..pos].trim(), str[(pos + 1)..].trim()))
+                    .context("Parse error in the header line")
             })
             .collect::<Result<Vec<_>>>()?;
         ensure!(fields.len() >= 2, "Too few fields in the header line");
         check_variable_name("x", fields[0].0, "1st")?;
-        let width = parse_number(fields[0])?;
+        let width = parse_as_number(fields[0])?;
         check_variable_name("y", fields[1].0, "2nd")?;
-        let height = parse_number(fields[1])?;
+        let height = parse_as_number(fields[1])?;
         if fields.len() > 2 {
             check_variable_name("rule", fields[2].0, "3rd")?;
             // TODO: rule parser is not implemented yet
