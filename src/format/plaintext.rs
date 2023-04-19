@@ -196,10 +196,10 @@ impl Plaintext {
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(name) = self.name() {
-            writeln!(f, "!Name: {}", name)?;
+            writeln!(f, "!Name: {name}")?;
         }
         for line in self.comments() {
-            writeln!(f, "!{}", line)?;
+            writeln!(f, "!{line}")?;
         }
         if !self.contents.is_empty() {
             let max_x = self.contents.iter().flat_map(|PlaintextLine(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
