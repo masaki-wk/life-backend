@@ -1,4 +1,4 @@
-use anyhow::{bail, ensure, Context as _, Result};
+use anyhow::{ensure, Context as _, Result};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
 
@@ -215,9 +215,7 @@ impl Rle {
             }
             buf
         };
-        let Some(header) = parser.header else {
-            bail!("Header line not found in the pattern");
-        };
+        let header = parser.header.context("Header line not found in the pattern")?;
         ensure!(parser.finished, "The terminal symbol not found");
         let contents = Self::convert_runs_to_triples(&parser.contents);
         Ok(Self {
