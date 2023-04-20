@@ -17,14 +17,8 @@ impl Config {
     fn new(mut args: env::Args) -> Result<Self> {
         args.next();
         let path_str = args.next().context("Not enough arguments")?;
-        let generation = match args.next() {
-            Some(s) => s.parse().context("2nd argument is not a number")?,
-            None => 0,
-        };
-        let step_size = match args.next() {
-            Some(s) => s.parse().context("3rd argument is not a number")?,
-            None => 1,
-        };
+        let generation = args.next().map_or(Ok(0), |s| s.parse().context("2nd argument is not a number"))?;
+        let step_size = args.next().map_or(Ok(1), |s| s.parse().context("3rd argument is not a number"))?;
         Ok(Self {
             path_str,
             generation,
