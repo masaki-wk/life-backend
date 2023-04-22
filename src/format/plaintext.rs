@@ -203,20 +203,21 @@ impl fmt::Display for Plaintext {
         }
         if !self.contents.is_empty() {
             let max_x = self.contents.iter().flat_map(|PlaintextLine(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
-            let dead_cell_chars = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format of self.contents
+            let dead_cell_chars = ".".repeat(max_x) + "."; // this code avoids `".".repeat(max_x + 1)` because `max_x + 1` overflows if max_x == usize::MAX
             let mut prev_y = 0;
             for PlaintextLine(curr_y, xs) in &self.contents {
                 for _ in prev_y..(*curr_y) {
                     writeln!(f, "{dead_cell_chars}")?;
                 }
                 let line = {
-                    let (mut buf, prev_x) = xs.iter().fold((String::with_capacity(max_x + 1), 0), |(mut buf, prev_x), &curr_x| {
+                    let capacity = if max_x < usize::MAX { max_x + 1 } else { max_x };
+                    let (mut buf, prev_x) = xs.iter().fold((String::with_capacity(capacity), 0), |(mut buf, prev_x), &curr_x| {
                         buf += &dead_cell_chars[0..(curr_x - prev_x)];
                         buf += "O";
                         (buf, curr_x + 1)
                     });
                     if prev_x <= max_x {
-                        buf += &dead_cell_chars[0..((max_x + 1) - prev_x)];
+                        buf += &dead_cell_chars[0..(max_x - prev_x + 1)]; // `!xs.is_empty()` is guaranteed by the structure of Plaintext, so `prev_x > 0` is also guaranteed. Thus `max_x - prev_x + 1` never overflow
                     }
                     buf
                 };
