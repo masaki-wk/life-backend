@@ -126,34 +126,31 @@ impl fmt::Display for ParseRuleError {
 impl FromStr for Rule {
     type Err = ParseRuleError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut iter = s.chars();
-        if !matches!(iter.next(), Some('B')) {
+        fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; 9]> {
+            let mut buf = [false; 9];
+            for c in numbers.chars() {
+                let n = c.to_digit(9)?;
+                buf[n as usize] = true;
+            }
+            Some(buf)
+        }
+        let fields_splitted: Vec<_> = s.split('/').collect();
+        if fields_splitted.len() != 2 || fields_splitted.iter().any(|s| s.is_empty()) {
             return Err(ParseRuleError);
         }
-        let mut birth = [false; 9];
-        loop {
-            let Some(c) = iter.next() else { return Err(ParseRuleError); };
-            if c == '/' {
-                break;
-            }
-            let Some(n) = c.to_digit(10) else { return Err(ParseRuleError); };
-            if n == 9 {
-                return Err(ParseRuleError);
-            }
-            birth[n as usize] = true;
-        }
-        if !matches!(iter.next(), Some('S')) {
+        let fields_labeled: Vec<_> = fields_splitted
+            .into_iter()
+            .map(|s| {
+                let (label, body) = s.split_at(1); // this split_at never panic
+                (label.chars().next().unwrap(), body) // this unwrap never panic
+            })
+            .collect();
+        if !fields_labeled.iter().map(|(c, _)| c).eq(['B', 'S'].iter()) {
             return Err(ParseRuleError);
         }
-        let mut survival = [false; 9];
-        loop {
-            let Some(c) = iter.next() else { break; };
-            let Some(n) = c.to_digit(10) else { return Err(ParseRuleError); };
-            if n == 9 {
-                return Err(ParseRuleError);
-            }
-            survival[n as usize] = true;
-        }
+        let fields_numbers: Vec<_> = fields_labeled.into_iter().map(|(_, s)| s).collect();
+        let Some(birth) = convert_numbers_to_slice(fields_numbers[0]) else { return Err(ParseRuleError) };
+        let Some(survival) = convert_numbers_to_slice(fields_numbers[1]) else { return Err(ParseRuleError) };
         Ok(Self { birth, survival })
     }
 }
