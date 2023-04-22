@@ -348,7 +348,7 @@ where
     /// ```should_panic
     /// # use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap();
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
     ///
     pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {

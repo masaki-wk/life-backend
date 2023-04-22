@@ -219,7 +219,7 @@ where
     /// ```should_panic
     /// # use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build().unwrap();
+    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
