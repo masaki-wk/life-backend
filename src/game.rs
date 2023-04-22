@@ -1,4 +1,5 @@
 use super::Board;
+use super::Rule;
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive, Zero};
 use std::fmt;
@@ -15,6 +16,7 @@ pub struct Game<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
 {
+    rule: Rule,
     curr_board: Board<IndexType>,
     prev_board: Board<IndexType>,
 }
@@ -35,6 +37,7 @@ where
     ///
     pub fn new(board: Board<IndexType>) -> Self {
         Self {
+            rule: Rule::conways_life(),
             curr_board: board,
             prev_board: Board::new(),
         }
@@ -116,11 +119,11 @@ where
         );
         self.curr_board.retain(|&(x, y)| {
             let count = Self::live_neighbour_count(&self.prev_board, x, y);
-            count == 3
+            self.rule.is_born(count)
         });
         self.curr_board.extend(self.prev_board.iter().copied().filter(|&(x, y)| {
             let count = Self::live_neighbour_count(&self.prev_board, x, y);
-            count == 2 || count == 3
+            self.rule.is_survive(count)
         }));
     }
 }
