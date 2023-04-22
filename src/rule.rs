@@ -97,7 +97,7 @@ impl Rule {
 
 impl fmt::Display for Rule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let convert_slice_to_string = |slice: &[bool]| {
+        fn convert_slice_to_string(slice: &[bool]) -> String {
             slice
                 .iter()
                 .enumerate()
@@ -105,13 +105,9 @@ impl fmt::Display for Rule {
                 .map(|s| s.to_string())
                 .collect::<Vec<_>>()
                 .join("")
-        };
-        let mut buf = String::new();
-        buf += "B";
-        buf += &convert_slice_to_string(&self.birth);
-        buf += "/S";
-        buf += &convert_slice_to_string(&self.survival);
-        write!(f, "{buf}")?;
+        }
+        let s = ["B", &convert_slice_to_string(&self.birth), "/S", &convert_slice_to_string(&self.survival)].join("");
+        f.write_str(&s)?;
         Ok(())
     }
 }
