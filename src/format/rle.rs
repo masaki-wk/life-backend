@@ -113,11 +113,13 @@ impl RleParser {
         matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
-        let check_variable_name = |expected_name, label, name| {
+        fn check_variable_name(expected_name: &str, label: &str, name: &str) -> Result<()> {
             ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
             Ok(())
-        };
-        let parse_as_number = |(name, val_str): (&str, &str)| val_str.parse().with_context(|| format!("Invalid {name} value"));
+        }
+        fn parse_as_number((name, val_str): (&str, &str)) -> Result<usize> {
+            val_str.parse().with_context(|| format!("Invalid {name} value"))
+        }
         let fields = line
             .split(',')
             .enumerate()
@@ -239,26 +241,26 @@ where
     ///
     pub fn build(self) -> Result<Rle> {
         let comments = {
-            let parse_to_comments = |str: Option<String>, prefix: &str| {
-                let prefixed_str = |str: &str, prefix: &str| {
+            fn parse_to_comments(str: Option<String>, prefix: &str) -> Vec<String> {
+                fn append_prefix(str: &str, prefix: &str) -> String {
                     let mut buf = prefix.to_string();
                     if !str.is_empty() {
                         buf.push(' ');
                         buf.push_str(str);
                     }
                     buf
-                };
+                }
                 match str {
                     Some(str) => {
                         if str.is_empty() {
                             vec![prefix.to_string()]
                         } else {
-                            str.lines().map(|s| prefixed_str(s, prefix)).collect::<Vec<_>>()
+                            str.lines().map(|s| append_prefix(s, prefix)).collect::<Vec<_>>()
                         }
                     }
                     None => Vec::new(),
                 }
-            };
+            }
             let name = self.name.drain();
             if let Some(str) = &name {
                 ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
@@ -286,7 +288,7 @@ where
             RleHeader { width, height }
         };
         let contents = {
-            let flush_to_buf = |buf: &mut Vec<RleRunsTriple>, (prev_x, prev_y), (curr_x, curr_y), live_cells| {
+            fn flush_to_buf(buf: &mut Vec<RleRunsTriple>, (prev_x, prev_y): (usize, usize), (curr_x, curr_y): (usize, usize), live_cells: usize) {
                 if live_cells > 0 {
                     let pad_lines = curr_y - prev_y;
                     let pad_dead_cells = if pad_lines > 0 { curr_x } else { curr_x - prev_x };
@@ -295,8 +297,8 @@ where
                         pad_dead_cells,
                         live_cells,
                     })
-                };
-            };
+                }
+            }
             let (mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells) =
                 contents_sorted.into_iter().flat_map(|(y, xs)| xs.into_iter().map(move |x| (x, y))).fold(
                     (Vec::new(), (0, 0), (0, 0), 0),
@@ -671,7 +673,7 @@ impl Rle {
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         const MAX_LINE_WIDTH: usize = 70;
-        let convert_run_to_string = |run_count: usize, tag_char| {
+        fn convert_run_to_string(run_count: usize, tag_char: char) -> String {
             if run_count > 1 {
                 let mut buf = run_count.to_string();
                 buf.push(tag_char);
@@ -679,19 +681,19 @@ impl fmt::Display for Rle {
             } else {
                 tag_char.to_string()
             }
-        };
-        let flush_buf = |f: &mut fmt::Formatter, buf: &mut String| {
+        }
+        fn flush_buf(f: &mut fmt::Formatter, buf: &mut String) -> Result<(), fmt::Error> {
             writeln!(f, "{buf}")?;
             Ok(())
-        };
-        let write_with_buf = |f: &mut fmt::Formatter, buf: &mut String, s: &str| {
+        }
+        fn write_with_buf(f: &mut fmt::Formatter, buf: &mut String, s: &str) -> Result<(), fmt::Error> {
             if buf.len() + s.len() > MAX_LINE_WIDTH {
                 flush_buf(f, buf)?;
                 buf.clear();
             }
             *buf += s;
             Ok(())
-        };
+        }
         for line in self.comments() {
             writeln!(f, "{line}")?;
         }
