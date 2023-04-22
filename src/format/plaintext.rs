@@ -13,15 +13,19 @@ use std::io::{BufRead as _, BufReader, Read};
 pub struct Plaintext {
     name: Option<String>,
     comments: Vec<String>,
-    contents: Vec<(usize, Vec<usize>)>,
+    contents: Vec<PlaintextLine>,
 }
+
+// An internal struct, used in Plaintext
+#[derive(Debug, Clone, PartialEq)]
+struct PlaintextLine(usize, Vec<usize>);
 
 // An internal struct, used during constructing of Plaintext
 struct PlaintextParser {
     name: Option<String>,
     comments: Vec<String>,
     lines: usize,
-    contents: Vec<(usize, Vec<usize>)>,
+    contents: Vec<PlaintextLine>,
 }
 
 /// A builder of Plaintext.
@@ -94,7 +98,7 @@ impl PlaintextParser {
     fn parse_content_line(line: &str) -> Result<Vec<usize>> {
         line.chars()
             .enumerate()
-            .filter_map(|(i, char)| match char {
+            .filter_map(|(i, c)| match c {
                 '.' => None,
                 'O' => Some(Ok(i)),
                 _ => Some(Err(anyhow!("Invalid character found in the pattern"))),
@@ -124,7 +128,7 @@ impl PlaintextParser {
         }
         let content = Self::parse_content_line(line)?;
         if !content.is_empty() {
-            self.contents.push((self.lines, content));
+            self.contents.push(PlaintextLine(self.lines, content));
         }
         self.lines += 1;
         Ok(())
@@ -170,9 +174,9 @@ where
             acc
         });
         let contents_sorted = {
-            let mut buf: Vec<_> = contents_group_by_y.into_iter().collect();
-            buf.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
-            for (_, xs) in &mut buf {
+            let mut buf: Vec<_> = contents_group_by_y.into_iter().map(|(y, xs)| PlaintextLine(y, xs)).collect();
+            buf.sort_by(|PlaintextLine(y0, _), PlaintextLine(y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+            for PlaintextLine(_, xs) in &mut buf {
                 xs.sort();
             }
             buf
@@ -416,7 +420,7 @@ impl Plaintext {
     /// ```
     ///
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-        self.contents.iter().flat_map(|(y, xs)| xs.iter().map(|x| (*x, *y)))
+        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
 }
 
@@ -425,27 +429,28 @@ impl Plaintext {
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(name) = self.name() {
-            writeln!(f, "!Name: {}", name)?;
+            writeln!(f, "!Name: {name}")?;
         }
         for line in self.comments() {
-            writeln!(f, "!{}", line)?;
+            writeln!(f, "!{line}")?;
         }
         if !self.contents.is_empty() {
-            let max_x = self.contents.iter().flat_map(|(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
-            let dead_cell_chars = ".".repeat(max_x + 1); // max_x + 1 never overflows because max_x < usize::MAX is guaranteed by the format of self.contents
+            let max_x = self.contents.iter().flat_map(|PlaintextLine(_, xs)| xs.iter()).copied().max().unwrap(); // this unwrap() never panic because flat_map() always returns at least one value under !self.contents.is_empty()
+            let dead_cell_chars = ".".repeat(max_x) + "."; // this code avoids `".".repeat(max_x + 1)` because `max_x + 1` overflows if max_x == usize::MAX
             let mut prev_y = 0;
-            for (curr_y, xs) in &self.contents {
+            for PlaintextLine(curr_y, xs) in &self.contents {
                 for _ in prev_y..(*curr_y) {
                     writeln!(f, "{dead_cell_chars}")?;
                 }
                 let line = {
-                    let (mut buf, prev_x) = xs.iter().fold((String::with_capacity(max_x + 1), 0), |(mut buf, prev_x), &curr_x| {
+                    let capacity = if max_x < usize::MAX { max_x + 1 } else { max_x };
+                    let (mut buf, prev_x) = xs.iter().fold((String::with_capacity(capacity), 0), |(mut buf, prev_x), &curr_x| {
                         buf += &dead_cell_chars[0..(curr_x - prev_x)];
                         buf += "O";
                         (buf, curr_x + 1)
                     });
                     if prev_x <= max_x {
-                        buf += &dead_cell_chars[0..((max_x + 1) - prev_x)];
+                        buf += &dead_cell_chars[0..(max_x - prev_x + 1)]; // `!xs.is_empty()` is guaranteed by the structure of Plaintext, so `prev_x > 0` is also guaranteed. Thus `max_x - prev_x + 1` never overflow
                     }
                     buf
                 };
@@ -462,8 +467,8 @@ impl fmt::Display for Plaintext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_check(target: &Plaintext, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[(usize, Vec<usize>)]) {
-        let expected_name = expected_name.map(|s| s.to_string());
+    fn do_check(target: &Plaintext, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) {
+        let expected_name = expected_name.map(String::from);
         assert_eq!(target.name(), expected_name);
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
@@ -474,12 +479,7 @@ mod tests {
             assert_eq!(result, expected);
         }
     }
-    fn do_new_test_to_be_passed(
-        pattern: &str,
-        expected_name: &Option<&str>,
-        expected_comments: &[&str],
-        expected_contents: &[(usize, Vec<usize>)],
-    ) -> Result<()> {
+    fn do_new_test_to_be_passed(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) -> Result<()> {
         let target = Plaintext::new(pattern.as_bytes())?;
         do_check(&target, expected_name, expected_comments, expected_contents);
         assert_eq!(target.to_string(), pattern);
@@ -534,7 +534,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", ".O\n");
         let expected_name = Some("test");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1])];
+        let expected_contents = vec![PlaintextLine(0, vec![1])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
@@ -542,7 +542,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
@@ -550,7 +550,7 @@ mod tests {
         let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O.\n");
         let expected_name = Some("test");
         let expected_comments = vec!["comment0", "comment1"];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         do_new_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
     }
     #[test]
@@ -581,7 +581,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = None;
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -591,7 +591,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = Some("test");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().name("test").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -601,7 +601,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = Some("");
         let expected_comments = Vec::new();
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().name("").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -617,7 +617,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = None;
         let expected_comments = vec!["comment"];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -627,7 +627,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = None;
         let expected_comments = vec![""];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().comment("").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -637,7 +637,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = None;
         let expected_comments = vec!["comment0", "comment1"];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())
@@ -647,7 +647,7 @@ mod tests {
         let pattern = [(1, 0), (0, 1)];
         let expected_name = Some("test");
         let expected_comments = vec!["comment"];
-        let expected_contents = vec![(0, vec![1]), (1, vec![0])];
+        let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
         let target = pattern.iter().collect::<PlaintextBuilder>().name("test").comment("comment").build()?;
         do_check(&target, &expected_name, &expected_comments, &expected_contents);
         Ok(())

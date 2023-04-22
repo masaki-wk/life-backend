@@ -1,4 +1,4 @@
-use anyhow::{bail, Context as _, Result};
+use anyhow::{Context as _, Result};
 use life_backend::format::Plaintext;
 use life_backend::{Board, Game};
 use std::env;
@@ -16,23 +16,9 @@ struct Config {
 impl Config {
     fn new(mut args: env::Args) -> Result<Self> {
         args.next();
-        let Some(path_str) = args.next() else {
-            bail!("Not enough arguments");
-        };
-        let generation = match args.next() {
-            Some(s) => match s.parse() {
-                Ok(n) => n,
-                Err(_) => bail!("2nd argument is not a number"),
-            },
-            None => 0,
-        };
-        let step_size = match args.next() {
-            Some(s) => match s.parse() {
-                Ok(n) => n,
-                Err(_) => bail!("3rd argument is not a number"),
-            },
-            None => 1,
-        };
+        let path_str = args.next().context("Not enough arguments")?;
+        let generation = args.next().map_or(Ok(0), |s| s.parse().context("2nd argument is not a number"))?;
+        let step_size = args.next().map_or(Ok(1), |s| s.parse().context("3rd argument is not a number"))?;
         Ok(Self {
             path_str,
             generation,

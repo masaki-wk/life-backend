@@ -1,4 +1,4 @@
-use anyhow::{bail, Context as _, Result};
+use anyhow::{Context as _, Result};
 use life_backend::format::Plaintext;
 use std::env;
 use std::fs::File;
@@ -11,9 +11,7 @@ struct Config {
 impl Config {
     fn new(mut args: env::Args) -> Result<Self> {
         args.next();
-        let Some(path_str) = args.next() else {
-            bail!("Not enough arguments");
-        };
+        let path_str = args.next().context("Not enough arguments")?;
         Ok(Self { path_str })
     }
 }
