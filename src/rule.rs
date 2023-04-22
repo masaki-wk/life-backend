@@ -1,4 +1,7 @@
+use std::error::Error;
 use std::fmt;
+use std::result::Result;
+use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 /// It only supports the birth/survival notation: see <https://conwaylife.com/wiki/Rulestring>.
@@ -113,11 +116,64 @@ impl fmt::Display for Rule {
     }
 }
 
+#[derive(Debug)]
+pub struct ParseRuleError;
+
+impl Error for ParseRuleError {}
+
+impl fmt::Display for ParseRuleError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "cannot parse rule from the string")
+    }
+}
+
+impl FromStr for Rule {
+    type Err = ParseRuleError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut iter = s.chars();
+        if !matches!(iter.next(), Some('B')) {
+            return Err(ParseRuleError);
+        }
+        let mut birth = [false; 9];
+        loop {
+            let Some(c) = iter.next() else { return Err(ParseRuleError); };
+            if c == '/' {
+                break;
+            }
+            let Some(n) = c.to_digit(10) else { return Err(ParseRuleError); };
+            if n == 9 {
+                return Err(ParseRuleError);
+            }
+            birth[n as usize] = true;
+        }
+        if !matches!(iter.next(), Some('S')) {
+            return Err(ParseRuleError);
+        }
+        let mut survival = [false; 9];
+        loop {
+            let Some(c) = iter.next() else { break; };
+            let Some(n) = c.to_digit(10) else { return Err(ParseRuleError); };
+            if n == 9 {
+                return Err(ParseRuleError);
+            }
+            survival[n as usize] = true;
+        }
+        Ok(Self { birth, survival })
+    }
+}
+
 // Unit tests
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use anyhow::Result;
+    fn check_value(target: &Rule, expected_birth: &[usize], expected_survival: &[usize]) {
+        for i in 0..=8 {
+            assert_eq!(target.is_born(i), expected_birth.iter().any(|&x| x == i));
+            assert_eq!(target.is_survive(i), expected_survival.iter().any(|&x| x == i));
+        }
+    }
     #[test]
     fn test_display_conways_life() {
         let target = Rule::conways_life();
@@ -127,5 +183,11 @@ mod tests {
     fn test_display_highlife() {
         let target = Rule::highlife();
         assert_eq!(target.to_string(), "B36/S23");
+    }
+    #[test]
+    fn test_from_str() -> Result<()> {
+        let target: Rule = "B3/S23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
     }
 }
