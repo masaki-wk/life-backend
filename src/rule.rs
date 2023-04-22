@@ -14,7 +14,7 @@ pub struct Rule {
 // Inherent methods
 
 impl Rule {
-    /// Returns whether the cell will be born from the specified number of alive neighbors.
+    /// Returns whether a new cell will be born from the specified number of alive neighbors.
     ///
     /// # Examples
     ///
@@ -31,7 +31,7 @@ impl Rule {
         self.birth[count]
     }
 
-    /// Returns whether the cell will be survive from the specified number of alive neighbors.
+    /// Returns whether the cell surrounded by a specified number of alive neighbors will survive.
     ///
     /// # Examples
     ///
