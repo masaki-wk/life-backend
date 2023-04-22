@@ -4,7 +4,7 @@ use std::result::Result;
 use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
-/// It only supports the birth/survival notation: see <https://conwaylife.com/wiki/Rulestring>.
+/// It only supports the birth/survival notation such as "B3/S23", see <https://conwaylife.com/wiki/Rulestring>.
 #[derive(Debug)]
 pub struct Rule {
     birth: [bool; 9],
