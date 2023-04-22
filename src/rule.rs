@@ -119,7 +119,7 @@ impl Error for ParseRuleError {}
 
 impl fmt::Display for ParseRuleError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "cannot parse rule from the string")
+        f.write_str("cannot parse rule from the string")
     }
 }
 
