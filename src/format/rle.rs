@@ -51,7 +51,7 @@ impl RleParser {
         matches!(line.chars().next(), Some('#') | None)
     }
     fn parse_header_line(line: &str) -> Result<RleHeader> {
-        let check_variable_name = |expected_name, name, label| {
+        let check_variable_name = |expected_name, label, name| {
             ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
             Ok(())
         };
@@ -67,12 +67,12 @@ impl RleParser {
             })
             .collect::<Result<Vec<_>>>()?;
         ensure!(fields.len() >= 2, "Too few fields in the header line");
-        check_variable_name("x", fields[0].0, "1st")?;
+        check_variable_name("x", "1st", fields[0].0)?;
         let width = parse_as_number(fields[0])?;
-        check_variable_name("y", fields[1].0, "2nd")?;
+        check_variable_name("y", "2nd", fields[1].0)?;
         let height = parse_as_number(fields[1])?;
         if fields.len() > 2 {
-            check_variable_name("rule", fields[2].0, "3rd")?;
+            check_variable_name("rule", "3rd", fields[2].0)?;
             // TODO: rule parser is not implemented yet
         }
         Ok(RleHeader { width, height })
@@ -167,7 +167,7 @@ impl Rle {
             pad_dead_cells: 0,
             live_cells: 0,
         };
-        let (mut buf, triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
+        let (mut buf, curr_triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
             let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, RleRun(_, RleTag::AliveCell)) {
                 buf.push(curr_triple);
                 TRIPLE_ZERO
@@ -186,8 +186,8 @@ impl Rle {
             }
             (buf, next_triple)
         });
-        if triple.live_cells > 0 {
-            buf.push(triple);
+        if curr_triple.live_cells > 0 {
+            buf.push(curr_triple);
         }
         buf
     }
@@ -333,7 +333,7 @@ impl Rle {
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         const MAX_LINE_WIDTH: usize = 70;
-        let convert_count_tag_to_string = |run_count: usize, tag_char| {
+        let convert_run_to_string = |run_count: usize, tag_char| {
             if run_count > 1 {
                 let mut buf = run_count.to_string();
                 buf.push(tag_char);
@@ -362,7 +362,7 @@ impl fmt::Display for Rle {
         for x in &self.contents {
             for (run_count, tag_char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
                 if run_count > 0 {
-                    let s = convert_count_tag_to_string(run_count, tag_char);
+                    let s = convert_run_to_string(run_count, tag_char);
                     write_with_buf(f, &mut buf, &s)?;
                 }
             }
