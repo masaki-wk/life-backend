@@ -23,7 +23,7 @@ impl Rule {
     /// let rule = Rule::conways_life();
     /// let b = [3];
     /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_born(i), b.iter().find(|&&x| x == i).is_some());
+    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
     /// }
     /// ```
     ///
@@ -40,7 +40,7 @@ impl Rule {
     /// let rule = Rule::conways_life();
     /// let s = [2, 3];
     /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_survive(i), s.iter().find(|&&x| x == i).is_some());
+    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
     /// }
     /// ```
     ///
@@ -58,8 +58,8 @@ impl Rule {
     /// let b = [3];
     /// let s = [2, 3];
     /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_born(i), b.iter().find(|&&x| x == i).is_some());
-    ///     assert_eq!(rule.is_survive(i), s.iter().find(|&&x| x == i).is_some());
+    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
+    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
     /// }
     /// ```
     ///
@@ -80,8 +80,8 @@ impl Rule {
     /// let b = [3, 6];
     /// let s = [2, 3];
     /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_born(i), b.iter().find(|&&x| x == i).is_some());
-    ///     assert_eq!(rule.is_survive(i), s.iter().find(|&&x| x == i).is_some());
+    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
+    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
     /// }
     /// ```
     ///
