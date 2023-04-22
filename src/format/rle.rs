@@ -1,4 +1,5 @@
 use anyhow::{ensure, Context as _, Result};
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
 
@@ -42,6 +43,67 @@ struct RleParser {
     contents: Vec<RleRun>,
     position: (usize, usize),
     finished: bool,
+}
+
+/// A builder of Rle.
+#[derive(Debug, Clone)]
+pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+{
+    name: Name,
+    created: Created,
+    comment: Comment,
+    contents: HashSet<(usize, usize)>,
+}
+
+// Traits and types for RleBuilder's typestate
+pub trait RleBuilderName {
+    fn drain(self) -> Option<String>;
+}
+pub trait RleBuilderCreated {
+    fn drain(self) -> Option<String>;
+}
+pub trait RleBuilderComment {
+    fn drain(self) -> Option<String>;
+}
+pub struct RleBuilderNoName;
+impl RleBuilderName for RleBuilderNoName {
+    fn drain(self) -> Option<String> {
+        None
+    }
+}
+pub struct RleBuilderWithName(String);
+impl RleBuilderName for RleBuilderWithName {
+    fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
+}
+pub struct RleBuilderNoCreated;
+pub struct RleBuilderWithCreated(String);
+impl RleBuilderCreated for RleBuilderNoCreated {
+    fn drain(self) -> Option<String> {
+        None
+    }
+}
+impl RleBuilderCreated for RleBuilderWithCreated {
+    fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
+}
+pub struct RleBuilderNoComment;
+pub struct RleBuilderWithComment(String);
+impl RleBuilderComment for RleBuilderNoComment {
+    fn drain(self) -> Option<String> {
+        None
+    }
+}
+impl RleBuilderComment for RleBuilderWithComment {
+    fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
 }
 
 // Inherent methods of RleParser
@@ -157,7 +219,283 @@ impl RleParser {
     }
 }
 
-// Inherent methods
+// Inherent methods of RleBuilder
+
+impl<Name, Created, Comment> RleBuilder<Name, Created, Comment>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+{
+    /// Builds the Rle.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().build().unwrap();
+    /// ```
+    ///
+    pub fn build(self) -> Result<Rle> {
+        let comments = {
+            let parse_to_comments = |str: Option<String>, prefix: &str| {
+                let prefixed_str = |str: &str, prefix: &str| {
+                    let mut buf = prefix.to_string();
+                    if !str.is_empty() {
+                        buf.push(' ');
+                        buf.push_str(str);
+                    }
+                    buf
+                };
+                match str {
+                    Some(str) => {
+                        if str.is_empty() {
+                            vec![prefix.to_string()]
+                        } else {
+                            str.lines().map(|s| prefixed_str(s, prefix)).collect::<Vec<_>>()
+                        }
+                    }
+                    None => Vec::new(),
+                }
+            };
+            let name = self.name.drain();
+            if let Some(str) = &name {
+                ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
+            }
+            [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")]
+                .into_iter()
+                .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
+                .collect::<Vec<_>>()
+        };
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+            acc.entry(y).or_insert_with(Vec::new).push(x);
+            acc
+        });
+        let contents_sorted = {
+            let mut contents_sorted: Vec<_> = contents_group_by_y.into_iter().collect();
+            contents_sorted.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
+            for (_, xs) in &mut contents_sorted {
+                xs.sort();
+            }
+            contents_sorted
+        };
+        let header = {
+            let width = contents_sorted.iter().flat_map(|(_, xs)| xs.iter()).copied().max().map(|x| x + 1).unwrap_or(0);
+            let height = contents_sorted.iter().last().map(|&(y, _)| y + 1).unwrap_or(0);
+            RleHeader { width, height }
+        };
+        let contents = {
+            let flush_to_buf = |buf: &mut Vec<RleRunsTriple>, (prev_x, prev_y), (curr_x, curr_y), live_cells| {
+                if live_cells > 0 {
+                    let pad_lines = curr_y - prev_y;
+                    let pad_dead_cells = if pad_lines > 0 { curr_x } else { curr_x - prev_x };
+                    buf.push(RleRunsTriple {
+                        pad_lines,
+                        pad_dead_cells,
+                        live_cells,
+                    })
+                };
+            };
+            let (mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells) =
+                contents_sorted.into_iter().flat_map(|(y, xs)| xs.into_iter().map(move |x| (x, y))).fold(
+                    (Vec::new(), (0, 0), (0, 0), 0),
+                    |(mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells), (next_x, next_y)| {
+                        if next_y == curr_y && next_x == curr_x + live_cells {
+                            (buf, (prev_x, prev_y), (curr_x, curr_y), live_cells + 1)
+                        } else {
+                            flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
+                            (buf, (curr_x + live_cells, curr_y), (next_x, next_y), 1)
+                        }
+                    },
+                );
+            flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
+            buf
+        };
+        Ok(Rle { comments, header, contents })
+    }
+}
+
+impl<Created, Comment> RleBuilder<RleBuilderNoName, Created, Comment>
+where
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+{
+    /// Set the name.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").build().unwrap();
+    /// assert_eq!(target.comments().len(), 1);
+    /// assert_eq!(target.comments()[0], "#N foo".to_string());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Code that calls name() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
+    /// ```
+    ///
+    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    ///
+    /// ```should_panic
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
+    /// ```
+    ///
+    pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {
+        let name = RleBuilderWithName(str.to_string());
+        RleBuilder {
+            name,
+            created: self.created,
+            comment: self.comment,
+            contents: self.contents,
+        }
+    }
+}
+
+impl<Name, Comment> RleBuilder<Name, RleBuilderNoCreated, Comment>
+where
+    Name: RleBuilderName,
+    Comment: RleBuilderComment,
+{
+    /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").build().unwrap();
+    /// assert_eq!(target.comments().len(), 1);
+    /// assert_eq!(target.comments()[0], "#O foo".to_string());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Code that calls created() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
+    /// ```
+    ///
+    pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment> {
+        let created = RleBuilderWithCreated(str.to_string());
+        RleBuilder {
+            name: self.name,
+            created,
+            comment: self.comment,
+            contents: self.contents,
+        }
+    }
+}
+
+impl<Name, Created> RleBuilder<Name, Created, RleBuilderNoComment>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+{
+    /// Set the comment. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
+    /// assert_eq!(target.comments().len(), 2);
+    /// assert_eq!(target.comments()[0], "#C comment0".to_string());
+    /// assert_eq!(target.comments()[1], "#C comment1".to_string());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
+    /// ```
+    ///
+    pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
+        let comment = RleBuilderWithComment(str.to_string());
+        RleBuilder {
+            name: self.name,
+            created: self.created,
+            comment,
+            contents: self.contents,
+        }
+    }
+}
+
+// Trait implementations of RleBuilder
+
+impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+    /// Conversion from a non-owning iterator over a series of &(usize, usize).
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let builder = pattern.iter().collect::<RleBuilder>();
+    /// let target = builder.build().unwrap();
+    /// ```
+    ///
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = &'a (usize, usize)>,
+    {
+        let contents = iter.into_iter().copied().collect();
+        Self {
+            name: RleBuilderNoName,
+            created: RleBuilderNoCreated,
+            comment: RleBuilderNoComment,
+            contents,
+        }
+    }
+}
+
+impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+    /// Conversion from an owning iterator over a series of (usize, usize).
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let builder = pattern.into_iter().collect::<RleBuilder>();
+    /// let target = builder.build().unwrap();
+    /// ```
+    ///
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (usize, usize)>,
+    {
+        let contents = iter.into_iter().collect();
+        Self {
+            name: RleBuilderNoName,
+            created: RleBuilderNoCreated,
+            comment: RleBuilderNoComment,
+            contents,
+        }
+    }
+}
+
+// Inherent methods of Rle
 
 impl Rle {
     // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
@@ -378,8 +716,7 @@ impl fmt::Display for Rle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_new_test_to_be_passed(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
-        let target = Rle::new(pattern.as_bytes())?;
+    fn do_check(target: &Rle, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], expected_pattern: Option<&str>) {
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
             assert_eq!(result, expected);
@@ -388,9 +725,13 @@ mod tests {
         for (result, &expected) in target.contents.iter().zip(expected_contents.iter()) {
             assert_eq!((result.pad_lines, result.pad_dead_cells, result.live_cells), expected);
         }
-        if check_tostring {
-            assert_eq!(target.to_string(), pattern);
+        if let Some(expected_pattern) = expected_pattern {
+            assert_eq!(target.to_string(), expected_pattern);
         }
+    }
+    fn do_new_test_to_be_passed(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
+        let target = Rle::new(pattern.as_bytes())?;
+        do_check(&target, expected_comments, expected_contents, if check_tostring { Some(pattern) } else { None });
         Ok(())
     }
     fn do_new_test_to_be_failed(pattern: &str) {
@@ -635,6 +976,110 @@ mod tests {
         let expected_comments = Vec::new();
         let expected_contents = vec![(0, 0, 1)];
         do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+    }
+    #[test]
+    fn test_build() -> Result<()> {
+        let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+        let target = pattern.iter().collect::<RleBuilder>().build()?;
+        assert_eq!(target.width(), 3);
+        assert_eq!(target.height(), 2);
+        let expected_comments = Vec::new();
+        let expected_contents = vec![(0, 0, 3), (1, 1, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_singleline_name() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("name").build()?;
+        let expected_comments = vec!["#N name"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_blank_name() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("").build()?;
+        let expected_comments = vec!["#N"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_multiline_name() {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().name("name\nname").build();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_build_created() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("created").build()?;
+        let expected_comments = vec!["#O created"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_blank_created() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("").build()?;
+        let expected_comments = vec!["#O"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_createds() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().created("created0\ncreated1").build()?;
+        let expected_comments = vec!["#O created0", "#O created1"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("comment").build()?;
+        let expected_comments = vec!["#C comment"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_blank_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("").build()?;
+        let expected_comments = vec!["#C"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_comments() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
+        let expected_comments = vec!["#C comment0", "#C comment1"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_name_created_comment() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern
+            .iter()
+            .collect::<RleBuilder>()
+            .name("name")
+            .created("created")
+            .comment("comment")
+            .build()?;
+        let expected_comments = vec!["#N name", "#O created", "#C comment"];
+        let expected_contents = vec![(0, 0, 1)];
+        do_check(&target, &expected_comments, &expected_contents, None);
+        Ok(())
     }
     #[test]
     fn test_display_max_width() -> Result<()> {
