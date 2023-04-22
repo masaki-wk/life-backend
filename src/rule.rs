@@ -178,9 +178,34 @@ mod tests {
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]
-    fn test_from_str() -> Result<()> {
+    fn test_from_str_conways_life() -> Result<()> {
         let target: Rule = "B3/S23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
+    }
+    #[test]
+    fn test_from_str_no_separator() {
+        let target = "B0S0".parse::<Rule>();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_from_str_too_many_separators() {
+        let target = "B0/S0/C0".parse::<Rule>();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_from_str_no_label_birth() {
+        let target = "0/S0".parse::<Rule>();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_from_str_no_label_survival() {
+        let target = "B0/0".parse::<Rule>();
+        assert!(target.is_err());
+    }
+    #[test]
+    fn test_from_str_too_large_number() {
+        let target = "B9/S0".parse::<Rule>();
+        assert!(target.is_err());
     }
 }
