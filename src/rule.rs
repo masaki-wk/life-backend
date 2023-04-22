@@ -1,3 +1,5 @@
+use std::fmt;
+
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 #[derive(Debug)]
 pub struct Rule {
@@ -84,5 +86,45 @@ impl Rule {
             birth: [false, false, false, true, false, false, true, false, false],
             survival: [false, false, true, true, false, false, false, false, false],
         }
+    }
+}
+
+// Trait implementations of Rule
+
+impl fmt::Display for Rule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let convert_slice_to_string = |slice: &[bool]| {
+            slice
+                .iter()
+                .enumerate()
+                .filter_map(|(i, &x)| if x { Some(i) } else { None })
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join("")
+        };
+        let mut buf = String::new();
+        buf += "B";
+        buf += &convert_slice_to_string(&self.birth);
+        buf += "/S";
+        buf += &convert_slice_to_string(&self.survival);
+        write!(f, "{buf}")?;
+        Ok(())
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_display_conways_life() {
+        let target = Rule::conways_life();
+        assert_eq!(target.to_string(), "B3/S23");
+    }
+    #[test]
+    fn test_display_highlife() {
+        let target = Rule::highlife();
+        assert_eq!(target.to_string(), "B36/S23");
     }
 }
