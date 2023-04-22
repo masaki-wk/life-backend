@@ -102,7 +102,7 @@ impl fmt::Display for Rule {
                 .iter()
                 .enumerate()
                 .filter_map(|(i, &x)| if x { Some(i) } else { None })
-                .map(|s| s.to_string())
+                .map(|n| n.to_string())
                 .collect::<Vec<_>>()
                 .join("")
         }
