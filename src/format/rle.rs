@@ -727,7 +727,7 @@ impl fmt::Display for Rle {
         for line in self.comments() {
             writeln!(f, "{line}")?;
         }
-        writeln!(f, "x = {}, y = {}", self.width(), self.height())?;
+        writeln!(f, "x = {}, y = {}, rule = {}", self.width(), self.height(), self.rule())?;
         let mut buf = String::new();
         for x in &self.contents {
             for (run_count, tag_char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
@@ -799,37 +799,37 @@ mod tests {
     }
     #[test]
     fn test_new_header() -> Result<()> {
-        let pattern = concat!("x = 0, y = 0\n", "!\n");
+        let pattern = concat!("x = 0, y = 0, rule = B3/S23\n", "!\n");
         do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &Vec::new(), &Vec::new(), true)
     }
     #[test]
     fn test_new_comment_header() -> Result<()> {
-        let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
+        let pattern = concat!("#comment\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
         do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment"], &Vec::new(), true)
     }
     #[test]
     fn test_new_comments_header() -> Result<()> {
-        let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
         do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment0", "#comment1"], &Vec::new(), true)
     }
     #[test]
     fn test_new_comments_with_blank_header() -> Result<()> {
-        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0\n", "!\n");
+        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
         do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment", ""], &Vec::new(), true)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
-        let pattern = concat!("x = 1, y = 1\n", "o!\n");
+        let pattern = concat!("x = 1, y = 1, rule = B3/S23\n", "o!\n");
         do_new_test_to_be_passed(pattern, 1, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
-        let pattern = concat!("x = 2, y = 2\n", "o$bo!\n");
+        let pattern = concat!("x = 2, y = 2, rule = B3/S23\n", "o$bo!\n");
         do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1), (1, 1, 1)], true)
     }
     #[test]
     fn test_new_comments_header_contents() -> Result<()> {
-        let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2, rule = B3/S23\n", "o$bo!\n");
         do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &["#comment0", "#comment1"], &[(0, 0, 1), (1, 1, 1)], true)
     }
     #[test]
@@ -879,12 +879,12 @@ mod tests {
     }
     #[test]
     fn test_new_header_larger_width() -> Result<()> {
-        let pattern = concat!("x = 2, y = 1\n", "o!\n");
+        let pattern = concat!("x = 2, y = 1, rule = B3/S23\n", "o!\n");
         do_new_test_to_be_passed(pattern, 2, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
     fn test_new_header_larger_height() -> Result<()> {
-        let pattern = concat!("x = 1, y = 2\n", "o!\n");
+        let pattern = concat!("x = 1, y = 2, rule = B3/S23\n", "o!\n");
         do_new_test_to_be_passed(pattern, 1, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
@@ -1084,7 +1084,7 @@ mod tests {
     }
     #[test]
     fn test_display_max_width() -> Result<()> {
-        let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
+        let pattern = ["x = 72, y = 1, rule = B3/S23", &"bo".repeat(35), "bo!"]
             .iter()
             .map(|&s| s.to_string() + "\n")
             .collect::<String>();
