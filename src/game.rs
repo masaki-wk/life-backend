@@ -1,11 +1,12 @@
-use super::Board;
-use super::Rule;
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive, Zero};
 use std::fmt;
 use std::hash::Hash;
 use std::mem;
 use std::ops::{Add, Sub};
+
+use crate::Board;
+use crate::Rule;
 
 /// The default index type of boards.
 type DefaultIndexType = i16;
