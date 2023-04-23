@@ -798,9 +798,19 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
-    fn test_new_header() -> Result<()> {
+    fn test_new_header_with_conways_rule() -> Result<()> {
         let pattern = concat!("x = 0, y = 0, rule = B3/S23\n", "!\n");
         do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &Vec::new(), &Vec::new(), true)
+    }
+    #[test]
+    fn test_new_header_with_highlife_rule() -> Result<()> {
+        let pattern = concat!("x = 0, y = 0, rule = B36/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::highlife(), &Vec::new(), &Vec::new(), true)
+    }
+    #[test]
+    fn test_new_header_without_rule() -> Result<()> {
+        let pattern = concat!("x = 0, y = 0\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &Vec::new(), &Vec::new(), false)
     }
     #[test]
     fn test_new_comment_header() -> Result<()> {
