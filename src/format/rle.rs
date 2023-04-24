@@ -50,15 +50,17 @@ struct RleParser {
 
 /// A builder of Rle.
 #[derive(Debug, Clone)]
-pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment>
+pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     name: Name,
     created: Created,
     comment: Comment,
+    rule: Rule,
     contents: HashSet<(usize, usize)>,
 }
 
@@ -71,6 +73,9 @@ pub trait RleBuilderCreated {
 }
 pub trait RleBuilderComment {
     fn drain(self) -> Option<String>;
+}
+pub trait RleBuilderRule {
+    fn drain(self) -> Option<Rule>;
 }
 pub struct RleBuilderNoName;
 impl RleBuilderName for RleBuilderNoName {
@@ -105,6 +110,18 @@ impl RleBuilderComment for RleBuilderNoComment {
 }
 impl RleBuilderComment for RleBuilderWithComment {
     fn drain(self) -> Option<String> {
+        Some(self.0)
+    }
+}
+pub struct RleBuilderNoRule;
+pub struct RleBuilderWithRule(Rule);
+impl RleBuilderRule for RleBuilderNoRule {
+    fn drain(self) -> Option<Rule> {
+        None
+    }
+}
+impl RleBuilderRule for RleBuilderWithRule {
+    fn drain(self) -> Option<Rule> {
         Some(self.0)
     }
 }
@@ -231,11 +248,12 @@ impl RleParser {
 
 // Inherent methods of RleBuilder
 
-impl<Name, Created, Comment> RleBuilder<Name, Created, Comment>
+impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
 {
     /// Builds the Rle.
     ///
@@ -278,7 +296,7 @@ where
                 .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
                 .collect::<Vec<_>>()
         };
-        let rule = Rule::conways_life(); // TODO: the rule setter is not implemented yet
+        let rule = self.rule.drain().unwrap_or(Rule::conways_life());
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
@@ -327,10 +345,11 @@ where
     }
 }
 
-impl<Created, Comment> RleBuilder<RleBuilderNoName, Created, Comment>
+impl<Created, Comment, Rule> RleBuilder<RleBuilderNoName, Created, Comment, Rule>
 where
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     /// Set the name.
     ///
@@ -362,21 +381,23 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
     ///
-    pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {
+    pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment, Rule> {
         let name = RleBuilderWithName(str.to_string());
         RleBuilder {
             name,
             created: self.created,
             comment: self.comment,
+            rule: self.rule,
             contents: self.contents,
         }
     }
 }
 
-impl<Name, Comment> RleBuilder<Name, RleBuilderNoCreated, Comment>
+impl<Name, Comment, Rule> RleBuilder<Name, RleBuilderNoCreated, Comment, Rule>
 where
     Name: RleBuilderName,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
     ///
@@ -400,21 +421,23 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
     /// ```
     ///
-    pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment> {
+    pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment, Rule> {
         let created = RleBuilderWithCreated(str.to_string());
         RleBuilder {
             name: self.name,
             created,
             comment: self.comment,
+            rule: self.rule,
             contents: self.contents,
         }
     }
 }
 
-impl<Name, Created> RleBuilder<Name, Created, RleBuilderNoComment>
+impl<Name, Created, Rule> RleBuilder<Name, Created, RleBuilderNoComment, Rule>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
+    Rule: RleBuilderRule,
 {
     /// Set the comment. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
     ///
@@ -439,12 +462,53 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
     ///
-    pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
+    pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment, Rule> {
         let comment = RleBuilderWithComment(str.to_string());
         RleBuilder {
             name: self.name,
             created: self.created,
             comment,
+            rule: self.rule,
+            contents: self.contents,
+        }
+    }
+}
+
+impl<Name, Created, Comment> RleBuilder<Name, Created, Comment, RleBuilderNoRule>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+{
+    /// Set the rule.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// # use life_backend::Rule;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).build().unwrap();
+    /// assert_eq!(*target.rule(), Rule::conways_life());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Code that calls rule() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::highlife()).build().unwrap(); // Compile error
+    /// ```
+    ///
+    pub fn rule(self, rule: Rule) -> RleBuilder<Name, Created, Comment, RleBuilderWithRule> {
+        let rule = RleBuilderWithRule(rule);
+        RleBuilder {
+            name: self.name,
+            created: self.created,
+            comment: self.comment,
+            rule,
             contents: self.contents,
         }
     }
@@ -452,7 +516,7 @@ where
 
 // Trait implementations of RleBuilder
 
-impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
     /// Conversion from a non-owning iterator over a series of &(usize, usize).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
@@ -474,12 +538,13 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
             name: RleBuilderNoName,
             created: RleBuilderNoCreated,
             comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
             contents,
         }
     }
 }
 
-impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
     /// Conversion from an owning iterator over a series of (usize, usize).
     /// Each item in the series represents a moved live cell position.
     ///
@@ -501,6 +566,7 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
             name: RleBuilderNoName,
             created: RleBuilderNoCreated,
             comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
             contents,
         }
     }
@@ -1069,6 +1135,13 @@ mod tests {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
         do_check(&target, 1, 1, &Rule::conways_life(), &["#C comment0", "#C comment1"], &[(0, 0, 1)], None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_rule() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().rule(Rule::highlife()).build()?;
+        do_check(&target, 1, 1, &Rule::highlife(), &Vec::new(), &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
