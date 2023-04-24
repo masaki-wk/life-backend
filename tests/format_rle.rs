@@ -4,6 +4,7 @@ use std::io::Read;
 use std::path::Path;
 
 use life_backend::format::{Rle, RleBuilder};
+use life_backend::Rule;
 
 // Execute the test with the Read implementor and the expected positions.
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
@@ -33,19 +34,27 @@ fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, 
     do_new_test(file, expected_positions)
 }
 
-fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Option<String>, comment: Option<String>) -> Result<()> {
-    // Create the target with the pattern, the name, the created and the comment
+fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Option<String>, comment: Option<String>, rule: Option<Rule>) -> Result<()> {
+    // Create the target with the pattern, the name, the created, the comment and the rule
     let target = {
         let builder = pattern.iter().collect::<RleBuilder>();
-        match (&name, &created, &comment) {
-            (None, None, None) => builder.build()?,
-            (Some(name), None, None) => builder.name(name).build()?,
-            (None, Some(created), None) => builder.created(created).build()?,
-            (Some(name), Some(created), None) => builder.name(name).created(created).build()?,
-            (None, None, Some(comment)) => builder.comment(comment).build()?,
-            (Some(name), None, Some(comment)) => builder.name(name).comment(comment).build()?,
-            (None, Some(created), Some(comment)) => builder.created(created).comment(comment).build()?,
-            (Some(name), Some(created), Some(comment)) => builder.name(name).created(created).comment(comment).build()?,
+        match (name, created, comment, rule) {
+            (None, None, None, None) => builder.build()?,
+            (Some(name), None, None, None) => builder.name(&name).build()?,
+            (None, Some(created), None, None) => builder.created(&created).build()?,
+            (Some(name), Some(created), None, None) => builder.name(&name).created(&created).build()?,
+            (None, None, Some(comment), None) => builder.comment(&comment).build()?,
+            (Some(name), None, Some(comment), None) => builder.name(&name).comment(&comment).build()?,
+            (None, Some(created), Some(comment), None) => builder.created(&created).comment(&comment).build()?,
+            (Some(name), Some(created), Some(comment), None) => builder.name(&name).created(&created).comment(&comment).build()?,
+            (None, None, None, Some(rule)) => builder.rule(rule).build()?,
+            (Some(name), None, None, Some(rule)) => builder.name(&name).rule(rule).build()?,
+            (None, Some(created), None, Some(rule)) => builder.created(&created).rule(rule).build()?,
+            (Some(name), Some(created), None, Some(rule)) => builder.name(&name).created(&created).rule(rule).build()?,
+            (None, None, Some(comment), Some(rule)) => builder.comment(&comment).rule(rule).build()?,
+            (Some(name), None, Some(comment), Some(rule)) => builder.name(&name).comment(&comment).rule(rule).build()?,
+            (None, Some(created), Some(comment), Some(rule)) => builder.created(&created).comment(&comment).rule(rule).build()?,
+            (Some(name), Some(created), Some(comment), Some(rule)) => builder.name(&name).created(&created).comment(&comment).rule(rule).build()?,
         }
     };
     println!("Target:");
@@ -83,5 +92,6 @@ fn format_rle_build_test() -> Result<()> {
     let pattern = vec![(0, 0), (1, 0), (2, 0), (1, 1)];
     let name = Some("T-tetromino".to_string());
     let comment = Some("----".to_string());
-    do_build_test(&pattern, name, None, comment)
+    let rule = Some(Rule::conways_life());
+    do_build_test(&pattern, name, None, comment, rule)
 }
