@@ -1,8 +1,9 @@
 use anyhow::{Context as _, Result};
-use life_backend::format::{Rle, RleBuilder};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+
+use life_backend::format::{Rle, RleBuilder};
 
 // Execute the test with the Read implementor and the expected positions.
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>

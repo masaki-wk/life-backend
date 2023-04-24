@@ -1,8 +1,9 @@
 use anyhow::Result;
-use life_backend::format::Rle;
-use life_backend::{Board, Game};
 use std::fs::File;
 use std::path::Path;
+
+use life_backend::format::Rle;
+use life_backend::{Board, Game};
 
 use i16 as I;
 

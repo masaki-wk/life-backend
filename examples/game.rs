@@ -1,9 +1,10 @@
 use anyhow::{Context as _, Result};
-use life_backend::format::Plaintext;
-use life_backend::{Board, Game};
 use std::env;
 use std::fs::File;
 use std::path::Path;
+
+use life_backend::format::Plaintext;
+use life_backend::{Board, Game};
 
 use i16 as I;
 
