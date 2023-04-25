@@ -3,21 +3,21 @@ use std::fs::File;
 use std::path::Path;
 
 use life_backend::format::Rle;
-use life_backend::{Board, Game};
+use life_backend::{Board, Game, Rule};
 
 use i16 as I;
 
 // Creates a new game from the specific board and advances it to the specific generation.
-fn do_game(board: Board<I>, steps: usize) -> Game<I> {
+fn do_game(rule: Rule, board: Board<I>, steps: usize) -> Game<I> {
     // Utility closure
-    let print_game_with_header = |header: &str, game: &Game<_>| {
+    fn print_game_with_header(header: &str, game: &Game<I>) {
         println!("{header}");
         println!("(boundary: {:?})", game.board().bounding_box());
         println!("{game}");
-    };
+    }
 
     // Create the game with the board
-    let mut game = Game::new(board);
+    let mut game = Game::new(rule, board);
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
@@ -33,9 +33,10 @@ fn do_game(board: Board<I>, steps: usize) -> Game<I> {
 fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
-    let loader = Rle::new(file)?;
-    let board: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
-    let game = do_game(board.clone(), period);
+    let parser = Rle::new(file)?;
+    let rule = parser.rule().clone();
+    let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
+    let game = do_game(rule, board.clone(), period);
     assert_eq!(*game.board(), board);
     Ok(())
 }
@@ -47,10 +48,11 @@ fn do_stilllife_test(path_str: &str) -> Result<()> {
 fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
-    let loader = Rle::new(file)?;
-    let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
+    let parser = Rle::new(file)?;
+    let rule = parser.rule().clone();
+    let init: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
-    let game = do_game(init, period);
+    let game = do_game(rule, init, period);
     assert_eq!(*game.board(), expected);
     Ok(())
 }

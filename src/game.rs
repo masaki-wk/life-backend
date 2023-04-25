@@ -5,8 +5,7 @@ use std::hash::Hash;
 use std::mem;
 use std::ops::{Add, Sub};
 
-use crate::Board;
-use crate::Rule;
+use crate::{Board, Rule};
 
 /// The default index type of boards.
 type DefaultIndexType = i16;
@@ -26,22 +25,40 @@ impl<IndexType> Game<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Creates from the specified board.
+    /// Creates from the specified rule and board.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game};
+    /// # use life_backend::{Board, Game, Rule};
+    /// let rule = Rule::conways_life();
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
-    /// let game = Game::new(board);
+    /// let game = Game::new(rule, board);
     /// ```
     ///
-    pub fn new(board: Board<IndexType>) -> Self {
+    pub fn new(rule: Rule, board: Board<IndexType>) -> Self {
         Self {
-            rule: Rule::conways_life(),
+            rule,
             curr_board: board,
             prev_board: Board::new(),
         }
+    }
+
+    /// Returns the rule.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::{Board, Game, Rule};
+    /// let rule = Rule::conways_life();
+    /// let board: Board = [(1, 0), (0, 1)].iter().collect();
+    /// let game = Game::new(rule.clone(), board);
+    /// assert_eq!(game.rule(), &rule);
+    /// ```
+    ///
+    #[inline]
+    pub fn rule(&self) -> &Rule {
+        &self.rule
     }
 
     /// Returns the board.
@@ -49,9 +66,10 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game};
+    /// # use life_backend::{Board, Game, Rule};
+    /// let rule = Rule::conways_life();
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
-    /// let game = Game::new(board);
+    /// let game = Game::new(rule, board);
     /// let board = game.board();
     /// assert_eq!(board.bounding_box(), (0, 1, 0, 1));
     /// assert_eq!(board.get(0, 0), false);
@@ -95,9 +113,10 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game};
+    /// # use life_backend::{Board, Game, Rule};
+    /// let rule = Rule::conways_life();
     /// let board: Board = [(0, 1), (1, 1), (2, 1)].iter().collect(); // Blinker pattern
-    /// let mut game = Game::new(board);
+    /// let mut game = Game::new(rule, board);
     /// game.update();
     /// let board = game.board();
     /// assert_eq!(board.bounding_box(), (1, 1, 0, 2));
