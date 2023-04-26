@@ -1,41 +1,43 @@
 use anyhow::Result;
-use life_backend::format::Rle;
-use life_backend::{Board, Game};
 use std::fs::File;
 use std::path::Path;
 
+use life_backend::format::Rle;
+use life_backend::{Board, Game};
+
 use i16 as I;
 
-// Creates a new game from the specific board and advances it to the specific generation.
-fn do_game(board: Board<I>, steps: usize) -> Game<I> {
-    // Utility closure
-    let print_game_with_header = |header: &str, game: &Game<_>| {
-        println!("{header}");
-        println!("(boundary: {:?})", game.board().bounding_box());
-        println!("{game}");
-    };
+fn load_board(path_str: &str) -> Result<Board<I>> {
+    let path = Path::new(path_str);
+    let file = File::open(path)?;
+    let parser = Rle::new(file)?;
+    let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
+    Ok(board)
+}
 
-    // Create the game with the board
-    let mut game = Game::new(board);
-    print_game_with_header("Generation 0:", &game);
-
-    // Advance the game to the target generation
-    for _ in 0..steps {
-        game.update();
-    }
-    print_game_with_header(&format!("Generation {}:", steps), &game);
-
-    // Return the game
-    game
+fn print_game_with_header(header: &str, game: &Game<I>) {
+    println!("{header}");
+    println!("(boundary: {:?})", game.board().bounding_box());
+    println!("{game}");
 }
 
 fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
-    let path = Path::new(path_str);
-    let file = File::open(path)?;
-    let loader = Rle::new(file)?;
-    let board: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
-    let game = do_game(board.clone(), period);
-    assert_eq!(*game.board(), board);
+    // Load the board
+    let init = load_board(path_str)?;
+
+    // Create the game with the board
+    let mut game = Game::new(init.clone());
+    print_game_with_header("Generation 0:", &game);
+
+    // Advance the game to the target generation
+    for _ in 0..period {
+        game.update();
+    }
+    print_game_with_header(&format!("Generation {}:", period), &game);
+
+    // Check the result
+    let result = game.board();
+    assert_eq!(*result, init);
     Ok(())
 }
 
@@ -44,13 +46,25 @@ fn do_stilllife_test(path_str: &str) -> Result<()> {
 }
 
 fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
-    let path = Path::new(path_str);
-    let file = File::open(path)?;
-    let loader = Rle::new(file)?;
-    let init: Board<_> = loader.iter().map(|(x, y)| (x as I, y as I)).collect();
+    // Load the board
+    let init = load_board(path_str)?;
+
+    // Setup the expected board
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
-    let game = do_game(init, period);
-    assert_eq!(*game.board(), expected);
+
+    // Create the game with the board
+    let mut game = Game::new(init);
+    print_game_with_header("Generation 0:", &game);
+
+    // Advance the game to the target generation
+    for _ in 0..period {
+        game.update();
+    }
+    print_game_with_header(&format!("Generation {}:", period), &game);
+
+    // Check the result
+    let result = game.board();
+    assert_eq!(*result, expected);
     Ok(())
 }
 
