@@ -30,7 +30,10 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
-    for _ in 0..period {
+    for i in 0..period {
+        if i > 0 {
+            assert_ne!(game.board(), &init);
+        }
         game.update();
     }
     print_game_with_header(&format!("Generation {}:", period), &game);
