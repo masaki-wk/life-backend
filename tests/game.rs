@@ -37,7 +37,7 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
 
     // Check the result
     let result = game.board();
-    assert_eq!(*result, init);
+    assert_eq!(result, &init);
     Ok(())
 }
 
@@ -64,7 +64,7 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
 
     // Check the result
     let result = game.board();
-    assert_eq!(*result, expected);
+    assert_eq!(result, &expected);
     Ok(())
 }
 
