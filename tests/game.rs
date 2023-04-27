@@ -71,6 +71,26 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
     Ok(())
 }
 
+fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: usize) -> Result<()> {
+    // Load the board
+    let init = load_board(path_str)?;
+
+    // Create the game with the board
+    let mut game = Game::new(init);
+    print_game_with_header("Generation 0:", &game);
+
+    // Advance the game to the target generation
+    for _ in 0..steps {
+        game.update();
+    }
+    print_game_with_header(&format!("Generation {}:", steps), &game);
+
+    // Check the result
+    let result = game.board().iter().count();
+    assert_eq!(result, expected_final_population);
+    Ok(())
+}
+
 macro_rules! create_stilllife_test_function {
     ($function_name:ident, $relative_path_string:literal) => {
         #[test]
@@ -101,6 +121,16 @@ macro_rules! create_spaceship_test_function {
     };
 }
 
+macro_rules! create_methuselah_test_function {
+    ($function_name:ident, $relative_path_string:literal, $steps:expr, $expected_final_population:expr) => {
+        #[test]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_methuselah_test(path_str, $steps, $expected_final_population)
+        }
+    };
+}
+
 // Still life tests
 
 create_stilllife_test_function!(game_block_test, "patterns/block.rle");
@@ -124,3 +154,7 @@ create_spaceship_test_function!(game_glider_test, "patterns/glider.rle", 4, (1, 
 create_spaceship_test_function!(game_lwss_test, "patterns/lwss.rle", 4, (-2, 0));
 create_spaceship_test_function!(game_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
 create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
+
+// Methuselah tests
+
+create_methuselah_test_function!(game_rpentomino_test, "patterns/rpentomino.rle", 1103, 116);
