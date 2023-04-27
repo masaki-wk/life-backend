@@ -158,3 +158,16 @@ create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle",
 // Methuselah tests
 
 create_methuselah_test_function!(game_rpentomino_test, "patterns/rpentomino.rle", 1103, 116);
+create_methuselah_test_function!(game_bheptomino_test, "patterns/bheptomino.rle", 148, 28);
+create_methuselah_test_function!(game_eheptomino_test, "patterns/eheptomino.rle", 343, 52);
+create_methuselah_test_function!(game_fheptomino_test, "patterns/fheptomino.rle", 437, 61);
+create_methuselah_test_function!(game_herschel_test, "patterns/herschel.rle", 128, 24);
+create_methuselah_test_function!(game_piheptomino_test, "patterns/piheptomino.rle", 173, 55);
+create_methuselah_test_function!(game_century_test, "patterns/century.rle", 103, 15);
+create_methuselah_test_function!(game_queenbee_test, "patterns/queenbee.rle", 191, 30);
+create_methuselah_test_function!(game_thunderbird_test, "patterns/thunderbird.rle", 243, 46);
+
+// Too long patterns for testing:
+// create_methuselah_test_function!(game_switchengine_test, "patterns/switchengine.rle", 3911, 842);
+// create_methuselah_test_function!(game_acorn_test, "patterns/acorn.rle", 5206, 633);
+// create_methuselah_test_function!(game_bunnies_test, "patterns/bunnies.rle", 17332, 1744);
