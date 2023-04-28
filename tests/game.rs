@@ -133,6 +133,14 @@ macro_rules! create_methuselah_test_function {
             do_methuselah_test(path_str, $steps, $expected_final_population)
         }
     };
+    ($function_name:ident, $relative_path_string:literal, $steps:expr, $expected_final_population:expr, ignore = $reason:literal) => {
+        #[test]
+        #[ignore = $reason]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_methuselah_test(path_str, $steps, $expected_final_population)
+        }
+    };
 }
 
 macro_rules! create_diehard_test_function {
@@ -180,11 +188,9 @@ create_methuselah_test_function!(game_piheptomino_test, "patterns/piheptomino.rl
 create_methuselah_test_function!(game_century_test, "patterns/century.rle", 103, 15);
 create_methuselah_test_function!(game_queenbee_test, "patterns/queenbee.rle", 191, 30);
 create_methuselah_test_function!(game_thunderbird_test, "patterns/thunderbird.rle", 243, 46);
-
-// Too long patterns for testing:
-// create_methuselah_test_function!(game_switchengine_test, "patterns/switchengine.rle", 3911, 842);
-// create_methuselah_test_function!(game_acorn_test, "patterns/acorn.rle", 5206, 633);
-// create_methuselah_test_function!(game_bunnies_test, "patterns/bunnies.rle", 17332, 1744);
+create_methuselah_test_function!(game_switchengine_test, "patterns/switchengine.rle", 3911, 842, ignore = "too long for testing");
+create_methuselah_test_function!(game_acorn_test, "patterns/acorn.rle", 5206, 633, ignore = "too long for testing");
+create_methuselah_test_function!(game_bunnies_test, "patterns/bunnies.rle", 17332, 1744, ignore = "too long for testing");
 
 // Diehard tests
 
