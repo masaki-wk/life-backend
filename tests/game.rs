@@ -25,7 +25,7 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
     // Load the board
     let init = load_board(path_str)?;
 
-    // Create the game with the board
+    // Create the game
     let mut game = Game::new(init.clone());
     print_game_with_header("Generation 0:", &game);
 
@@ -55,7 +55,7 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
     // Setup the expected board
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
 
-    // Create the game with the board
+    // Create the game
     let mut game = Game::new(init);
     print_game_with_header("Generation 0:", &game);
 
@@ -75,7 +75,7 @@ fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: u
     // Load the board
     let init = load_board(path_str)?;
 
-    // Create the game with the board
+    // Create the game
     let mut game = Game::new(init);
     print_game_with_header("Generation 0:", &game);
 
