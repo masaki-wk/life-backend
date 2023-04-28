@@ -91,6 +91,10 @@ fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: u
     Ok(())
 }
 
+fn do_diehard_test(path_str: &str, steps: usize) -> Result<()> {
+    do_methuselah_test(path_str, steps, 0)
+}
+
 macro_rules! create_stilllife_test_function {
     ($function_name:ident, $relative_path_string:literal) => {
         #[test]
@@ -127,6 +131,16 @@ macro_rules! create_methuselah_test_function {
         fn $function_name() -> Result<()> {
             let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
             do_methuselah_test(path_str, $steps, $expected_final_population)
+        }
+    };
+}
+
+macro_rules! create_diehard_test_function {
+    ($function_name:ident, $relative_path_string:literal, $steps:expr) => {
+        #[test]
+        fn $function_name() -> Result<()> {
+            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_diehard_test(path_str, $steps)
         }
     };
 }
@@ -171,3 +185,7 @@ create_methuselah_test_function!(game_thunderbird_test, "patterns/thunderbird.rl
 // create_methuselah_test_function!(game_switchengine_test, "patterns/switchengine.rle", 3911, 842);
 // create_methuselah_test_function!(game_acorn_test, "patterns/acorn.rle", 5206, 633);
 // create_methuselah_test_function!(game_bunnies_test, "patterns/bunnies.rle", 17332, 1744);
+
+// Diehard tests
+
+create_diehard_test_function!(game_diehard_test, "patterns/diehard.rle", 130);
