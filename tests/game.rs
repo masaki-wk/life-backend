@@ -170,6 +170,8 @@ create_oscillator_test_function!(game_queenbeeshuttle_test, "patterns/transqueen
 create_oscillator_test_function!(game_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.rle", 46);
 create_oscillator_test_function!(game_p60glidershuttle_test, "patterns/p60glidershuttle.rle", 60);
 create_oscillator_test_function!(game_centinal_test, "patterns/centinal.rle", 100);
+create_oscillator_test_function!(game_highlife_p7_test, "patterns/highlife_p7.rle", 7);
+create_oscillator_test_function!(game_highlife_p10_test, "patterns/highlife_p10.rle", 10);
 
 // Spaceship tests
 
@@ -177,6 +179,7 @@ create_spaceship_test_function!(game_glider_test, "patterns/glider.rle", 4, (1, 
 create_spaceship_test_function!(game_lwss_test, "patterns/lwss.rle", 4, (-2, 0));
 create_spaceship_test_function!(game_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
 create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
+create_spaceship_test_function!(game_highlife_bomber_test, "patterns/highlife_bomber.rle", 48, (8, 8));
 
 // Methuselah tests
 
