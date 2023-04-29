@@ -3,16 +3,17 @@ use std::fs::File;
 use std::path::Path;
 
 use life_backend::format::Rle;
-use life_backend::{Board, Game};
+use life_backend::{Board, Game, Rule};
 
 use i16 as I;
 
-fn load_board(path_str: &str) -> Result<Board<I>> {
+fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
     let path = Path::new(path_str);
     let file = File::open(path)?;
     let parser = Rle::new(file)?;
+    let rule = parser.rule().clone();
     let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
-    Ok(board)
+    Ok((rule, board))
 }
 
 fn print_game_with_header(header: &str, game: &Game<I>) {
@@ -22,11 +23,11 @@ fn print_game_with_header(header: &str, game: &Game<I>) {
 }
 
 fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
-    // Load the board
-    let init = load_board(path_str)?;
+    // Load the rule and the board
+    let (rule, init) = load(path_str)?;
 
     // Create the game
-    let mut game = Game::new(init.clone());
+    let mut game = Game::new(rule, init.clone());
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
@@ -49,14 +50,14 @@ fn do_stilllife_test(path_str: &str) -> Result<()> {
 }
 
 fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
-    // Load the board
-    let init = load_board(path_str)?;
+    // Load the rule and the board
+    let (rule, init) = load(path_str)?;
 
     // Setup the expected board
     let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
 
     // Create the game
-    let mut game = Game::new(init);
+    let mut game = Game::new(rule, init);
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
@@ -72,11 +73,11 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
 }
 
 fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: usize) -> Result<()> {
-    // Load the board
-    let init = load_board(path_str)?;
+    // Load the rule and the board
+    let (rule, init) = load(path_str)?;
 
     // Create the game
-    let mut game = Game::new(init);
+    let mut game = Game::new(rule, init);
     print_game_with_header("Generation 0:", &game);
 
     // Advance the game to the target generation
@@ -169,6 +170,10 @@ create_oscillator_test_function!(game_queenbeeshuttle_test, "patterns/transqueen
 create_oscillator_test_function!(game_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.rle", 46);
 create_oscillator_test_function!(game_p60glidershuttle_test, "patterns/p60glidershuttle.rle", 60);
 create_oscillator_test_function!(game_centinal_test, "patterns/centinal.rle", 100);
+create_oscillator_test_function!(game_highlife_p7_test, "patterns/highlife_p7.rle", 7);
+create_oscillator_test_function!(game_highlife_p10_test, "patterns/highlife_p10.rle", 10);
+create_oscillator_test_function!(game_2x2_largedomino_test, "patterns/2x2_largedomino.rle", 2);
+create_oscillator_test_function!(game_2x2_largetetromino_test, "patterns/2x2_largetetromino.rle", 6);
 
 // Spaceship tests
 
@@ -176,6 +181,9 @@ create_spaceship_test_function!(game_glider_test, "patterns/glider.rle", 4, (1, 
 create_spaceship_test_function!(game_lwss_test, "patterns/lwss.rle", 4, (-2, 0));
 create_spaceship_test_function!(game_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
 create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
+create_spaceship_test_function!(game_highlife_bomber_test, "patterns/highlife_bomber.rle", 48, (8, 8));
+create_spaceship_test_function!(game_daynight_rocket_test, "patterns/daynight_rocket.rle", 40, (-20, 0));
+create_spaceship_test_function!(game_2x2_crawler_test, "patterns/2x2_crawler.rle", 8, (1, -1));
 
 // Methuselah tests
 

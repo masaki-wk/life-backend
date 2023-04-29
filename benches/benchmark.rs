@@ -1,18 +1,19 @@
 use anyhow::{Context as _, Result};
 use criterion::{criterion_group, criterion_main, Criterion};
-use life_backend::format::Rle;
-use life_backend::{Board, Game};
 use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
 use std::fs::File;
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 use std::path::Path;
 
-fn workload<IndexType>(board: &Board<IndexType>, steps: usize)
+use life_backend::format::Rle;
+use life_backend::{Board, Game, Rule};
+
+fn workload<IndexType>(rule: &Rule, board: &Board<IndexType>, steps: usize)
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
 {
-    let mut game = Game::<_>::new(board.clone());
+    let mut game = Game::<_>::new(rule.clone(), board.clone());
     for _ in 0..steps {
         game.update();
     }
@@ -25,9 +26,10 @@ where
     let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
     let path = Path::new(path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let loader = Rle::new(file)?;
-    let board: Board<_> = loader.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
-    c.bench_function(id, |b| b.iter(|| workload(&board, steps)));
+    let parser = Rle::new(file)?;
+    let rule = parser.rule();
+    let board: Board<_> = parser.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
+    c.bench_function(id, |b| b.iter(|| workload(rule, &board, steps)));
     Ok(())
 }
 

@@ -1,9 +1,10 @@
 use anyhow::{Context as _, Result};
-use life_backend::format::Plaintext;
-use life_backend::{Board, Game};
 use std::env;
 use std::fs::File;
 use std::path::Path;
+
+use life_backend::format::Rle;
+use life_backend::{Board, Game};
 
 use i16 as I;
 
@@ -30,9 +31,10 @@ impl Config {
 fn run(config: Config) -> Result<()> {
     let path = Path::new(&config.path_str);
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let parser = Plaintext::new(file)?;
+    let parser = Rle::new(file)?;
+    let rule = parser.rule().clone();
     let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
-    let game = Game::new(board);
+    let game = Game::new(rule, board);
     simulate(game, config.generation, config.step_size);
     Ok(())
 }

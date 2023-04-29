@@ -1,8 +1,9 @@
 use anyhow::{Context as _, Result};
-use life_backend::format::Rle;
 use std::env;
 use std::fs::File;
 use std::path::Path;
+
+use life_backend::format::Rle;
 
 struct Config {
     path_str: String,

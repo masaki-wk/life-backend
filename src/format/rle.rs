@@ -3,6 +3,8 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::{BufRead as _, BufReader, Read};
 
+use crate::Rule;
+
 /// A representation for RLE file format.
 ///
 /// The detail of this format is described in:
@@ -22,6 +24,7 @@ pub struct Rle {
 struct RleHeader {
     width: usize,
     height: usize,
+    rule: Rule,
 }
 #[derive(Debug, Clone)]
 struct RleRunsTriple {
@@ -47,15 +50,17 @@ struct RleParser {
 
 /// A builder of Rle.
 #[derive(Debug, Clone)]
-pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment>
+pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     name: Name,
     created: Created,
     comment: Comment,
+    rule: Rule,
     contents: HashSet<(usize, usize)>,
 }
 
@@ -68,6 +73,9 @@ pub trait RleBuilderCreated {
 }
 pub trait RleBuilderComment {
     fn drain(self) -> Option<String>;
+}
+pub trait RleBuilderRule {
+    fn drain(self) -> Option<Rule>;
 }
 pub struct RleBuilderNoName;
 impl RleBuilderName for RleBuilderNoName {
@@ -105,6 +113,18 @@ impl RleBuilderComment for RleBuilderWithComment {
         Some(self.0)
     }
 }
+pub struct RleBuilderNoRule;
+pub struct RleBuilderWithRule(Rule);
+impl RleBuilderRule for RleBuilderNoRule {
+    fn drain(self) -> Option<Rule> {
+        None
+    }
+}
+impl RleBuilderRule for RleBuilderWithRule {
+    fn drain(self) -> Option<Rule> {
+        Some(self.0)
+    }
+}
 
 // Inherent methods of RleParser
 
@@ -118,6 +138,9 @@ impl RleParser {
             Ok(())
         }
         fn parse_as_number((name, val_str): (&str, &str)) -> Result<usize> {
+            val_str.parse().with_context(|| format!("Invalid {name} value"))
+        }
+        fn parse_as_rule((name, val_str): (&str, &str)) -> Result<Rule> {
             val_str.parse().with_context(|| format!("Invalid {name} value"))
         }
         let fields = line
@@ -135,11 +158,13 @@ impl RleParser {
         let width = parse_as_number(fields[0])?;
         check_variable_name("y", "2nd", fields[1].0)?;
         let height = parse_as_number(fields[1])?;
-        if fields.len() > 2 {
+        let rule = if fields.len() > 2 {
             check_variable_name("rule", "3rd", fields[2].0)?;
-            // TODO: rule parser is not implemented yet
-        }
-        Ok(RleHeader { width, height })
+            parse_as_rule(fields[2])?
+        } else {
+            Rule::conways_life()
+        };
+        Ok(RleHeader { width, height, rule })
     }
     fn parse_content_line(mut line: &str) -> Result<(Vec<RleRun>, bool)> {
         let mut buf = Vec::new();
@@ -223,11 +248,12 @@ impl RleParser {
 
 // Inherent methods of RleBuilder
 
-impl<Name, Created, Comment> RleBuilder<Name, Created, Comment>
+impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
 {
     /// Builds the Rle.
     ///
@@ -270,6 +296,7 @@ where
                 .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
                 .collect::<Vec<_>>()
         };
+        let rule = self.rule.drain().unwrap_or(Rule::conways_life());
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
@@ -285,7 +312,7 @@ where
         let header = {
             let width = contents_sorted.iter().flat_map(|(_, xs)| xs.iter()).copied().max().map(|x| x + 1).unwrap_or(0);
             let height = contents_sorted.iter().last().map(|&(y, _)| y + 1).unwrap_or(0);
-            RleHeader { width, height }
+            RleHeader { width, height, rule }
         };
         let contents = {
             fn flush_to_buf(buf: &mut Vec<RleRunsTriple>, (prev_x, prev_y): (usize, usize), (curr_x, curr_y): (usize, usize), live_cells: usize) {
@@ -318,10 +345,11 @@ where
     }
 }
 
-impl<Created, Comment> RleBuilder<RleBuilderNoName, Created, Comment>
+impl<Created, Comment, Rule> RleBuilder<RleBuilderNoName, Created, Comment, Rule>
 where
     Created: RleBuilderCreated,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     /// Set the name.
     ///
@@ -353,21 +381,23 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
     ///
-    pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment> {
+    pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment, Rule> {
         let name = RleBuilderWithName(str.to_string());
         RleBuilder {
             name,
             created: self.created,
             comment: self.comment,
+            rule: self.rule,
             contents: self.contents,
         }
     }
 }
 
-impl<Name, Comment> RleBuilder<Name, RleBuilderNoCreated, Comment>
+impl<Name, Comment, Rule> RleBuilder<Name, RleBuilderNoCreated, Comment, Rule>
 where
     Name: RleBuilderName,
     Comment: RleBuilderComment,
+    Rule: RleBuilderRule,
 {
     /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
     ///
@@ -391,21 +421,23 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
     /// ```
     ///
-    pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment> {
+    pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment, Rule> {
         let created = RleBuilderWithCreated(str.to_string());
         RleBuilder {
             name: self.name,
             created,
             comment: self.comment,
+            rule: self.rule,
             contents: self.contents,
         }
     }
 }
 
-impl<Name, Created> RleBuilder<Name, Created, RleBuilderNoComment>
+impl<Name, Created, Rule> RleBuilder<Name, Created, RleBuilderNoComment, Rule>
 where
     Name: RleBuilderName,
     Created: RleBuilderCreated,
+    Rule: RleBuilderRule,
 {
     /// Set the comment. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
     ///
@@ -430,12 +462,53 @@ where
     /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
     ///
-    pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment> {
+    pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment, Rule> {
         let comment = RleBuilderWithComment(str.to_string());
         RleBuilder {
             name: self.name,
             created: self.created,
             comment,
+            rule: self.rule,
+            contents: self.contents,
+        }
+    }
+}
+
+impl<Name, Created, Comment> RleBuilder<Name, Created, Comment, RleBuilderNoRule>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+{
+    /// Set the rule.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::RleBuilder;
+    /// # use life_backend::Rule;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).build().unwrap();
+    /// assert_eq!(*target.rule(), Rule::conways_life());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Code that calls rule() twice or more will fail at compile time.  For example:
+    ///
+    /// ```compile_fail
+    /// # use life_backend::format::RleBuilder;
+    /// let pattern = [(1, 0), (0, 1)];
+    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::highlife()).build().unwrap(); // Compile error
+    /// ```
+    ///
+    pub fn rule(self, rule: Rule) -> RleBuilder<Name, Created, Comment, RleBuilderWithRule> {
+        let rule = RleBuilderWithRule(rule);
+        RleBuilder {
+            name: self.name,
+            created: self.created,
+            comment: self.comment,
+            rule,
             contents: self.contents,
         }
     }
@@ -443,7 +516,7 @@ where
 
 // Trait implementations of RleBuilder
 
-impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
     /// Conversion from a non-owning iterator over a series of &(usize, usize).
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
@@ -465,12 +538,13 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
             name: RleBuilderNoName,
             created: RleBuilderNoCreated,
             comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
             contents,
         }
     }
 }
 
-impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment> {
+impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
     /// Conversion from an owning iterator over a series of (usize, usize).
     /// Each item in the series represents a moved live cell position.
     ///
@@ -492,6 +566,7 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
             name: RleBuilderNoName,
             created: RleBuilderNoCreated,
             comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
             contents,
         }
     }
@@ -629,6 +704,27 @@ impl Rle {
         self.header.height
     }
 
+    /// Returns the rule.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Rle;
+    /// # use life_backend::Rule;
+    /// let pattern = "\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2, rule = B3/S23\n\
+    ///     3o$bo!\n\
+    /// ";
+    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(*parser.rule(), Rule::conways_life());
+    /// ```
+    ///
+    #[inline]
+    pub fn rule(&self) -> &Rule {
+        &self.header.rule
+    }
+
     /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
     ///
     /// # Examples
@@ -697,7 +793,7 @@ impl fmt::Display for Rle {
         for line in self.comments() {
             writeln!(f, "{line}")?;
         }
-        writeln!(f, "x = {}, y = {}", self.width(), self.height())?;
+        writeln!(f, "x = {}, y = {}, rule = {}", self.width(), self.height(), self.rule())?;
         let mut buf = String::new();
         for x in &self.contents {
             for (run_count, tag_char) in [(x.pad_lines, '$'), (x.pad_dead_cells, 'b'), (x.live_cells, 'o')] {
@@ -718,7 +814,18 @@ impl fmt::Display for Rle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn do_check(target: &Rle, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], expected_pattern: Option<&str>) {
+    fn do_check(
+        target: &Rle,
+        expected_width: usize,
+        expected_height: usize,
+        expected_rule: &Rule,
+        expected_comments: &[&str],
+        expected_contents: &[(usize, usize, usize)],
+        expected_pattern: Option<&str>,
+    ) {
+        assert_eq!(target.width(), expected_width);
+        assert_eq!(target.height(), expected_height);
+        assert_eq!(target.rule(), expected_rule);
         assert_eq!(target.comments().len(), expected_comments.len());
         for (result, expected) in target.comments().iter().zip(expected_comments.iter()) {
             assert_eq!(result, expected);
@@ -731,9 +838,25 @@ mod tests {
             assert_eq!(target.to_string(), expected_pattern);
         }
     }
-    fn do_new_test_to_be_passed(pattern: &str, expected_comments: &[&str], expected_contents: &[(usize, usize, usize)], check_tostring: bool) -> Result<()> {
+    fn do_new_test_to_be_passed(
+        pattern: &str,
+        expected_width: usize,
+        expected_height: usize,
+        expected_rule: &Rule,
+        expected_comments: &[&str],
+        expected_contents: &[(usize, usize, usize)],
+        check_tostring: bool,
+    ) -> Result<()> {
         let target = Rle::new(pattern.as_bytes())?;
-        do_check(&target, expected_comments, expected_contents, if check_tostring { Some(pattern) } else { None });
+        do_check(
+            &target,
+            expected_width,
+            expected_height,
+            expected_rule,
+            expected_comments,
+            expected_contents,
+            if check_tostring { Some(pattern) } else { None },
+        );
         Ok(())
     }
     fn do_new_test_to_be_failed(pattern: &str) {
@@ -741,53 +864,49 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
-    fn test_new_header() -> Result<()> {
+    fn test_new_header_with_conways_rule() -> Result<()> {
+        let pattern = concat!("x = 0, y = 0, rule = B3/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &Vec::new(), &Vec::new(), true)
+    }
+    #[test]
+    fn test_new_header_with_highlife_rule() -> Result<()> {
+        let pattern = concat!("x = 0, y = 0, rule = B36/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::highlife(), &Vec::new(), &Vec::new(), true)
+    }
+    #[test]
+    fn test_new_header_without_rule() -> Result<()> {
         let pattern = concat!("x = 0, y = 0\n", "!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = Vec::new();
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &Vec::new(), &Vec::new(), false)
     }
     #[test]
     fn test_new_comment_header() -> Result<()> {
-        let pattern = concat!("#comment\n", "x = 0, y = 0\n", "!\n");
-        let expected_comments = vec!["#comment"];
-        let expected_contents = Vec::new();
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("#comment\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment"], &Vec::new(), true)
     }
     #[test]
     fn test_new_comments_header() -> Result<()> {
-        let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0\n", "!\n");
-        let expected_comments = vec!["#comment0", "#comment1"];
-        let expected_contents = Vec::new();
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment0", "#comment1"], &Vec::new(), true)
     }
     #[test]
     fn test_new_comments_with_blank_header() -> Result<()> {
-        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0\n", "!\n");
-        let expected_comments = vec!["#comment", ""];
-        let expected_contents = Vec::new();
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("#comment\n", "\n", "x = 0, y = 0, rule = B3/S23\n", "!\n");
+        do_new_test_to_be_passed(pattern, 0, 0, &Rule::conways_life(), &["#comment", ""], &Vec::new(), true)
     }
     #[test]
     fn test_new_header_content() -> Result<()> {
-        let pattern = concat!("x = 1, y = 1\n", "o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("x = 1, y = 1, rule = B3/S23\n", "o!\n");
+        do_new_test_to_be_passed(pattern, 1, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
     fn test_new_header_contents() -> Result<()> {
-        let pattern = concat!("x = 2, y = 2\n", "o$bo!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("x = 2, y = 2, rule = B3/S23\n", "o$bo!\n");
+        do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1), (1, 1, 1)], true)
     }
     #[test]
     fn test_new_comments_header_contents() -> Result<()> {
-        let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2\n", "o$bo!\n");
-        let expected_comments = vec!["#comment0", "#comment1"];
-        let expected_contents = vec![(0, 0, 1), (1, 1, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2, rule = B3/S23\n", "o$bo!\n");
+        do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &["#comment0", "#comment1"], &[(0, 0, 1), (1, 1, 1)], true)
     }
     #[test]
     fn test_new_empty() {
@@ -836,31 +955,23 @@ mod tests {
     }
     #[test]
     fn test_new_header_larger_width() -> Result<()> {
-        let pattern = concat!("x = 2, y = 1\n", "o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("x = 2, y = 1, rule = B3/S23\n", "o!\n");
+        do_new_test_to_be_passed(pattern, 2, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
     fn test_new_header_larger_height() -> Result<()> {
-        let pattern = concat!("x = 1, y = 2\n", "o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, true)
+        let pattern = concat!("x = 1, y = 2, rule = B3/S23\n", "o!\n");
+        do_new_test_to_be_passed(pattern, 1, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], true)
     }
     #[test]
     fn test_new_content_acceptable_tag_without_count() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "_!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], false)
     }
     #[test]
     fn test_new_content_acceptable_tag_with_count() -> Result<()> {
         let pattern = concat!("x = 2, y = 1\n", "2_!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 2)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 2, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 2)], false)
     }
     #[test]
     fn test_new_content_alone_count() {
@@ -905,107 +1016,77 @@ mod tests {
     #[test]
     fn test_new_nonoptimal_dead_cells() -> Result<()> {
         let pattern = concat!("x = 4, y = 1\n", "bbbo!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 3, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 4, 1, &Rule::conways_life(), &Vec::new(), &[(0, 3, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_live_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 1\n", "ooo!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 3)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 3, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 3)], false)
     }
     #[test]
     fn test_new_nonoptimal_end_of_lines() -> Result<()> {
         let pattern = concat!("x = 1, y = 4\n", "$$$o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(3, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 4, &Rule::conways_life(), &Vec::new(), &[(3, 0, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cell() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "b$o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(1, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 2, &Rule::conways_life(), &Vec::new(), &[(1, 0, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_line_end_dead_cells() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "2b$2o!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(1, 0, 2)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &Vec::new(), &[(1, 0, 2)], false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cell() -> Result<()> {
         let pattern = concat!("x = 2, y = 2\n", "2o$ob!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 2), (1, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 2), (1, 0, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_dead_cells() -> Result<()> {
         let pattern = concat!("x = 3, y = 2\n", "3o$o2b!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 3), (1, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 3, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 3), (1, 0, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_line_end() -> Result<()> {
         let pattern = concat!("x = 1, y = 2\n", "o$!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], false)
     }
     #[test]
     fn test_new_nonoptimal_trailing_line_ends() -> Result<()> {
         let pattern = concat!("x = 1, y = 3\n", "o2$!\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 3, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], false)
     }
     #[test]
     fn test_new_trailing_ignored_content() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!_\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], false)
     }
     #[test]
     fn test_new_trailing_ignored_line() -> Result<()> {
         let pattern = concat!("x = 1, y = 1\n", "o!\n", "ignored line\n");
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 1)];
-        do_new_test_to_be_passed(pattern, &expected_comments, &expected_contents, false)
+        do_new_test_to_be_passed(pattern, 1, 1, &Rule::conways_life(), &Vec::new(), &[(0, 0, 1)], false)
     }
     #[test]
     fn test_build() -> Result<()> {
         let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
         let target = pattern.iter().collect::<RleBuilder>().build()?;
-        assert_eq!(target.width(), 3);
-        assert_eq!(target.height(), 2);
-        let expected_comments = Vec::new();
-        let expected_contents = vec![(0, 0, 3), (1, 1, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 3, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 3), (1, 1, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_singleline_name() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().name("name").build()?;
-        let expected_comments = vec!["#N name"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#N name"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_blank_name() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().name("").build()?;
-        let expected_comments = vec!["#N"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#N"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
@@ -1018,54 +1099,49 @@ mod tests {
     fn test_build_created() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().created("created").build()?;
-        let expected_comments = vec!["#O created"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#O created"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_blank_created() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().created("").build()?;
-        let expected_comments = vec!["#O"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#O"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_createds() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().created("created0\ncreated1").build()?;
-        let expected_comments = vec!["#O created0", "#O created1"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#O created0", "#O created1"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_comment() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().comment("comment").build()?;
-        let expected_comments = vec!["#C comment"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#C comment"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_blank_comment() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().comment("").build()?;
-        let expected_comments = vec!["#C"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#C"], &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
     fn test_build_comments() -> Result<()> {
         let pattern = [(0, 0)];
         let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
-        let expected_comments = vec!["#C comment0", "#C comment1"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(&target, 1, 1, &Rule::conways_life(), &["#C comment0", "#C comment1"], &[(0, 0, 1)], None);
+        Ok(())
+    }
+    #[test]
+    fn test_build_rule() -> Result<()> {
+        let pattern = [(0, 0)];
+        let target = pattern.iter().collect::<RleBuilder>().rule(Rule::highlife()).build()?;
+        do_check(&target, 1, 1, &Rule::highlife(), &Vec::new(), &[(0, 0, 1)], None);
         Ok(())
     }
     #[test]
@@ -1078,14 +1154,20 @@ mod tests {
             .created("created")
             .comment("comment")
             .build()?;
-        let expected_comments = vec!["#N name", "#O created", "#C comment"];
-        let expected_contents = vec![(0, 0, 1)];
-        do_check(&target, &expected_comments, &expected_contents, None);
+        do_check(
+            &target,
+            1,
+            1,
+            &Rule::conways_life(),
+            &["#N name", "#O created", "#C comment"],
+            &[(0, 0, 1)],
+            None,
+        );
         Ok(())
     }
     #[test]
     fn test_display_max_width() -> Result<()> {
-        let pattern = ["x = 72, y = 1", &"bo".repeat(35), "bo!"]
+        let pattern = ["x = 72, y = 1, rule = B3/S23", &"bo".repeat(35), "bo!"]
             .iter()
             .map(|&s| s.to_string() + "\n")
             .collect::<String>();
