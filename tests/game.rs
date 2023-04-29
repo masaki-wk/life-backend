@@ -180,6 +180,7 @@ create_spaceship_test_function!(game_lwss_test, "patterns/lwss.rle", 4, (-2, 0))
 create_spaceship_test_function!(game_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
 create_spaceship_test_function!(game_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
 create_spaceship_test_function!(game_highlife_bomber_test, "patterns/highlife_bomber.rle", 48, (8, 8));
+create_spaceship_test_function!(game_daynight_rocket_test, "patterns/daynight_rocket.rle", 40, (-20, 0));
 
 // Methuselah tests
 
