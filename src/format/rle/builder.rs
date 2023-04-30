@@ -103,7 +103,7 @@ where
     /// ```
     ///
     pub fn build(self) -> Result<Rle> {
-        let comments = {
+        let comments: Vec<_> = {
             fn parse_to_comments(str: Option<String>, prefix: &str) -> Vec<String> {
                 fn append_prefix(str: &str, prefix: &str) -> String {
                     let mut buf = prefix.to_string();
@@ -131,7 +131,7 @@ where
             [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")]
                 .into_iter()
                 .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
-                .collect::<Vec<_>>()
+                .collect()
         };
         let rule = self.rule.drain().unwrap_or(Rule::conways_life());
         let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
