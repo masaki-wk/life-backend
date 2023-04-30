@@ -41,8 +41,8 @@ impl Rle {
     where
         R: Read,
     {
-        let (comments, header, contents) = RleParser::parse(read)?;
-        Ok(Self { comments, header, contents })
+        let (header, comments, contents) = RleParser::parse(read)?;
+        Ok(Self { header, comments, contents })
     }
 
     /// Returns the width written in the pattern.
