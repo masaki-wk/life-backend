@@ -4,7 +4,7 @@ use std::io::{BufRead as _, BufReader, Read};
 use super::{RleHeader, RleRunsTriple};
 use crate::Rule;
 
-// The parser of the RLE format, used during constructing of Rle
+// The parser of RLE format, used during constructing of Rle
 pub(super) struct RleParser {
     comments: Vec<String>,
     header: Option<RleHeader>,
