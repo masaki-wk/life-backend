@@ -1,9 +1,8 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
-use crate::Rule;
-
 use super::{Rle, RleHeader, RleRunsTriple};
+use crate::Rule;
 
 /// A builder of Rle.
 #[derive(Debug, Clone)]

@@ -2,9 +2,8 @@ use anyhow::Result;
 use std::fmt;
 use std::io::Read;
 
-use crate::Rule;
-
 use super::{RleHeader, RleParser, RleRunsTriple};
+use crate::Rule;
 
 /// A representation for RLE file format.
 ///

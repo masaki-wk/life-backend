@@ -1,9 +1,8 @@
 use anyhow::{ensure, Context as _, Result};
 use std::io::{BufRead as _, BufReader, Read};
 
-use crate::Rule;
-
 use super::{RleHeader, RleRunsTriple};
+use crate::Rule;
 
 // The parser of the RLE format, used during constructing of Rle
 pub(super) struct RleParser {
