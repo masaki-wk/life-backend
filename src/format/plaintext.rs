@@ -15,6 +15,5 @@ mod builder;
 pub use builder::PlaintextBuilder;
 
 // Unit tests
-
 #[cfg(test)]
 mod tests;
