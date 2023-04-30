@@ -13,6 +13,7 @@ pub(super) struct PlaintextParser {
 // Inherent methods
 
 impl PlaintextParser {
+    // Parses the line with the specified prefix
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
             None
@@ -25,14 +26,20 @@ impl PlaintextParser {
             }
         }
     }
+
+    // Parses the line as a name line
     #[inline]
     fn parse_name_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!Name: ", line)
     }
+
+    // Parses the line as a comment line
     #[inline]
     fn parse_comment_line(line: &str) -> Option<&str> {
         Self::parse_prefixed_line("!", line)
     }
+
+    // Parses the line as a content line
     fn parse_content_line(line: &str) -> Result<Vec<usize>> {
         line.chars()
             .enumerate()
@@ -43,6 +50,8 @@ impl PlaintextParser {
             })
             .collect()
     }
+
+    // Creates an empty parser
     pub(super) fn new() -> Self {
         Self {
             name: None,
@@ -51,6 +60,8 @@ impl PlaintextParser {
             contents: Vec::new(),
         }
     }
+
+    // Adds a line into the parser
     pub(super) fn push(&mut self, line: &str) -> Result<()> {
         if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
             if let Some(name) = Self::parse_name_line(line) {
