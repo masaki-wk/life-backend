@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use super::*;
+use super::{Plaintext, PlaintextBuilder, PlaintextLine};
 
 fn do_check(target: &Plaintext, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) {
     let expected_name = expected_name.map(String::from);
