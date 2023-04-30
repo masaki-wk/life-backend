@@ -29,14 +29,11 @@ impl RleParser {
     where
         R: Read,
     {
-        let parser = {
-            let mut buf = Self::new();
-            for line in BufReader::new(read).lines() {
-                let line = line?;
-                buf.push(&line)?;
-            }
-            buf
-        };
+        let parser = BufReader::new(read).lines().try_fold(Self::new(), |mut buf, line| {
+            let line = line?;
+            buf.push(&line)?;
+            Ok::<_, anyhow::Error>(buf)
+        })?;
         ensure!(parser.finished, "The terminal symbol not found");
         let header = parser.header.context("Header line not found in the pattern")?;
         let comments = parser.comments;
