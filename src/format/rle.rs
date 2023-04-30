@@ -22,7 +22,7 @@ pub use self::core::Rle;
 mod parser;
 use parser::RleParser;
 
-// A builder of Rle
+// The builder of Rle
 mod builder;
 pub use builder::RleBuilder;
 

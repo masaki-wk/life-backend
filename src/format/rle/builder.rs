@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 use super::{Rle, RleHeader, RleRunsTriple};
 use crate::Rule;
 
-/// A builder of Rle.
+/// The builder of Rle.
 #[derive(Debug, Clone)]
 pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
