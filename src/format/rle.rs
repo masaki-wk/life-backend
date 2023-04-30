@@ -14,6 +14,10 @@ struct RleRunsTriple {
     live_cells: usize,
 }
 
+// A representation for RLE file format
+mod core;
+pub use self::core::Rle;
+
 // The parser of the RLE format, used during constructing of Rle
 mod parser;
 use parser::RleParser;
@@ -21,10 +25,6 @@ use parser::RleParser;
 // A builder of Rle
 mod builder;
 pub use builder::RleBuilder;
-
-// A representation for RLE file format
-mod core;
-pub use self::core::Rle;
 
 // Unit tests
 #[cfg(test)]
