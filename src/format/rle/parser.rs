@@ -25,6 +25,56 @@ struct RleRun(usize, RleTag);
 // Inherent methods
 
 impl RleParser {
+    // Parses the specified implementor of Read (ex. File, `&[u8]`) into the parts of Rle
+    pub(super) fn parse<R>(read: R) -> Result<(Vec<String>, RleHeader, Vec<RleRunsTriple>)>
+    where
+        R: Read,
+    {
+        let parser = {
+            let mut buf = Self::new();
+            for line in BufReader::new(read).lines() {
+                let line = line?;
+                buf.push(&line)?;
+            }
+            buf
+        };
+        ensure!(parser.finished, "The terminal symbol not found");
+        let header = parser.header.context("Header line not found in the pattern")?;
+        let comments = parser.comments;
+        let contents = Self::convert_runs_to_triples(&parser.contents);
+        Ok((comments, header, contents))
+    }
+
+    // Creates an empty parser
+    fn new() -> Self {
+        Self {
+            comments: Vec::new(),
+            header: None,
+            contents: Vec::new(),
+            position: (0, 0),
+            finished: false,
+        }
+    }
+
+    // Adds a line into the parser
+    fn push(&mut self, line: &str) -> Result<()> {
+        if let Some(header) = &self.header {
+            if !self.finished {
+                let (contents, terminated) = Self::parse_content_line(line)?;
+                let advanced_position = Self::advanced_position(header, self.position, &contents)?;
+                self.contents.extend(contents.into_iter());
+                self.position = advanced_position;
+                self.finished = terminated;
+            }
+        } else if Self::is_comment_line(line) {
+            self.comments.push(line.to_string());
+        } else {
+            let header = Self::parse_header_line(line)?;
+            self.header = Some(header);
+        }
+        Ok(())
+    }
+
     // Determines whether the line is a comment line or not
     fn is_comment_line(line: &str) -> bool {
         matches!(line.chars().next(), Some('#') | None)
@@ -122,36 +172,6 @@ impl RleParser {
             })
     }
 
-    // Creates an empty parser
-    fn new() -> Self {
-        Self {
-            comments: Vec::new(),
-            header: None,
-            contents: Vec::new(),
-            position: (0, 0),
-            finished: false,
-        }
-    }
-
-    // Adds a line into the parser
-    fn push(&mut self, line: &str) -> Result<()> {
-        if let Some(header) = &self.header {
-            if !self.finished {
-                let (contents, terminated) = Self::parse_content_line(line)?;
-                let advanced_position = Self::advanced_position(header, self.position, &contents)?;
-                self.contents.extend(contents.into_iter());
-                self.position = advanced_position;
-                self.finished = terminated;
-            }
-        } else if Self::is_comment_line(line) {
-            self.comments.push(line.to_string());
-        } else {
-            let header = Self::parse_header_line(line)?;
-            self.header = Some(header);
-        }
-        Ok(())
-    }
-
     // Convert the series of (usize, RleTag) into the series of RleRunsTriple
     fn convert_runs_to_triples(runs: &[RleRun]) -> Vec<RleRunsTriple> {
         const TRIPLE_ZERO: RleRunsTriple = RleRunsTriple {
@@ -182,25 +202,5 @@ impl RleParser {
             buf.push(curr_triple);
         }
         buf
-    }
-
-    // Parses the specified implementor of Read (ex. File, `&[u8]`) into the parts of Rle
-    pub(super) fn parse<R>(read: R) -> Result<(Vec<String>, RleHeader, Vec<RleRunsTriple>)>
-    where
-        R: Read,
-    {
-        let parser = {
-            let mut buf = Self::new();
-            for line in BufReader::new(read).lines() {
-                let line = line?;
-                buf.push(&line)?;
-            }
-            buf
-        };
-        ensure!(parser.finished, "The terminal symbol not found");
-        let header = parser.header.context("Header line not found in the pattern")?;
-        let comments = parser.comments;
-        let contents = Self::convert_runs_to_triples(&parser.contents);
-        Ok((comments, header, contents))
     }
 }
