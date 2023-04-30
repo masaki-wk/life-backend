@@ -178,7 +178,7 @@ where
             flush_to_buf(&mut buf, (prev_x, prev_y), (curr_x, curr_y), live_cells);
             buf
         };
-        Ok(Rle { comments, header, contents })
+        Ok(Rle { header, comments, contents })
     }
 }
 
