@@ -1,7 +1,7 @@
 use anyhow::{ensure, Context as _, Result};
 use std::io::{BufRead as _, BufReader, Read};
 
-use super::{RleHeader, RleRunsTriple};
+use super::{Rle, RleHeader, RleRunsTriple};
 use crate::Rule;
 
 // The parser of RLE format, used during constructing of Rle
@@ -24,8 +24,8 @@ struct RleRun(usize, RleTag);
 // Inherent methods
 
 impl RleParser {
-    // Parses the specified implementor of Read (ex. File, `&[u8]`) into the parts of Rle
-    pub(super) fn parse<R>(read: R) -> Result<(RleHeader, Vec<String>, Vec<RleRunsTriple>)>
+    // Parses the specified implementor of Read (ex. File, `&[u8]`) into Rle
+    pub(super) fn parse<R>(read: R) -> Result<Rle>
     where
         R: Read,
     {
@@ -41,7 +41,7 @@ impl RleParser {
         let header = parser.header.context("Header line not found in the pattern")?;
         let comments = parser.comments;
         let contents = Self::convert_runs_to_triples(&parser.contents);
-        Ok((header, comments, contents))
+        Ok(Rle { header, comments, contents })
     }
 
     // Creates an empty parser

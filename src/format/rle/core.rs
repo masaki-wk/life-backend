@@ -36,12 +36,12 @@ impl Rle {
     /// let parser = Rle::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
+    #[inline]
     pub fn new<R>(read: R) -> Result<Self>
     where
         R: Read,
     {
-        let (header, comments, contents) = RleParser::parse(read)?;
-        Ok(Self { header, comments, contents })
+        RleParser::parse(read)
     }
 
     /// Returns the width written in the pattern.
