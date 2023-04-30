@@ -15,8 +15,8 @@ use super::{RleHeader, RleParser, RleRunsTriple};
 ///
 #[derive(Debug, Clone)]
 pub struct Rle {
-    pub(super) comments: Vec<String>,
     pub(super) header: RleHeader,
+    pub(super) comments: Vec<String>,
     pub(super) contents: Vec<RleRunsTriple>,
 }
 
@@ -43,27 +43,6 @@ impl Rle {
     {
         let (comments, header, contents) = RleParser::parse(read)?;
         Ok(Self { comments, header, contents })
-    }
-
-    /// Returns comments of the pattern.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use life_backend::format::Rle;
-    /// let pattern = "\
-    ///     #N T-tetromino\n\
-    ///     x = 3, y = 2\n\
-    ///     3o$bo!\n\
-    /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
-    /// assert_eq!(parser.comments().len(), 1);
-    /// assert_eq!(parser.comments()[0], "#N T-tetromino");
-    /// ```
-    ///
-    #[inline]
-    pub fn comments(&self) -> &Vec<String> {
-        &self.comments
     }
 
     /// Returns the width written in the pattern.
@@ -125,6 +104,27 @@ impl Rle {
     #[inline]
     pub fn rule(&self) -> &Rule {
         &self.header.rule
+    }
+
+    /// Returns comments of the pattern.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::format::Rle;
+    /// let pattern = "\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2\n\
+    ///     3o$bo!\n\
+    /// ";
+    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// assert_eq!(parser.comments().len(), 1);
+    /// assert_eq!(parser.comments()[0], "#N T-tetromino");
+    /// ```
+    ///
+    #[inline]
+    pub fn comments(&self) -> &Vec<String> {
+        &self.comments
     }
 
     /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
