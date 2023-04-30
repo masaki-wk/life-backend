@@ -16,9 +16,12 @@ pub(super) struct RleParser {
 // Inherent methods
 
 impl RleParser {
+    // Determines whether the line is a comment line or not
     fn is_comment_line(line: &str) -> bool {
         matches!(line.chars().next(), Some('#') | None)
     }
+
+    // Parses the line as a header line
     fn parse_header_line(line: &str) -> Result<RleHeader> {
         fn check_variable_name(expected_name: &str, label: &str, name: &str) -> Result<()> {
             ensure!(name == expected_name, format!("{label} variable in the header line is not \"{expected_name}\""));
@@ -53,6 +56,8 @@ impl RleParser {
         };
         Ok(RleHeader { width, height, rule })
     }
+
+    // Parses the line as a content line
     fn parse_content_line(mut line: &str) -> Result<(Vec<RleRun>, bool)> {
         let mut buf = Vec::new();
         let terminated = loop {
@@ -88,6 +93,8 @@ impl RleParser {
         };
         Ok((buf, terminated))
     }
+
+    // Calculates the advanced position
     fn advanced_position(header: &RleHeader, current_position: (usize, usize), contents_to_be_append: &[RleRun]) -> Result<(usize, usize)> {
         ensure!(contents_to_be_append.is_empty() || header.height > 0, "The pattern exceeds specified height"); // this check is required for the header with "y = 0"
         contents_to_be_append
@@ -105,6 +112,8 @@ impl RleParser {
                 }
             })
     }
+
+    // Creates an empty parser
     pub(super) fn new() -> Self {
         Self {
             comments: Vec::new(),
@@ -114,6 +123,8 @@ impl RleParser {
             finished: false,
         }
     }
+
+    // Adds a line into the parser
     pub(super) fn push(&mut self, line: &str) -> Result<()> {
         if let Some(header) = &self.header {
             if !self.finished {
