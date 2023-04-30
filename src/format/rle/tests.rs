@@ -1,6 +1,7 @@
 use anyhow::Result;
 
-use super::*;
+use super::{Rle, RleBuilder};
+use crate::Rule;
 
 fn do_check(
     target: &Rle,
