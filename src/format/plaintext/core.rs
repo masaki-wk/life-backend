@@ -34,12 +34,12 @@ impl Plaintext {
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
     /// ```
     ///
+    #[inline]
     pub fn new<R>(read: R) -> Result<Self>
     where
         R: Read,
     {
-        let (name, comments, contents) = PlaintextParser::parse(read)?;
-        Ok(Self { name, comments, contents })
+        PlaintextParser::parse(read)
     }
 
     /// Returns the name of the pattern.

@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use std::io::{BufRead as _, BufReader, Read};
 
-use super::PlaintextLine;
+use super::{Plaintext, PlaintextLine};
 
 // The parser of Plaintext format, used during constructing of Plaintext
 pub(super) struct PlaintextParser {
@@ -14,8 +14,8 @@ pub(super) struct PlaintextParser {
 // Inherent methods
 
 impl PlaintextParser {
-    /// Parses the specified implementor of Read (ex. File, `&[u8]`) into the parts of Plaintext
-    pub(super) fn parse<R>(read: R) -> Result<(Option<String>, Vec<String>, Vec<PlaintextLine>)>
+    /// Parses the specified implementor of Read (ex. File, `&[u8]`) into Plaintext
+    pub(super) fn parse<R>(read: R) -> Result<Plaintext>
     where
         R: Read,
     {
@@ -24,7 +24,11 @@ impl PlaintextParser {
             buf.push(&line)?;
             Ok::<_, anyhow::Error>(buf)
         })?;
-        Ok((parser.name, parser.comments, parser.contents))
+        Ok(Plaintext {
+            name: parser.name,
+            comments: parser.comments,
+            contents: parser.contents,
+        })
     }
 
     // Creates an empty parser
