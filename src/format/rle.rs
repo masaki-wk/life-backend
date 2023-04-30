@@ -14,14 +14,6 @@ struct RleRunsTriple {
     live_cells: usize,
 }
 
-// Internal structs, used during constructing of Rle
-enum RleTag {
-    DeadCell,
-    AliveCell,
-    EndOfLine,
-}
-struct RleRun(usize, RleTag);
-
 // The parser of the RLE format, used during constructing of Rle
 mod parser;
 use parser::RleParser;

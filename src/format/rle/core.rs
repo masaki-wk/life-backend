@@ -1,10 +1,10 @@
-use anyhow::{ensure, Context as _, Result};
+use anyhow::Result;
 use std::fmt;
-use std::io::{BufRead as _, BufReader, Read};
+use std::io::Read;
 
 use crate::Rule;
 
-use super::{RleHeader, RleParser, RleRun, RleRunsTriple, RleTag};
+use super::{RleHeader, RleParser, RleRunsTriple};
 
 /// A representation for RLE file format.
 ///
@@ -23,38 +23,6 @@ pub struct Rle {
 // Inherent methods
 
 impl Rle {
-    // Convert the series of (usize, RleTag) into the series of RleRunsTriple.
-    fn convert_runs_to_triples(runs: &[RleRun]) -> Vec<RleRunsTriple> {
-        const TRIPLE_ZERO: RleRunsTriple = RleRunsTriple {
-            pad_lines: 0,
-            pad_dead_cells: 0,
-            live_cells: 0,
-        };
-        let (mut buf, curr_triple) = runs.iter().fold((Vec::new(), TRIPLE_ZERO), |(mut buf, curr_triple), run| {
-            let mut next_triple = if curr_triple.live_cells > 0 && !matches!(run, RleRun(_, RleTag::AliveCell)) {
-                buf.push(curr_triple);
-                TRIPLE_ZERO
-            } else {
-                curr_triple
-            };
-            match run {
-                RleRun(n, RleTag::AliveCell) => next_triple.live_cells += n,
-                RleRun(n, RleTag::DeadCell) => {
-                    next_triple.pad_dead_cells += n;
-                }
-                RleRun(n, RleTag::EndOfLine) => {
-                    next_triple.pad_lines += n;
-                    next_triple.pad_dead_cells = 0;
-                }
-            }
-            (buf, next_triple)
-        });
-        if curr_triple.live_cells > 0 {
-            buf.push(curr_triple);
-        }
-        buf
-    }
-
     /// Creates from the specified implementor of Read, such as File or `&[u8]`.
     ///
     /// # Examples
@@ -73,22 +41,8 @@ impl Rle {
     where
         R: Read,
     {
-        let parser = {
-            let mut buf = RleParser::new();
-            for line in BufReader::new(read).lines() {
-                let line = line?;
-                buf.push(&line)?;
-            }
-            buf
-        };
-        let header = parser.header.context("Header line not found in the pattern")?;
-        ensure!(parser.finished, "The terminal symbol not found");
-        let contents = Self::convert_runs_to_triples(&parser.contents);
-        Ok(Self {
-            comments: parser.comments,
-            header,
-            contents,
-        })
+        let (comments, header, contents) = RleParser::parse(read)?;
+        Ok(Self { comments, header, contents })
     }
 
     /// Returns comments of the pattern.
