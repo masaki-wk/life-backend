@@ -13,6 +13,38 @@ pub(super) struct PlaintextParser {
 // Inherent methods
 
 impl PlaintextParser {
+    // Creates an empty parser
+    pub(super) fn new() -> Self {
+        Self {
+            name: None,
+            comments: Vec::new(),
+            lines: 0,
+            contents: Vec::new(),
+        }
+    }
+
+    // Adds a line into the parser
+    pub(super) fn push(&mut self, line: &str) -> Result<()> {
+        if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
+            if let Some(name) = Self::parse_name_line(line) {
+                self.name = Some(name.to_string());
+                return Ok(());
+            }
+        }
+        if self.lines == 0 {
+            if let Some(comment) = Self::parse_comment_line(line) {
+                self.comments.push(comment.to_string());
+                return Ok(());
+            }
+        }
+        let content = Self::parse_content_line(line)?;
+        if !content.is_empty() {
+            self.contents.push(PlaintextLine(self.lines, content));
+        }
+        self.lines += 1;
+        Ok(())
+    }
+
     // Parses the line with the specified prefix
     fn parse_prefixed_line<'a>(prefix: &str, line: &'a str) -> Option<&'a str> {
         if line.len() < prefix.len() {
@@ -49,37 +81,5 @@ impl PlaintextParser {
                 _ => Some(Err(anyhow!("Invalid character found in the pattern"))),
             })
             .collect()
-    }
-
-    // Creates an empty parser
-    pub(super) fn new() -> Self {
-        Self {
-            name: None,
-            comments: Vec::new(),
-            lines: 0,
-            contents: Vec::new(),
-        }
-    }
-
-    // Adds a line into the parser
-    pub(super) fn push(&mut self, line: &str) -> Result<()> {
-        if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
-            if let Some(name) = Self::parse_name_line(line) {
-                self.name = Some(name.to_string());
-                return Ok(());
-            }
-        }
-        if self.lines == 0 {
-            if let Some(comment) = Self::parse_comment_line(line) {
-                self.comments.push(comment.to_string());
-                return Ok(());
-            }
-        }
-        let content = Self::parse_content_line(line)?;
-        if !content.is_empty() {
-            self.contents.push(PlaintextLine(self.lines, content));
-        }
-        self.lines += 1;
-        Ok(())
     }
 }
