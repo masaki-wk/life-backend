@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 
 use super::PlaintextLine;
 
-// An internal struct, used during constructing of Plaintext
+// The parser of Plaintext format, used during constructing of Plaintext
 pub(super) struct PlaintextParser {
     pub(super) name: Option<String>,
     pub(super) comments: Vec<String>,

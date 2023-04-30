@@ -6,11 +6,11 @@ struct PlaintextLine(usize, Vec<usize>);
 mod core;
 pub use self::core::Plaintext;
 
-// A parser of Plaintext, used during constructing of Plaintext
+// The parser of Plaintext, used during constructing of Plaintext
 mod parser;
 use parser::PlaintextParser;
 
-// A builder of Plaintext
+// The builder of Plaintext
 mod builder;
 pub use builder::PlaintextBuilder;
 

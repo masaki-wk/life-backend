@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
 
-/// A builder of Plaintext.
+/// The builder of Plaintext.
 #[derive(Debug, Clone)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
