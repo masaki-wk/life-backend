@@ -1,20 +1,34 @@
 use anyhow::{anyhow, Result};
+use std::io::{BufRead as _, BufReader, Read};
 
 use super::PlaintextLine;
 
 // The parser of Plaintext format, used during constructing of Plaintext
 pub(super) struct PlaintextParser {
-    pub(super) name: Option<String>,
-    pub(super) comments: Vec<String>,
-    pub(super) lines: usize,
-    pub(super) contents: Vec<PlaintextLine>,
+    name: Option<String>,
+    comments: Vec<String>,
+    lines: usize,
+    contents: Vec<PlaintextLine>,
 }
 
 // Inherent methods
 
 impl PlaintextParser {
+    /// Parses the specified implementor of Read (ex. File, `&[u8]`) into the parts of Plaintext
+    pub(super) fn parse<R>(read: R) -> Result<(Option<String>, Vec<String>, Vec<PlaintextLine>)>
+    where
+        R: Read,
+    {
+        let parser = BufReader::new(read).lines().try_fold(Self::new(), |mut buf, line| {
+            let line = line?;
+            buf.push(&line)?;
+            Ok::<_, anyhow::Error>(buf)
+        })?;
+        Ok((parser.name, parser.comments, parser.contents))
+    }
+
     // Creates an empty parser
-    pub(super) fn new() -> Self {
+    fn new() -> Self {
         Self {
             name: None,
             comments: Vec::new(),
@@ -24,7 +38,7 @@ impl PlaintextParser {
     }
 
     // Adds a line into the parser
-    pub(super) fn push(&mut self, line: &str) -> Result<()> {
+    fn push(&mut self, line: &str) -> Result<()> {
         if self.name.is_none() && self.comments.is_empty() && self.lines == 0 {
             if let Some(name) = Self::parse_name_line(line) {
                 self.name = Some(name.to_string());

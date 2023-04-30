@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::fmt;
-use std::io::{BufRead as _, BufReader, Read};
+use std::io::Read;
 
 use super::{PlaintextLine, PlaintextParser};
 
@@ -38,16 +38,8 @@ impl Plaintext {
     where
         R: Read,
     {
-        let parser = BufReader::new(read).lines().try_fold(PlaintextParser::new(), |mut buf, line| {
-            let line = line?;
-            buf.push(&line)?;
-            Ok::<_, anyhow::Error>(buf)
-        })?;
-        Ok(Self {
-            name: parser.name,
-            comments: parser.comments,
-            contents: parser.contents,
-        })
+        let (name, comments, contents) = PlaintextParser::parse(read)?;
+        Ok(Self { name, comments, contents })
     }
 
     /// Returns the name of the pattern.
