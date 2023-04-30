@@ -18,7 +18,7 @@ struct RleRunsTriple {
 mod core;
 pub use self::core::Rle;
 
-// The parser of the RLE format, used during constructing of Rle
+// The parser of RLE format, used during constructing of Rle
 mod parser;
 use parser::RleParser;
 
