@@ -11,7 +11,7 @@ use crate::{Board, Rule};
 type DefaultIndexType = i16;
 
 /// A representation of games.
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Game<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
