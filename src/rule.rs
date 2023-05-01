@@ -16,6 +16,10 @@ pub struct Rule {
 impl Rule {
     /// Returns whether a new cell will be born from the specified number of alive neighbors.
     ///
+    /// # Panics
+    ///
+    /// Panics if the number is greater than 8.
+    ///
     /// # Examples
     ///
     /// ```
@@ -33,6 +37,10 @@ impl Rule {
     }
 
     /// Returns whether the cell surrounded by a specified number of alive neighbors will survive.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the number is greater than 8.
     ///
     /// # Examples
     ///
