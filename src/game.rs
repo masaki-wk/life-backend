@@ -25,7 +25,7 @@ impl<IndexType> Game<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Creates from the specified rule and board.
+    /// Creates from the specified rule and the board.
     ///
     /// # Examples
     ///
