@@ -11,7 +11,7 @@ use crate::{Board, Rule};
 type DefaultIndexType = i16;
 
 /// A representation of games.
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Game<IndexType = DefaultIndexType>
 where
     IndexType: Eq + Hash,
@@ -25,7 +25,7 @@ impl<IndexType> Game<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Creates from the specified rule and board.
+    /// Creates from the specified rule and the board.
     ///
     /// # Examples
     ///
@@ -71,7 +71,7 @@ where
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// let board = game.board();
-    /// assert_eq!(board.bounding_box(), (0, 1, 0, 1));
+    /// assert_eq!(board.bounding_box(), Some((0, 1, 0, 1)));
     /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
     /// assert_eq!(board.get(0, 1), true);
@@ -119,7 +119,7 @@ where
     /// let mut game = Game::new(rule, board);
     /// game.update();
     /// let board = game.board();
-    /// assert_eq!(board.bounding_box(), (1, 1, 0, 2));
+    /// assert_eq!(board.bounding_box(), Some((1, 1, 0, 2)));
     /// assert_eq!(board.get(1, 0), true);
     /// assert_eq!(board.get(1, 1), true);
     /// assert_eq!(board.get(1, 2), true);

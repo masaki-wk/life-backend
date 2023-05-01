@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 /// It only supports the birth/survival notation such as "B3/S23", see <https://conwaylife.com/wiki/Rulestring>.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
     birth: [bool; 9],
     survival: [bool; 9],
@@ -15,6 +15,10 @@ pub struct Rule {
 
 impl Rule {
     /// Returns whether a new cell will be born from the specified number of alive neighbors.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the number is greater than 8.
     ///
     /// # Examples
     ///
@@ -27,11 +31,16 @@ impl Rule {
     /// }
     /// ```
     ///
+    #[inline]
     pub fn is_born(&self, count: usize) -> bool {
         self.birth[count]
     }
 
-    /// Returns whether the cell surrounded by a specified number of alive neighbors will survive.
+    /// Returns whether a cell surrounded by the specified number of alive neighbors will survive.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the number is greater than 8.
     ///
     /// # Examples
     ///
@@ -44,6 +53,7 @@ impl Rule {
     /// }
     /// ```
     ///
+    #[inline]
     pub fn is_survive(&self, count: usize) -> bool {
         self.survival[count]
     }
@@ -93,7 +103,7 @@ impl Rule {
     }
 }
 
-// Trait implementations of Rule
+// Trait implementations
 
 impl fmt::Display for Rule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
