@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-/// The default index type of boards.
+/// The default index type of Board.
 type DefaultIndexType = i16;
 
 /// A representation of boards.
