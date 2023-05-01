@@ -36,7 +36,7 @@ impl Rule {
         self.birth[count]
     }
 
-    /// Returns whether the cell surrounded by a specified number of alive neighbors will survive.
+    /// Returns whether a cell surrounded by the specified number of alive neighbors will survive.
     ///
     /// # Panics
     ///
@@ -103,7 +103,7 @@ impl Rule {
     }
 }
 
-// Trait implementations of Rule
+// Trait implementations
 
 impl fmt::Display for Rule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
