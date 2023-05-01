@@ -7,13 +7,13 @@ use std::ops::{Add, Sub};
 use std::path::Path;
 
 use life_backend::format::Rle;
-use life_backend::{Board, Game, Rule};
+use life_backend::{Board, Game};
 
-fn workload<IndexType>(rule: &Rule, board: &Board<IndexType>, steps: usize)
+fn workload<IndexType>(game: &Game<IndexType>, steps: usize)
 where
     IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
 {
-    let mut game = Game::<_>::new(rule.clone(), board.clone());
+    let mut game = game.clone();
     for _ in 0..steps {
         game.update();
     }
@@ -29,7 +29,8 @@ where
     let parser = Rle::new(file)?;
     let rule = parser.rule();
     let board: Board<_> = parser.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
-    c.bench_function(id, |b| b.iter(|| workload(rule, &board, steps)));
+    let game = Game::new(rule.clone(), board);
+    c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())
 }
 
