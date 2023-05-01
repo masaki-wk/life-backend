@@ -27,6 +27,7 @@ impl Rule {
     /// }
     /// ```
     ///
+    #[inline]
     pub fn is_born(&self, count: usize) -> bool {
         self.birth[count]
     }
@@ -44,6 +45,7 @@ impl Rule {
     /// }
     /// ```
     ///
+    #[inline]
     pub fn is_survive(&self, count: usize) -> bool {
         self.survival[count]
     }
