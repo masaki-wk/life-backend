@@ -211,7 +211,7 @@ mod tests {
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]
-    fn test_from_str_conways_life() -> Result<()> {
+    fn test_from_str_birth_survival_notation() -> Result<()> {
         let target: Rule = "B3/S23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
@@ -237,7 +237,7 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_too_large_number() {
+    fn test_from_str_birth_survival_notation_too_large_number() {
         let target = "B9/S0".parse::<Rule>();
         assert!(target.is_err());
     }
