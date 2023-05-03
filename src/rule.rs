@@ -4,7 +4,26 @@ use std::result::Result;
 use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
-/// It only supports the birth/survival notation such as "B3/S23", see <https://conwaylife.com/wiki/Rulestring>.
+///
+/// # Examples
+///
+/// ```
+/// # use life_backend::Rule;
+/// let rule = "B3/S23".parse::<Rule>().unwrap();
+/// for i in 0..=8 {
+///     assert_eq!(rule.is_born(i), [3].iter().any(|&x| x == i));
+///     assert_eq!(rule.is_survive(i), [2, 3].iter().any(|&x| x == i));
+/// }
+/// assert_eq!(format!("{rule}"), "B3/S23");
+/// ```
+///
+/// Converting from a Rule value into a String value via `format!("{}", ...)` only supports the birth/survival notation. (ex. "B3/S23")
+///
+/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notations, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
+///
+/// - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
+/// - S/B notation (ex. "23/3")
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
     birth: [bool; 9],
@@ -145,23 +164,32 @@ impl FromStr for Rule {
             Some(buf)
         }
         let fields_splitted: Vec<_> = s.split('/').collect();
-        if fields_splitted.len() != 2 || fields_splitted.iter().any(|s| s.is_empty()) {
+        if fields_splitted.len() != 2 {
             return Err(ParseRuleError);
         }
-        let fields_labeled: Vec<_> = fields_splitted
+        let (labels, numbers): (Vec<_>, Vec<_>) = fields_splitted
+            .iter()
+            .map(|s| s.split_at(s.find(|c: char| c.is_ascii_digit()).unwrap_or(s.len())))
+            .unzip();
+        let numbers = if labels.iter().zip(["B", "S"]).all(|(lhs, rhs)| lhs.eq_ignore_ascii_case(rhs)) {
+            // the birth/survival notation, ex. "B3/S23"
+            numbers
+        } else if labels.iter().all(|s| s.is_empty()) {
+            // S/B notation, ex. "23/3"
+            vec![numbers[1], numbers[0]]
+        } else {
+            return Err(ParseRuleError);
+        };
+        let Some(slices) = numbers
             .into_iter()
-            .map(|s| {
-                let (label, body) = s.split_at(1); // this split_at never panic
-                (label.chars().next().unwrap(), body) // this unwrap never panic
-            })
-            .collect();
-        if !fields_labeled.iter().map(|(c, _)| c).eq(['B', 'S'].iter()) {
+            .map(convert_numbers_to_slice)
+            .collect::<Option<Vec<_>>>() else {
             return Err(ParseRuleError);
-        }
-        let fields_numbers: Vec<_> = fields_labeled.into_iter().map(|(_, s)| s).collect();
-        let Some(birth) = convert_numbers_to_slice(fields_numbers[0]) else { return Err(ParseRuleError) };
-        let Some(survival) = convert_numbers_to_slice(fields_numbers[1]) else { return Err(ParseRuleError) };
-        Ok(Self { birth, survival })
+        };
+        Ok(Self {
+            birth: slices[0],
+            survival: slices[1],
+        })
     }
 }
 
@@ -188,8 +216,38 @@ mod tests {
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]
-    fn test_from_str_conways_life() -> Result<()> {
+    fn test_from_str_birth_survival_notation() -> Result<()> {
         let target: Rule = "B3/S23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_s_b_notation() -> Result<()> {
+        let target: Rule = "23/3".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_without_birth_number() -> Result<()> {
+        let target: Rule = "B/S23".parse()?;
+        check_value(&target, &[], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_without_survival_number() -> Result<()> {
+        let target: Rule = "B3/S".parse()?;
+        check_value(&target, &[3], &[]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_lowercase_b() -> Result<()> {
+        let target: Rule = "b3/S23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_lowercase_s() -> Result<()> {
+        let target: Rule = "B3/s23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
@@ -214,7 +272,7 @@ mod tests {
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_too_large_number() {
+    fn test_from_str_birth_survival_notation_too_large_number() {
         let target = "B9/S0".parse::<Rule>();
         assert!(target.is_err());
     }
