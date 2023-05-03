@@ -33,7 +33,7 @@ fn run(config: Config) -> Result<()> {
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
     let parser = Rle::new(file)?;
     let rule = parser.rule().clone();
-    let board: Board<_> = parser.iter().map(|(x, y)| (x as I, y as I)).collect();
+    let board: Board<_> = parser.live_cells().map(|(x, y)| (x as I, y as I)).collect();
     let game = Game::new(rule, board);
     simulate(game, config.generation, config.step_size);
     Ok(())

@@ -28,7 +28,7 @@ where
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
     let parser = Rle::new(file)?;
     let rule = parser.rule();
-    let board: Board<_> = parser.iter().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
+    let board: Board<_> = parser.live_cells().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
     let game = Game::new(rule.clone(), board);
     c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())
