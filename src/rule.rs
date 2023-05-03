@@ -151,17 +151,25 @@ impl FromStr for Rule {
         if fields_splitted.len() != 2 {
             return Err(ParseRuleError);
         }
-        let fields_labeled: Vec<_> = fields_splitted
-            .into_iter()
+        let (labels, numbers): (Vec<_>, Vec<_>) = fields_splitted
+            .iter()
             .map(|s| s.split_at(s.find(|c: char| c.is_ascii_digit()).unwrap_or(s.len())))
-            .collect();
-        if !fields_labeled.iter().map(|(label, _)| label).eq(["B", "S"].iter()) {
+            .unzip();
+        let numbers = if labels.iter().eq(["B", "S"].iter()) {
+            numbers
+        } else {
             return Err(ParseRuleError);
-        }
-        let fields_numbers: Vec<_> = fields_labeled.into_iter().map(|(_, s)| s).collect();
-        let Some(birth) = convert_numbers_to_slice(fields_numbers[0]) else { return Err(ParseRuleError) };
-        let Some(survival) = convert_numbers_to_slice(fields_numbers[1]) else { return Err(ParseRuleError) };
-        Ok(Self { birth, survival })
+        };
+        let Some(slices) = numbers
+            .into_iter()
+            .map(convert_numbers_to_slice)
+            .collect::<Option<Vec<_>>>() else {
+            return Err(ParseRuleError);
+        };
+        Ok(Self {
+            birth: slices[0],
+            survival: slices[1],
+        })
     }
 }
 
