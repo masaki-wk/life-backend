@@ -21,7 +21,7 @@ use std::str::FromStr;
 ///
 /// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notation, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
 ///
-/// - The birth/survival notation (ex. "B3/S23")
+/// - The birth/survival notation(ex. "B3/S23"). Lowercase "b" or "s" are also allowed.
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
@@ -170,7 +170,8 @@ impl FromStr for Rule {
             .iter()
             .map(|s| s.split_at(s.find(|c: char| c.is_ascii_digit()).unwrap_or(s.len())))
             .unzip();
-        let numbers = if labels.iter().eq(["B", "S"].iter()) {
+        let numbers = if labels.iter().zip(["B", "S"]).all(|(lhs, rhs)| lhs.eq_ignore_ascii_case(rhs)) {
+            // the birth/survival notation, ex. "B3/S23"
             numbers
         } else {
             return Err(ParseRuleError);
@@ -226,6 +227,18 @@ mod tests {
     fn test_from_str_birth_survival_notation_without_survival_number() -> Result<()> {
         let target: Rule = "B3/S".parse()?;
         check_value(&target, &[3], &[]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_lowercase_b() -> Result<()> {
+        let target: Rule = "b3/S23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_lowercase_s() -> Result<()> {
+        let target: Rule = "B3/s23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
     #[test]
