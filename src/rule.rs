@@ -19,9 +19,10 @@ use std::str::FromStr;
 ///
 /// Converting from a Rule value into a String value via `format!("{}", ...)` only supports the birth/survival notation. (ex. "B3/S23")
 ///
-/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notation, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
+/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notations, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
 ///
-/// - The birth/survival notation(ex. "B3/S23"). Lowercase "b" or "s" are also allowed.
+/// - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
+/// - S/B notation (ex. "23/3")
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
@@ -173,6 +174,9 @@ impl FromStr for Rule {
         let numbers = if labels.iter().zip(["B", "S"]).all(|(lhs, rhs)| lhs.eq_ignore_ascii_case(rhs)) {
             // the birth/survival notation, ex. "B3/S23"
             numbers
+        } else if labels.iter().all(|s| s.is_empty()) {
+            // S/B notation, ex. "23/3"
+            vec![numbers[1], numbers[0]]
         } else {
             return Err(ParseRuleError);
         };
@@ -214,6 +218,12 @@ mod tests {
     #[test]
     fn test_from_str_birth_survival_notation() -> Result<()> {
         let target: Rule = "B3/S23".parse()?;
+        check_value(&target, &[3], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_s_b_notation() -> Result<()> {
+        let target: Rule = "23/3".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
