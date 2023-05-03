@@ -4,7 +4,22 @@ use std::result::Result;
 use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
-/// It only supports the following notation, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
+///
+/// # Examples
+///
+/// ```
+/// # use life_backend::Rule;
+/// let rule = "B3/S23".parse::<Rule>().unwrap();
+/// for i in 0..=8 {
+///     assert_eq!(rule.is_born(i), [3].iter().any(|&x| x == i));
+///     assert_eq!(rule.is_survive(i), [2, 3].iter().any(|&x| x == i));
+/// }
+/// assert_eq!(format!("{rule}"), "B3/S23");
+/// ```
+///
+/// Converting from a Rule value into a String value via `format!("{}", ...)` only supports the birth/survival notation. (ex. "B3/S23")
+///
+/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notation, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
 ///
 /// - The birth/survival notation (ex. "B3/S23")
 ///
