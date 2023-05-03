@@ -217,6 +217,18 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn test_from_str_birth_survival_notation_without_birth_number() -> Result<()> {
+        let target: Rule = "B/S23".parse()?;
+        check_value(&target, &[], &[2, 3]);
+        Ok(())
+    }
+    #[test]
+    fn test_from_str_birth_survival_notation_without_survival_number() -> Result<()> {
+        let target: Rule = "B3/S".parse()?;
+        check_value(&target, &[3], &[]);
+        Ok(())
+    }
+    #[test]
     fn test_from_str_no_separator() {
         let target = "B0S0".parse::<Rule>();
         assert!(target.is_err());
