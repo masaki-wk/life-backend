@@ -97,7 +97,7 @@ impl Plaintext {
     ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
-    /// let mut iter = parser.iter();
+    /// let mut iter = parser.live_cells();
     /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
     /// assert_eq!(iter.next(), Some((2, 0)));
@@ -105,7 +105,7 @@ impl Plaintext {
     /// assert_eq!(iter.next(), None);
     /// ```
     ///
-    pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    pub fn live_cells(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| (*x, *y)))
     }
 }
