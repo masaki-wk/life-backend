@@ -145,17 +145,14 @@ impl FromStr for Rule {
             Some(buf)
         }
         let fields_splitted: Vec<_> = s.split('/').collect();
-        if fields_splitted.len() != 2 || fields_splitted.iter().any(|s| s.is_empty()) {
+        if fields_splitted.len() != 2 {
             return Err(ParseRuleError);
         }
         let fields_labeled: Vec<_> = fields_splitted
             .into_iter()
-            .map(|s| {
-                let (label, body) = s.split_at(1); // this split_at never panic
-                (label.chars().next().unwrap(), body) // this unwrap never panic
-            })
+            .map(|s| s.split_at(s.find(|c: char| c.is_ascii_digit()).unwrap_or(s.len())))
             .collect();
-        if !fields_labeled.iter().map(|(c, _)| c).eq(['B', 'S'].iter()) {
+        if !fields_labeled.iter().map(|(label, _)| label).eq(["B", "S"].iter()) {
             return Err(ParseRuleError);
         }
         let fields_numbers: Vec<_> = fields_labeled.into_iter().map(|(_, s)| s).collect();
