@@ -10,3 +10,4 @@ mod game;
 pub use game::Game;
 
 pub mod format;
+pub use format::Format;

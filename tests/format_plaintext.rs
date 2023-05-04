@@ -5,7 +5,6 @@ use std::path::Path;
 
 use life_backend::format::{Plaintext, PlaintextBuilder};
 
-// Execute the test with the Read implementor and the expected positions.
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
     R: Read,
@@ -20,7 +19,7 @@ where
     println!("{:?}", expected_positions);
 
     // Check
-    assert!(target.iter().eq(expected_positions.iter().copied()));
+    assert!(target.live_cells().eq(expected_positions.iter().copied()));
     Ok(())
 }
 
@@ -53,7 +52,7 @@ fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Opti
     println!("{:?}", pattern);
 
     // Check
-    assert!(target.iter().eq(pattern.iter().copied()));
+    assert!(target.live_cells().eq(pattern.iter().copied()));
     assert_eq!(target.name(), name);
     if let Some(comment) = &comment {
         let comments: Vec<_> = comment.lines().map(|s| s.to_string()).collect();
