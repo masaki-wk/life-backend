@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::fmt;
 use std::io::Read;
+use std::str::FromStr;
 
 use super::{PlaintextLine, PlaintextParser};
 use crate::{Format, Rule};
@@ -155,5 +156,12 @@ impl fmt::Display for Plaintext {
             }
         }
         Ok(())
+    }
+}
+
+impl FromStr for Plaintext {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s.as_bytes())
     }
 }
