@@ -55,6 +55,28 @@ fn do_new_test_to_be_failed(pattern: &str) {
     assert!(target.is_err());
 }
 
+fn do_from_str_test_to_be_passed(
+    pattern: &str,
+    expected_width: usize,
+    expected_height: usize,
+    expected_rule: &Rule,
+    expected_comments: &[&str],
+    expected_contents: &[(usize, usize, usize)],
+    check_tostring: bool,
+) -> Result<()> {
+    let target: Rle = pattern.parse()?;
+    do_check(
+        &target,
+        expected_width,
+        expected_height,
+        expected_rule,
+        expected_comments,
+        expected_contents,
+        if check_tostring { Some(pattern) } else { None },
+    );
+    Ok(())
+}
+
 #[test]
 fn test_new_header_with_conways_rule() -> Result<()> {
     let pattern = concat!("x = 0, y = 0, rule = B3/S23\n", "!\n");
@@ -419,4 +441,10 @@ fn test_display_max_width() -> Result<()> {
     let target = Rle::new(pattern.as_bytes())?;
     assert_eq!(target.to_string(), pattern);
     Ok(())
+}
+
+#[test]
+fn test_from_str() -> Result<()> {
+    let pattern = concat!("#comment0\n", "#comment1\n", "x = 2, y = 2, rule = B3/S23\n", "o$bo!\n");
+    do_from_str_test_to_be_passed(pattern, 2, 2, &Rule::conways_life(), &["#comment0", "#comment1"], &[(0, 0, 1), (1, 1, 1)], true)
 }
