@@ -27,6 +27,13 @@ fn do_new_test_to_be_failed(pattern: &str) {
     assert!(target.is_err());
 }
 
+fn do_from_str_test_to_be_passed(pattern: &str, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) -> Result<()> {
+    let target: Plaintext = pattern.parse()?;
+    do_check(&target, expected_name, expected_comments, expected_contents);
+    assert_eq!(target.to_string(), pattern);
+    Ok(())
+}
+
 #[test]
 fn test_new_empty() -> Result<()> {
     let pattern = "";
@@ -208,4 +215,13 @@ fn test_build_name_comment() -> Result<()> {
     let target = pattern.iter().collect::<PlaintextBuilder>().name("test").comment("comment").build()?;
     do_check(&target, &expected_name, &expected_comments, &expected_contents);
     Ok(())
+}
+
+#[test]
+fn test_from_str() -> Result<()> {
+    let pattern = concat!("!Name: test\n", "!comment0\n", "!comment1\n", ".O\n", "O.\n");
+    let expected_name = Some("test");
+    let expected_comments = vec!["comment0", "comment1"];
+    let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
+    do_from_str_test_to_be_passed(pattern, &expected_name, &expected_comments, &expected_contents)
 }

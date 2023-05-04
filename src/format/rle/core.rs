@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::fmt;
 use std::io::Read;
+use std::str::FromStr;
 
 use super::{RleHeader, RleParser, RleRunsTriple};
 use crate::{Format, Rule};
@@ -216,5 +217,13 @@ impl fmt::Display for Rle {
         write_with_buf(f, &mut buf, "!")?;
         flush_buf(f, &mut buf)?;
         Ok(())
+    }
+}
+
+impl FromStr for Rle {
+    type Err = anyhow::Error;
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s.as_bytes())
     }
 }
