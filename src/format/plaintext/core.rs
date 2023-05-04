@@ -161,6 +161,7 @@ impl fmt::Display for Plaintext {
 
 impl FromStr for Plaintext {
     type Err = anyhow::Error;
+    #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::new(s.as_bytes())
     }

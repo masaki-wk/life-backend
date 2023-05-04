@@ -222,6 +222,7 @@ impl fmt::Display for Rle {
 
 impl FromStr for Rle {
     type Err = anyhow::Error;
+    #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::new(s.as_bytes())
     }
