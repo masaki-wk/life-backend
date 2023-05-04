@@ -1,4 +1,5 @@
 use anyhow::{bail, Context as _, Result};
+use std::fmt;
 use std::fs::File;
 use std::path::Path;
 
@@ -11,7 +12,7 @@ mod rle;
 pub use rle::{Rle, RleBuilder};
 
 /// Provides several methods for Conway's Game of Life pattern file formats.
-pub trait Format {
+pub trait Format: fmt::Display {
     fn rule(&self) -> Rule;
     fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_>;
 }
