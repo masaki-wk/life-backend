@@ -3,7 +3,7 @@ use std::fmt;
 use std::io::Read;
 
 use super::{RleHeader, RleParser, RleRunsTriple};
-use crate::Rule;
+use crate::{Format, Rule};
 
 /// A representation for RLE file format.
 ///
@@ -166,6 +166,15 @@ impl Rle {
 }
 
 // Trait implementations
+
+impl Format for Rle {
+    fn rule(&self) -> Rule {
+        self.rule().clone()
+    }
+    fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_> {
+        Box::new(self.live_cells())
+    }
+}
 
 impl fmt::Display for Rle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

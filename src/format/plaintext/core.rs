@@ -3,6 +3,7 @@ use std::fmt;
 use std::io::Read;
 
 use super::{PlaintextLine, PlaintextParser};
+use crate::{Format, Rule};
 
 /// A representation for Plaintext file format.
 ///
@@ -111,6 +112,15 @@ impl Plaintext {
 }
 
 // Trait implementations
+
+impl Format for Plaintext {
+    fn rule(&self) -> Rule {
+        Rule::conways_life()
+    }
+    fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_> {
+        Box::new(self.live_cells())
+    }
+}
 
 impl fmt::Display for Plaintext {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
