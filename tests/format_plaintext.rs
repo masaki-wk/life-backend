@@ -5,7 +5,6 @@ use std::path::Path;
 
 use life_backend::format::{Plaintext, PlaintextBuilder};
 
-// Execute the test with the Read implementor and the expected positions.
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
     R: Read,
