@@ -1,18 +1,16 @@
 use anyhow::Result;
-use std::fs::File;
 use std::path::Path;
 
-use life_backend::format::Rle;
+use life_backend::format;
 use life_backend::{Board, Game, Rule};
 
 use i16 as I;
 
 fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
     let path = Path::new(path_str);
-    let file = File::open(path)?;
-    let parser = Rle::new(file)?;
-    let rule = parser.rule().clone();
-    let board: Board<_> = parser.live_cells().map(|(x, y)| (x as I, y as I)).collect();
+    let handler = format::open(path)?;
+    let rule = handler.rule();
+    let board: Board<_> = handler.live_cells().map(|(x, y)| (x as I, y as I)).collect();
     Ok((rule, board))
 }
 

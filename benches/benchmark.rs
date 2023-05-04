@@ -1,12 +1,11 @@
-use anyhow::{Context as _, Result};
+use anyhow::Result;
 use criterion::{criterion_group, criterion_main, Criterion};
 use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
-use std::fs::File;
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 use std::path::Path;
 
-use life_backend::format::Rle;
+use life_backend::format;
 use life_backend::{Board, Game};
 
 fn workload<IndexType>(game: &Game<IndexType>, steps: usize)
@@ -25,11 +24,10 @@ where
 {
     let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
     let path = Path::new(path_str);
-    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let parser = Rle::new(file)?;
-    let rule = parser.rule();
-    let board: Board<_> = parser.live_cells().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
-    let game = Game::new(rule.clone(), board);
+    let handler = format::open(path)?;
+    let rule = handler.rule();
+    let board: Board<_> = handler.live_cells().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
+    let game = Game::new(rule, board);
     c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())
 }
