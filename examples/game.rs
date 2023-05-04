@@ -1,6 +1,5 @@
 use anyhow::{Context as _, Result};
 use std::env;
-use std::path::Path;
 
 use life_backend::format;
 use life_backend::{Board, Game};
@@ -28,8 +27,7 @@ impl Config {
 }
 
 fn run(config: Config) -> Result<()> {
-    let path = Path::new(&config.path_str);
-    let handler = format::open(path)?;
+    let handler = format::open(&config.path_str)?;
     let rule = handler.rule();
     let board: Board<_> = handler.live_cells().map(|(x, y)| (x as I, y as I)).collect();
     let game = Game::new(rule, board);

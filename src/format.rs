@@ -26,8 +26,7 @@ pub trait Format: fmt::Display {
 /// # use life_backend::format;
 /// # use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells");
-/// let path = Path::new(path_str);
-/// let handler = format::open(path).unwrap();
+/// let handler = format::open(path_str).unwrap();
 /// assert_eq!(handler.rule(), Rule::conways_life());
 /// assert_eq!(handler.live_cells().count(), 5);
 /// ```
@@ -37,22 +36,27 @@ pub trait Format: fmt::Display {
 /// # use life_backend::format;
 /// # use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/bheptomino.rle");
-/// let path = Path::new(path_str);
-/// let handler = format::open(path).unwrap();
+/// let handler = format::open(path_str).unwrap();
 /// assert_eq!(handler.rule(), Rule::conways_life());
 /// assert_eq!(handler.live_cells().count(), 7);
 /// ```
 ///
-pub fn open(path: &Path) -> Result<Box<dyn Format>> {
+pub fn open<P>(path: P) -> Result<Box<dyn Format>>
+where
+    P: AsRef<Path>,
+{
+    let path_to_display = path.as_ref().display().to_string();
     let ext = path
+        .as_ref()
         .extension()
         .map(|s| s.to_str().unwrap_or_default())
-        .with_context(|| format!("\"{}\" has no extension", path.display()))?;
-    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
-    let result: Box<dyn Format> = match ext {
+        .with_context(|| format!("\"{}\" has no extension", path_to_display))?
+        .to_string();
+    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path_to_display))?;
+    let result: Box<dyn Format> = match &ext[..] {
         "cells" => Box::new(Plaintext::new(file)?),
         "rle" => Box::new(Rle::new(file)?),
-        _ => bail!("\"{}\" has unknown extension", path.display()),
+        _ => bail!("\"{}\" has unknown extension", path_to_display),
     };
     Ok(result)
 }

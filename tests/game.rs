@@ -1,5 +1,4 @@
 use anyhow::Result;
-use std::path::Path;
 
 use life_backend::format;
 use life_backend::{Board, Game, Rule};
@@ -7,8 +6,7 @@ use life_backend::{Board, Game, Rule};
 use i16 as I;
 
 fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
-    let path = Path::new(path_str);
-    let handler = format::open(path)?;
+    let handler = format::open(path_str)?;
     let rule = handler.rule();
     let board: Board<_> = handler.live_cells().map(|(x, y)| (x as I, y as I)).collect();
     Ok((rule, board))
