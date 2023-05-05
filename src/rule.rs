@@ -1,9 +1,20 @@
 use std::error::Error;
 use std::fmt;
-use std::result::Result;
 use std::str::FromStr;
 
+const TRUTH_TABLE_SIZE: usize = 9;
+
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
+///
+/// The following operations are supported:
+///
+/// - Constructing from a pair of truth tables
+/// - Parsing a string into a value of this type, ex. "B3/S23". The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
+///   - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
+///   - S/B notation (ex. "23/3")
+/// - Determining whether a new cell will be born from the specified number of alive neighbors
+/// - Determining whether a cell surrounded by the specified number of alive neighbors will survive
+/// - Converting into a String value, ex. "B3/S23". This operation only supports the birth/survival notation
 ///
 /// # Examples
 ///
@@ -17,27 +28,45 @@ use std::str::FromStr;
 /// assert_eq!(format!("{rule}"), "B3/S23");
 /// ```
 ///
-/// Converting from a Rule value into a String value via `format!("{}", ...)` only supports the birth/survival notation. (ex. "B3/S23")
-///
-/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notations, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
-///
-/// - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
-/// - S/B notation (ex. "23/3")
-///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
-    birth: [bool; 9],
-    survival: [bool; 9],
+    birth: [bool; TRUTH_TABLE_SIZE],
+    survival: [bool; TRUTH_TABLE_SIZE],
 }
 
 // Inherent methods
 
 impl Rule {
+    /// Creates a new rule based on the specified pair of truth tables.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Rule;
+    /// let rule = Rule::new(
+    ///     &[false, false, false, true, false, false, false, false, false],
+    ///     &[false, false, true, true, false, false, false, false, false],
+    /// );
+    /// let b = [3];
+    /// let s = [2, 3];
+    /// for i in 0..=8 {
+    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
+    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
+    /// }
+    /// ```
+    ///
+    pub const fn new(birth: &[bool; 9], survival: &[bool; 9]) -> Self {
+        Self {
+            birth: *birth,
+            survival: *survival,
+        }
+    }
+
     /// Returns whether a new cell will be born from the specified number of alive neighbors.
     ///
     /// # Panics
     ///
-    /// Panics if the number is greater than 8.
+    /// Panics if the count argument is greater than 8.
     ///
     /// # Examples
     ///
@@ -51,7 +80,7 @@ impl Rule {
     /// ```
     ///
     #[inline]
-    pub fn is_born(&self, count: usize) -> bool {
+    pub const fn is_born(&self, count: usize) -> bool {
         self.birth[count]
     }
 
@@ -59,7 +88,7 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the number is greater than 8.
+    /// Panics if the count argument is greater than 8.
     ///
     /// # Examples
     ///
@@ -73,7 +102,7 @@ impl Rule {
     /// ```
     ///
     #[inline]
-    pub fn is_survive(&self, count: usize) -> bool {
+    pub const fn is_survive(&self, count: usize) -> bool {
         self.survival[count]
     }
 
@@ -93,32 +122,10 @@ impl Rule {
     /// ```
     ///
     pub const fn conways_life() -> Self {
-        Self {
-            birth: [false, false, false, true, false, false, false, false, false],
-            survival: [false, false, true, true, false, false, false, false, false],
-        }
-    }
-
-    /// Returns the rule of [HighLife](https://conwaylife.com/wiki/OCA:HighLife).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use life_backend::Rule;
-    /// let rule = Rule::highlife();
-    /// let b = [3, 6];
-    /// let s = [2, 3];
-    /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
-    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
-    /// }
-    /// ```
-    ///
-    pub const fn highlife() -> Self {
-        Self {
-            birth: [false, false, false, true, false, false, true, false, false],
-            survival: [false, false, true, true, false, false, false, false, false],
-        }
+        Self::new(
+            &[false, false, false, true, false, false, false, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        )
     }
 }
 
@@ -155,13 +162,12 @@ impl fmt::Display for ParseRuleError {
 impl FromStr for Rule {
     type Err = ParseRuleError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; 9]> {
-            let mut buf = [false; 9];
-            for c in numbers.chars() {
-                let n = c.to_digit(9)?;
-                buf[n as usize] = true;
-            }
-            Some(buf)
+        fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; TRUTH_TABLE_SIZE]> {
+            numbers.chars().try_fold([false; TRUTH_TABLE_SIZE], |mut buf, c| {
+                let n = c.to_digit(TRUTH_TABLE_SIZE as u32)? as usize;
+                buf[n] = true;
+                Some(buf)
+            })
         }
         let fields_splitted: Vec<_> = s.split('/').collect();
         if fields_splitted.len() != 2 {
@@ -199,11 +205,36 @@ impl FromStr for Rule {
 mod tests {
     use super::*;
     use anyhow::Result;
+    const RULE_HIGHLIFE: Rule = Rule::new(
+        &[false, false, false, true, false, false, true, false, false],
+        &[false, false, true, true, false, false, false, false, false],
+    );
     fn check_value(target: &Rule, expected_birth: &[usize], expected_survival: &[usize]) {
         for i in 0..=8 {
             assert_eq!(target.is_born(i), expected_birth.iter().any(|&x| x == i));
             assert_eq!(target.is_survive(i), expected_survival.iter().any(|&x| x == i));
         }
+    }
+    #[test]
+    fn test_new_conways_life() {
+        let target = Rule::new(
+            &[false, false, false, true, false, false, false, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        );
+        check_value(&target, &[3], &[2, 3]);
+    }
+    #[test]
+    fn test_new_highlife() {
+        let target = Rule::new(
+            &[false, false, false, true, false, false, true, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        );
+        check_value(&target, &[3, 6], &[2, 3]);
+    }
+    #[test]
+    fn test_conways_life() {
+        let target = Rule::conways_life();
+        check_value(&target, &[3], &[2, 3]);
     }
     #[test]
     fn test_display_conways_life() {
@@ -212,7 +243,7 @@ mod tests {
     }
     #[test]
     fn test_display_highlife() {
-        let target = Rule::highlife();
+        let target = RULE_HIGHLIFE;
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]

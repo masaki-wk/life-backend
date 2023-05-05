@@ -3,6 +3,11 @@ use anyhow::Result;
 use super::{Rle, RleBuilder};
 use crate::Rule;
 
+const RULE_HIGHLIFE: Rule = Rule::new(
+    &[false, false, false, true, false, false, true, false, false],
+    &[false, false, true, true, false, false, false, false, false],
+);
+
 fn do_check(
     target: &Rle,
     expected_width: usize,
@@ -86,7 +91,7 @@ fn test_new_header_with_conways_rule() -> Result<()> {
 #[test]
 fn test_new_header_with_highlife_rule() -> Result<()> {
     let pattern = concat!("x = 0, y = 0, rule = B36/S23\n", "!\n");
-    do_new_test_to_be_passed(pattern, 0, 0, &Rule::highlife(), &Vec::new(), &Vec::new(), true)
+    do_new_test_to_be_passed(pattern, 0, 0, &RULE_HIGHLIFE, &Vec::new(), &Vec::new(), true)
 }
 
 #[test]
@@ -405,8 +410,8 @@ fn test_build_comments() -> Result<()> {
 #[test]
 fn test_build_rule() -> Result<()> {
     let pattern = [(0, 0)];
-    let target = pattern.iter().collect::<RleBuilder>().rule(Rule::highlife()).build()?;
-    do_check(&target, 1, 1, &Rule::highlife(), &Vec::new(), &[(0, 0, 1)], None);
+    let target = pattern.iter().collect::<RleBuilder>().rule(RULE_HIGHLIFE.clone()).build()?;
+    do_check(&target, 1, 1, &RULE_HIGHLIFE, &Vec::new(), &[(0, 0, 1)], None);
     Ok(())
 }
 
