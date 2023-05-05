@@ -78,7 +78,9 @@ where
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(-1, 2, true);
     /// board.set(3, -2, true);
-    /// let (x_min, x_max, y_min, y_max) = board.bounding_box().unwrap();
+    /// let bbox = board.bounding_box();
+    /// assert!(bbox.is_some());
+    /// let (x_min, x_max, y_min, y_max) = bbox.unwrap();
     /// assert_eq!(x_min, -1);
     /// assert_eq!(x_max, 3);
     /// assert_eq!(y_min, -2);
