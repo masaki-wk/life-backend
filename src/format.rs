@@ -22,8 +22,8 @@ pub trait Format: fmt::Display {
 /// # Examples
 ///
 /// ```
-/// # use life_backend::format;
-/// # use life_backend::Rule;
+/// use life_backend::format;
+/// use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells");
 /// let handler = format::open(path_str).unwrap();
 /// assert_eq!(handler.rule(), Rule::conways_life());
@@ -31,8 +31,8 @@ pub trait Format: fmt::Display {
 /// ```
 ///
 /// ```
-/// # use life_backend::format;
-/// # use life_backend::Rule;
+/// use life_backend::format;
+/// use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/bheptomino.rle");
 /// let handler = format::open(path_str).unwrap();
 /// assert_eq!(handler.rule(), Rule::conways_life());
