@@ -3,6 +3,8 @@ use std::fmt;
 use std::result::Result;
 use std::str::FromStr;
 
+const TRUTH_TABLE_SIZE: usize = 9;
+
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
 /// The following operations are supported:
@@ -29,8 +31,8 @@ use std::str::FromStr;
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
-    birth: [bool; 9],
-    survival: [bool; 9],
+    birth: [bool; TRUTH_TABLE_SIZE],
+    survival: [bool; TRUTH_TABLE_SIZE],
 }
 
 // Inherent methods
@@ -161,7 +163,6 @@ impl fmt::Display for ParseRuleError {
 impl FromStr for Rule {
     type Err = ParseRuleError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        const TRUTH_TABLE_SIZE: usize = 9;
         fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; TRUTH_TABLE_SIZE]> {
             numbers.chars().try_fold([false; TRUTH_TABLE_SIZE], |mut buf, c| {
                 let n = c.to_digit(TRUTH_TABLE_SIZE as u32)? as usize;
