@@ -69,7 +69,7 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the count argument is greater than 8.
+    /// Panics if the argument `count` is greater than 8.
     ///
     /// # Examples
     ///
@@ -91,7 +91,7 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the count argument is greater than 8.
+    /// Panics if the argument `count` is greater than 8.
     ///
     /// # Examples
     ///
