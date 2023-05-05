@@ -62,7 +62,10 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -116,7 +119,11 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo")
+    ///     .build()?;
     /// assert_eq!(target.name(), Some("foo".to_string()));
     /// # Ok(())
     /// # }
@@ -130,7 +137,12 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo")
+    ///     .name("bar") // Compile error
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -141,7 +153,11 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build()?; // Should fail
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo\nbar")
+    ///     .build()?; // Should fail
     /// # Ok(())
     /// # }
     /// ```
@@ -168,7 +184,11 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .comment("comment0\ncomment1")
+    ///     .build()?;
     /// assert_eq!(target.comments().len(), 2);
     /// assert_eq!(target.comments()[0], "comment0");
     /// assert_eq!(target.comments()[1], "comment1");
@@ -184,7 +204,12 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .comment("comment0")
+    ///     .comment("comment1") // Compile error
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -211,7 +236,9 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.iter().collect::<PlaintextBuilder>();
+    /// let builder = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>();
     /// let target = builder.build()?;
     /// # Ok(())
     /// # }
@@ -240,7 +267,9 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
+    /// let builder = pattern
+    ///     .into_iter()
+    ///     .collect::<PlaintextBuilder>();
     /// let target = builder.build()?;
     /// # Ok(())
     /// # }
