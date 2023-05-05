@@ -361,9 +361,10 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Rule;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::highlife()).build()?; // Compile error
+    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::conways_life()).build()?; // Compile error
     /// # Ok(())
     /// # }
     /// ```
