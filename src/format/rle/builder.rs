@@ -99,7 +99,10 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -198,7 +201,11 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .name("foo")
+    ///     .build()?;
     /// assert_eq!(target.comments().len(), 1);
     /// assert_eq!(target.comments()[0], "#N foo".to_string());
     /// # Ok(())
@@ -213,7 +220,12 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().name("foo").name("bar").build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .name("foo")
+    ///     .name("bar") // Compile error
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -224,7 +236,11 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build()?; // Should fail
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .name("foo\nbar")
+    ///     .build()?; // Should fail
     /// # Ok(())
     /// # }
     /// ```
@@ -255,7 +271,11 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .created("foo")
+    ///     .build()?;
     /// assert_eq!(target.comments().len(), 1);
     /// assert_eq!(target.comments()[0], "#O foo".to_string());
     /// # Ok(())
@@ -270,7 +290,12 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .created("foo")
+    ///     .created("bar") // Compile error
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -301,7 +326,11 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .comment("comment0\ncomment1")
+    ///     .build()?;
     /// assert_eq!(target.comments().len(), 2);
     /// assert_eq!(target.comments()[0], "#C comment0".to_string());
     /// assert_eq!(target.comments()[1], "#C comment1".to_string());
@@ -317,7 +346,12 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .comment("comment0")
+    ///     .comment("comment1")
+    ///     .build()?; // Compile error
     /// # Ok(())
     /// # }
     /// ```
@@ -349,7 +383,11 @@ where
     /// use life_backend::Rule;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).build()?;
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .rule(Rule::conways_life())
+    ///     .build()?;
     /// assert_eq!(*target.rule(), Rule::conways_life());
     /// # Ok(())
     /// # }
@@ -364,7 +402,12 @@ where
     /// use life_backend::Rule;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::conways_life()).build()?; // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>()
+    ///     .rule(Rule::conways_life())
+    ///     .rule(Rule::conways_life()) // Compile error
+    ///     .build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -393,7 +436,9 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.iter().collect::<RleBuilder>();
+    /// let builder = pattern
+    ///     .iter()
+    ///     .collect::<RleBuilder>();
     /// let target = builder.build()?;
     /// # Ok(())
     /// # }
@@ -424,7 +469,9 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.into_iter().collect::<RleBuilder>();
+    /// let builder = pattern
+    ///     .into_iter()
+    ///     .collect::<RleBuilder>();
     /// let target = builder.build()?;
     /// # Ok(())
     /// # }
