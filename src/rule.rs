@@ -5,6 +5,16 @@ use std::str::FromStr;
 
 /// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
+/// The following operations are supported:
+///
+/// - Constructing from a pair of truth tables
+/// - Parsing a string into a value of this type, ex. "B3/S23". The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
+///   - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
+///   - S/B notation (ex. "23/3")
+/// - Determining whether a new cell will be born from the specified number of alive neighbors
+/// - Determining whether a cell surrounded by the specified number of alive neighbors will survive
+/// - Converting into a String value, ex. "B3/S23". This operation only supports the birth/survival notation
+///
 /// # Examples
 ///
 /// ```
@@ -16,13 +26,6 @@ use std::str::FromStr;
 /// }
 /// assert_eq!(format!("{rule}"), "B3/S23");
 /// ```
-///
-/// Converting from a Rule value into a String value via `format!("{}", ...)` only supports the birth/survival notation. (ex. "B3/S23")
-///
-/// Parsing from a string slice into a Rule value via `"...".parse::<Rule>()` supports the following notations, see [Rulestring](https://conwaylife.com/wiki/Rulestring).
-///
-/// - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
-/// - S/B notation (ex. "23/3")
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rule {
@@ -62,7 +65,7 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the number is greater than 8.
+    /// Panics if the count argument is greater than 8.
     ///
     /// # Examples
     ///
@@ -84,7 +87,7 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the number is greater than 8.
+    /// Panics if the count argument is greater than 8.
     ///
     /// # Examples
     ///
