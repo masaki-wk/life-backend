@@ -30,7 +30,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game, Rule};
+    /// use life_backend::{Board, Game, Rule};
     /// let rule = Rule::conways_life();
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
@@ -49,7 +49,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game, Rule};
+    /// use life_backend::{Board, Game, Rule};
     /// let rule = Rule::conways_life();
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
     /// let game = Game::new(rule.clone(), board);
@@ -66,7 +66,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game, Rule};
+    /// use life_backend::{Board, Game, Rule};
     /// let rule = Rule::conways_life();
     /// let board: Board = [(1, 0), (0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
@@ -113,7 +113,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::{Board, Game, Rule};
+    /// use life_backend::{Board, Game, Rule};
     /// let rule = Rule::conways_life();
     /// let board: Board = [(0, 1), (1, 1), (2, 1)].iter().collect(); // Blinker pattern
     /// let mut game = Game::new(rule, board);
