@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fmt;
-use std::result::Result;
 use std::str::FromStr;
 
 const TRUTH_TABLE_SIZE: usize = 9;
