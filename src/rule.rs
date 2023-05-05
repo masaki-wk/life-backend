@@ -33,6 +33,28 @@ pub struct Rule {
 // Inherent methods
 
 impl Rule {
+    /// Creates a new rule based on the specified pair of truth tables.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use life_backend::Rule;
+    /// let rule = Rule::new(&[false, false, false, true, false, false, true, false, false], &[false, false, true, true, false, false, false, false, false]);
+    /// let b = [3, 6];
+    /// let s = [2, 3];
+    /// for i in 0..=8 {
+    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
+    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
+    /// }
+    /// ```
+    ///
+    pub fn new(birth: &[bool; 9], survival: &[bool; 9]) -> Self {
+        Self {
+            birth: *birth,
+            survival: *survival,
+        }
+    }
+
     /// Returns whether a new cell will be born from the specified number of alive neighbors.
     ///
     /// # Panics
@@ -204,6 +226,16 @@ mod tests {
             assert_eq!(target.is_born(i), expected_birth.iter().any(|&x| x == i));
             assert_eq!(target.is_survive(i), expected_survival.iter().any(|&x| x == i));
         }
+    }
+    #[test]
+    fn test_new_conways_life() {
+        let target = Rule::new(&[false, false, false, true, false, false, false, false, false], &[false, false, true, true, false, false, false, false, false]);
+        check_value(&target, &[3], &[2, 3]);
+    }
+    #[test]
+    fn test_new_highlife() {
+        let target = Rule::new(&[false, false, false, true, false, false, true, false, false], &[false, false, true, true, false, false, false, false, false]);
+        check_value(&target, &[3, 6], &[2, 3]);
     }
     #[test]
     fn test_display_conways_life() {
