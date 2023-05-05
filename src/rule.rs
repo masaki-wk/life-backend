@@ -118,10 +118,10 @@ impl Rule {
     /// ```
     ///
     pub const fn conways_life() -> Self {
-        Self {
-            birth: [false, false, false, true, false, false, false, false, false],
-            survival: [false, false, true, true, false, false, false, false, false],
-        }
+        Self::new(
+            &[false, false, false, true, false, false, false, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        )
     }
 
     /// Returns the rule of [HighLife](https://conwaylife.com/wiki/OCA:HighLife).
@@ -140,10 +140,10 @@ impl Rule {
     /// ```
     ///
     pub const fn highlife() -> Self {
-        Self {
-            birth: [false, false, false, true, false, false, true, false, false],
-            survival: [false, false, true, true, false, false, false, false, false],
-        }
+        Self::new(
+            &[false, false, false, true, false, false, true, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        )
     }
 }
 
