@@ -24,19 +24,25 @@ pub trait Format: fmt::Display {
 /// ```
 /// use life_backend::format;
 /// use life_backend::Rule;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells");
-/// let handler = format::open(path_str).unwrap();
+/// let handler = format::open(path_str)?;
 /// assert_eq!(handler.rule(), Rule::conways_life());
 /// assert_eq!(handler.live_cells().count(), 5);
+/// # Ok(())
+/// # }
 /// ```
 ///
 /// ```
 /// use life_backend::format;
 /// use life_backend::Rule;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/bheptomino.rle");
-/// let handler = format::open(path_str).unwrap();
+/// let handler = format::open(path_str)?;
 /// assert_eq!(handler.rule(), Rule::conways_life());
 /// assert_eq!(handler.live_cells().count(), 7);
+/// # Ok(())
+/// # }
 /// ```
 ///
 pub fn open<P>(path: P) -> Result<Box<dyn Format>>
