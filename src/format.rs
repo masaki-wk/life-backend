@@ -22,7 +22,6 @@ pub trait Format: fmt::Display {
 /// # Examples
 ///
 /// ```
-/// # use std::path::Path;
 /// # use life_backend::format;
 /// # use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells");
@@ -32,7 +31,6 @@ pub trait Format: fmt::Display {
 /// ```
 ///
 /// ```
-/// # use std::path::Path;
 /// # use life_backend::format;
 /// # use life_backend::Rule;
 /// let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/bheptomino.rle");
