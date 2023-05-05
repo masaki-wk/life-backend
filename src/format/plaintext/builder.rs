@@ -59,7 +59,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().build().unwrap();
     /// ```
@@ -110,7 +110,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").build().unwrap();
     /// assert_eq!(target.name(), Some("foo".to_string()));
@@ -121,7 +121,7 @@ where
     /// Code that calls name() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
     /// ```
@@ -129,7 +129,7 @@ where
     /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
     ///
     /// ```should_panic
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
@@ -153,7 +153,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build().unwrap();
     /// assert_eq!(target.comments().len(), 2);
@@ -166,7 +166,7 @@ where
     /// Code that calls comment() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
@@ -190,7 +190,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.iter().collect::<PlaintextBuilder>();
     /// let target = builder.build().unwrap();
@@ -216,7 +216,7 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
     /// let target = builder.build().unwrap();

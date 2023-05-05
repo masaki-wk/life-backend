@@ -27,7 +27,7 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
@@ -49,7 +49,7 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
@@ -68,7 +68,7 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     !comment0\n\
@@ -92,7 +92,7 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
