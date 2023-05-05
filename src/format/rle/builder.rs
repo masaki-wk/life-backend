@@ -96,7 +96,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().build().unwrap();
     /// ```
@@ -192,7 +192,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().name("foo").build().unwrap();
     /// assert_eq!(target.comments().len(), 1);
@@ -204,7 +204,7 @@ where
     /// Code that calls name() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
     /// ```
@@ -212,7 +212,7 @@ where
     /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
     ///
     /// ```should_panic
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
     /// ```
@@ -240,7 +240,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().created("foo").build().unwrap();
     /// assert_eq!(target.comments().len(), 1);
@@ -252,7 +252,7 @@ where
     /// Code that calls created() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().created("foo").created("bar").build().unwrap(); // Compile error
     /// ```
@@ -280,7 +280,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build().unwrap();
     /// assert_eq!(target.comments().len(), 2);
@@ -293,7 +293,7 @@ where
     /// Code that calls comment() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
     /// ```
@@ -321,8 +321,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
-    /// # use life_backend::Rule;
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Rule;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).build().unwrap();
     /// assert_eq!(*target.rule(), Rule::conways_life());
@@ -333,7 +333,7 @@ where
     /// Code that calls rule() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let target = pattern.iter().collect::<RleBuilder>().rule(Rule::conways_life()).rule(Rule::highlife()).build().unwrap(); // Compile error
     /// ```
@@ -359,7 +359,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.iter().collect::<RleBuilder>();
     /// let target = builder.build().unwrap();
@@ -387,7 +387,7 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::RleBuilder;
+    /// use life_backend::format::RleBuilder;
     /// let pattern = [(1, 0), (0, 1)];
     /// let builder = pattern.into_iter().collect::<RleBuilder>();
     /// let target = builder.build().unwrap();

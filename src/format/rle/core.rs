@@ -28,7 +28,7 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
@@ -50,7 +50,7 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
@@ -70,7 +70,7 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
@@ -90,8 +90,8 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
-    /// # use life_backend::Rule;
+    /// use life_backend::format::Rle;
+    /// use life_backend::Rule;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2, rule = B3/S23\n\
@@ -111,7 +111,7 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
@@ -132,7 +132,7 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
