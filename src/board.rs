@@ -36,7 +36,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let board = Board::new();
     /// assert_eq!(board.get(0, 0), false);
     /// ```
@@ -52,7 +52,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// assert_eq!(board.get(0, 0), true);
@@ -68,21 +68,19 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board is empty, returns None.
+    /// If the board contains live cells, Some(x_min, x_max, y_min, y_max) will be returned.
+    /// Otherwise, None will be returned.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(-1, 2, true);
     /// board.set(3, -2, true);
-    /// let (x_min, x_max, y_min, y_max) = board.bounding_box().unwrap();
-    /// assert_eq!(x_min, -1);
-    /// assert_eq!(x_max, 3);
-    /// assert_eq!(y_min, -2);
-    /// assert_eq!(y_max, 2);
+    /// let bbox = board.bounding_box();
+    /// assert_eq!(bbox, Some((-1, 3, -2, 2)));
     /// ```
     ///
     pub fn bounding_box(&self) -> Option<(IndexType, IndexType, IndexType, IndexType)>
@@ -109,7 +107,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// board.clear();
@@ -126,7 +124,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// board.set(1, 0, true);
@@ -197,8 +195,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
-    /// # use std::collections::HashSet;
+    /// use life_backend::Board;
+    /// use std::collections::HashSet;
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
@@ -224,8 +222,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
-    /// # use std::collections::HashSet;
+    /// use life_backend::Board;
+    /// use std::collections::HashSet;
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
@@ -249,7 +247,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// assert_eq!(board.get(0, 0), false);
@@ -277,7 +275,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.into_iter().collect();
     /// assert_eq!(board.get(0, 0), false);
@@ -305,7 +303,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.iter());
@@ -334,7 +332,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Board;
+    /// use life_backend::Board;
     /// let mut board = Board::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.into_iter());

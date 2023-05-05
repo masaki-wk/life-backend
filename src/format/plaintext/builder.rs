@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
 
-/// The builder of Plaintext.
+/// A builder of Plaintext.
 #[derive(Debug, Clone)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
@@ -54,14 +54,20 @@ where
     Name: PlaintextBuilderName,
     Comment: PlaintextBuilderComment,
 {
-    /// Builds the Plaintext.
+    /// Builds the specified Plaintext value.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().build().unwrap();
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .build()?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn build(self) -> Result<Plaintext> {
@@ -110,10 +116,17 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").build().unwrap();
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo")
+    ///     .build()?;
     /// assert_eq!(target.name(), Some("foo".to_string()));
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// # Errors
@@ -121,17 +134,32 @@ where
     /// Code that calls name() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo").name("bar").build().unwrap(); // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo")
+    ///     .name("bar") // Compile error
+    ///     .build()?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
     ///
     /// ```should_panic
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build().unwrap(); // this unwrap will panic
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .name("foo\nbar")
+    ///     .build()?; // Should fail
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
@@ -153,12 +181,19 @@ where
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0\ncomment1").build().unwrap();
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .comment("comment0\ncomment1")
+    ///     .build()?;
     /// assert_eq!(target.comments().len(), 2);
     /// assert_eq!(target.comments()[0], "comment0");
     /// assert_eq!(target.comments()[1], "comment1");
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// # Errors
@@ -166,9 +201,17 @@ where
     /// Code that calls comment() twice or more will fail at compile time.  For example:
     ///
     /// ```compile_fail
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().comment("comment0").comment("comment1").build().unwrap(); // Compile error
+    /// let target = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>()
+    ///     .comment("comment0")
+    ///     .comment("comment1") // Compile error
+    ///     .build()?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
@@ -190,10 +233,15 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.iter().collect::<PlaintextBuilder>();
-    /// let target = builder.build().unwrap();
+    /// let builder = pattern
+    ///     .iter()
+    ///     .collect::<PlaintextBuilder>();
+    /// let target = builder.build()?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self
@@ -216,10 +264,15 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::PlaintextBuilder;
+    /// use life_backend::format::PlaintextBuilder;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern.into_iter().collect::<PlaintextBuilder>();
-    /// let target = builder.build().unwrap();
+    /// let builder = pattern
+    ///     .into_iter()
+    ///     .collect::<PlaintextBuilder>();
+    /// let target = builder.build()?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     fn from_iter<T>(iter: T) -> Self

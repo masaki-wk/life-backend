@@ -28,13 +28,16 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -50,14 +53,17 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
     /// assert_eq!(parser.width(), 3);
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -70,14 +76,17 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
     /// assert_eq!(parser.height(), 2);
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -90,15 +99,18 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
-    /// # use life_backend::Rule;
+    /// use life_backend::format::Rle;
+    /// use life_backend::Rule;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2, rule = B3/S23\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
     /// assert_eq!(*parser.rule(), Rule::conways_life());
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -111,15 +123,18 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
     /// assert_eq!(parser.comments().len(), 1);
     /// assert_eq!(parser.comments()[0], "#N T-tetromino");
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -132,19 +147,22 @@ impl Rle {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Rle;
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
     ///     x = 3, y = 2\n\
     ///     3o$bo!\n\
     /// ";
-    /// let parser = Rle::new(pattern.as_bytes()).unwrap();
+    /// let parser = Rle::new(pattern.as_bytes())?;
     /// let mut iter = parser.live_cells();
     /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
     /// assert_eq!(iter.next(), Some((2, 0)));
     /// assert_eq!(iter.next(), Some((1, 1)));
     /// assert_eq!(iter.next(), None);
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn live_cells(&self) -> impl Iterator<Item = (usize, usize)> + '_ {

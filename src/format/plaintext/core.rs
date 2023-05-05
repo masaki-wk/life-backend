@@ -27,13 +27,16 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
     ///     .O.\n\
     /// ";
-    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
+    /// let parser = Plaintext::new(pattern.as_bytes())?;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -49,14 +52,17 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
     ///     .O.\n\
     /// ";
-    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
+    /// let parser = Plaintext::new(pattern.as_bytes())?;
     /// assert_eq!(parser.name(), Some("T-tetromino".to_string()));
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn name(&self) -> Option<String> {
@@ -68,7 +74,8 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     !comment0\n\
@@ -76,10 +83,12 @@ impl Plaintext {
     ///     OOO\n\
     ///     .O.\n\
     /// ";
-    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
+    /// let parser = Plaintext::new(pattern.as_bytes())?;
     /// assert_eq!(parser.comments().len(), 2);
     /// assert_eq!(parser.comments()[0], "comment0");
     /// assert_eq!(parser.comments()[1], "comment1");
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     #[inline]
@@ -92,19 +101,22 @@ impl Plaintext {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::format::Plaintext;
+    /// use life_backend::format::Plaintext;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
     ///     OOO\n\
     ///     .O.\n\
     /// ";
-    /// let parser = Plaintext::new(pattern.as_bytes()).unwrap();
+    /// let parser = Plaintext::new(pattern.as_bytes())?;
     /// let mut iter = parser.live_cells();
     /// assert_eq!(iter.next(), Some((0, 0)));
     /// assert_eq!(iter.next(), Some((1, 0)));
     /// assert_eq!(iter.next(), Some((2, 0)));
     /// assert_eq!(iter.next(), Some((1, 1)));
     /// assert_eq!(iter.next(), None);
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     pub fn live_cells(&self) -> impl Iterator<Item = (usize, usize)> + '_ {

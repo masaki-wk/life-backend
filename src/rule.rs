@@ -19,13 +19,16 @@ const TRUTH_TABLE_SIZE: usize = 9;
 /// # Examples
 ///
 /// ```
-/// # use life_backend::Rule;
-/// let rule = "B3/S23".parse::<Rule>().unwrap();
+/// use life_backend::Rule;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let rule = "B3/S23".parse::<Rule>()?;
 /// for i in 0..=8 {
 ///     assert_eq!(rule.is_born(i), [3].iter().any(|&x| x == i));
 ///     assert_eq!(rule.is_survive(i), [2, 3].iter().any(|&x| x == i));
 /// }
 /// assert_eq!(format!("{rule}"), "B3/S23");
+/// # Ok(())
+/// # }
 /// ```
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,7 +45,7 @@ impl Rule {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Rule;
+    /// use life_backend::Rule;
     /// let rule = Rule::new(
     ///     &[false, false, false, true, false, false, false, false, false],
     ///     &[false, false, true, true, false, false, false, false, false],
@@ -66,12 +69,12 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the count argument is greater than 8.
+    /// Panics if the argument `count` is greater than 8.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Rule;
+    /// use life_backend::Rule;
     /// let rule = Rule::conways_life();
     /// let b = [3];
     /// for i in 0..=8 {
@@ -88,12 +91,12 @@ impl Rule {
     ///
     /// # Panics
     ///
-    /// Panics if the count argument is greater than 8.
+    /// Panics if the argument `count` is greater than 8.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Rule;
+    /// use life_backend::Rule;
     /// let rule = Rule::conways_life();
     /// let s = [2, 3];
     /// for i in 0..=8 {
@@ -111,7 +114,7 @@ impl Rule {
     /// # Examples
     ///
     /// ```
-    /// # use life_backend::Rule;
+    /// use life_backend::Rule;
     /// let rule = Rule::conways_life();
     /// let b = [3];
     /// let s = [2, 3];

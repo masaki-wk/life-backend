@@ -14,7 +14,7 @@ pub(super) struct PlaintextParser {
 // Inherent methods
 
 impl PlaintextParser {
-    /// Parses the specified implementor of Read (ex. File, `&[u8]`) into Plaintext
+    // Parses the specified implementor of Read (ex. File, `&[u8]`) into Plaintext
     pub(super) fn parse<R>(read: R) -> Result<Plaintext>
     where
         R: Read,
