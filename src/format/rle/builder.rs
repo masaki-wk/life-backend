@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 use super::{Rle, RleHeader, RleRunsTriple};
 use crate::Rule;
 
-/// The builder of Rle.
+/// A builder of Rle.
 #[derive(Debug, Clone)]
 pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
@@ -91,7 +91,7 @@ where
     Comment: RleBuilderComment,
     RuleSpec: RleBuilderRule,
 {
-    /// Builds the Rle.
+    /// Builds the specified Rle value.
     ///
     /// # Examples
     ///
@@ -224,7 +224,7 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build()?; // should fail
+    /// let target = pattern.iter().collect::<RleBuilder>().name("foo\nbar").build()?; // Should fail
     /// # Ok(())
     /// # }
     /// ```

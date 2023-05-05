@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
 
-/// The builder of Plaintext.
+/// A builder of Plaintext.
 #[derive(Debug, Clone)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
@@ -54,7 +54,7 @@ where
     Name: PlaintextBuilderName,
     Comment: PlaintextBuilderComment,
 {
-    /// Builds the Plaintext.
+    /// Builds the specified Plaintext value.
     ///
     /// # Examples
     ///
@@ -141,7 +141,7 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build()?; // should fail
+    /// let target = pattern.iter().collect::<PlaintextBuilder>().name("foo\nbar").build()?; // Should fail
     /// # Ok(())
     /// # }
     /// ```
