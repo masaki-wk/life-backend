@@ -158,13 +158,13 @@ impl fmt::Display for ParseRuleError {
 impl FromStr for Rule {
     type Err = ParseRuleError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; 9]> {
-            let mut buf = [false; 9];
-            for c in numbers.chars() {
-                let n = c.to_digit(9)?;
-                buf[n as usize] = true;
-            }
-            Some(buf)
+        const TRUTH_TABLE_SIZE: usize = 9;
+        fn convert_numbers_to_slice(numbers: &str) -> Option<[bool; TRUTH_TABLE_SIZE]> {
+            numbers.chars().try_fold([false; TRUTH_TABLE_SIZE], |mut buf, c| {
+                let n = c.to_digit(TRUTH_TABLE_SIZE as u32)? as usize;
+                buf[n] = true;
+                Some(buf)
+            })
         }
         let fields_splitted: Vec<_> = s.split('/').collect();
         if fields_splitted.len() != 2 {
