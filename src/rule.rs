@@ -229,12 +229,28 @@ mod tests {
     }
     #[test]
     fn test_new_conways_life() {
-        let target = Rule::new(&[false, false, false, true, false, false, false, false, false], &[false, false, true, true, false, false, false, false, false]);
+        let target = Rule::new(
+            &[false, false, false, true, false, false, false, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        );
         check_value(&target, &[3], &[2, 3]);
     }
     #[test]
     fn test_new_highlife() {
-        let target = Rule::new(&[false, false, false, true, false, false, true, false, false], &[false, false, true, true, false, false, false, false, false]);
+        let target = Rule::new(
+            &[false, false, false, true, false, false, true, false, false],
+            &[false, false, true, true, false, false, false, false, false],
+        );
+        check_value(&target, &[3, 6], &[2, 3]);
+    }
+    #[test]
+    fn test_conways_life() {
+        let target = Rule::conways_life();
+        check_value(&target, &[3], &[2, 3]);
+    }
+    #[test]
+    fn test_highlife() {
+        let target = Rule::highlife();
         check_value(&target, &[3, 6], &[2, 3]);
     }
     #[test]
