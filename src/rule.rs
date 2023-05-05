@@ -51,7 +51,7 @@ impl Rule {
     /// }
     /// ```
     ///
-    pub fn new(birth: &[bool; 9], survival: &[bool; 9]) -> Self {
+    pub const fn new(birth: &[bool; 9], survival: &[bool; 9]) -> Self {
         Self {
             birth: *birth,
             survival: *survival,
@@ -76,7 +76,7 @@ impl Rule {
     /// ```
     ///
     #[inline]
-    pub fn is_born(&self, count: usize) -> bool {
+    pub const fn is_born(&self, count: usize) -> bool {
         self.birth[count]
     }
 
@@ -98,7 +98,7 @@ impl Rule {
     /// ```
     ///
     #[inline]
-    pub fn is_survive(&self, count: usize) -> bool {
+    pub const fn is_survive(&self, count: usize) -> bool {
         self.survival[count]
     }
 
