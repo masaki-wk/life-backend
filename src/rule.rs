@@ -123,28 +123,6 @@ impl Rule {
             &[false, false, true, true, false, false, false, false, false],
         )
     }
-
-    /// Returns the rule of [HighLife](https://conwaylife.com/wiki/OCA:HighLife).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use life_backend::Rule;
-    /// let rule = Rule::highlife();
-    /// let b = [3, 6];
-    /// let s = [2, 3];
-    /// for i in 0..=8 {
-    ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
-    ///     assert_eq!(rule.is_survive(i), s.iter().any(|&x| x == i));
-    /// }
-    /// ```
-    ///
-    pub const fn highlife() -> Self {
-        Self::new(
-            &[false, false, false, true, false, false, true, false, false],
-            &[false, false, true, true, false, false, false, false, false],
-        )
-    }
 }
 
 // Trait implementations
@@ -224,6 +202,10 @@ impl FromStr for Rule {
 mod tests {
     use super::*;
     use anyhow::Result;
+    const RULE_HIGHLIFE: Rule = Rule::new(
+        &[false, false, false, true, false, false, true, false, false],
+        &[false, false, true, true, false, false, false, false, false],
+    );
     fn check_value(target: &Rule, expected_birth: &[usize], expected_survival: &[usize]) {
         for i in 0..=8 {
             assert_eq!(target.is_born(i), expected_birth.iter().any(|&x| x == i));
@@ -252,18 +234,13 @@ mod tests {
         check_value(&target, &[3], &[2, 3]);
     }
     #[test]
-    fn test_highlife() {
-        let target = Rule::highlife();
-        check_value(&target, &[3, 6], &[2, 3]);
-    }
-    #[test]
     fn test_display_conways_life() {
         let target = Rule::conways_life();
         assert_eq!(target.to_string(), "B3/S23");
     }
     #[test]
     fn test_display_highlife() {
-        let target = Rule::highlife();
+        let target = RULE_HIGHLIFE;
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]
