@@ -39,8 +39,11 @@ impl Rule {
     ///
     /// ```
     /// # use life_backend::Rule;
-    /// let rule = Rule::new(&[false, false, false, true, false, false, true, false, false], &[false, false, true, true, false, false, false, false, false]);
-    /// let b = [3, 6];
+    /// let rule = Rule::new(
+    ///     &[false, false, false, true, false, false, false, false, false],
+    ///     &[false, false, true, true, false, false, false, false, false],
+    /// );
+    /// let b = [3];
     /// let s = [2, 3];
     /// for i in 0..=8 {
     ///     assert_eq!(rule.is_born(i), b.iter().any(|&x| x == i));
