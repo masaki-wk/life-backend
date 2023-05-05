@@ -20,7 +20,6 @@ const TRUTH_TABLE_SIZE: usize = 9;
 ///
 /// ```
 /// use life_backend::Rule;
-///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let rule = "B3/S23".parse::<Rule>()?;
 /// for i in 0..=8 {
@@ -47,7 +46,6 @@ impl Rule {
     ///
     /// ```
     /// use life_backend::Rule;
-    ///
     /// let rule = Rule::new(
     ///     &[false, false, false, true, false, false, false, false, false],
     ///     &[false, false, true, true, false, false, false, false, false],
@@ -77,7 +75,6 @@ impl Rule {
     ///
     /// ```
     /// use life_backend::Rule;
-    ///
     /// let rule = Rule::conways_life();
     /// let b = [3];
     /// for i in 0..=8 {
@@ -100,7 +97,6 @@ impl Rule {
     ///
     /// ```
     /// use life_backend::Rule;
-    ///
     /// let rule = Rule::conways_life();
     /// let s = [2, 3];
     /// for i in 0..=8 {
@@ -119,7 +115,6 @@ impl Rule {
     ///
     /// ```
     /// use life_backend::Rule;
-    ///
     /// let rule = Rule::conways_life();
     /// let b = [3];
     /// let s = [2, 3];

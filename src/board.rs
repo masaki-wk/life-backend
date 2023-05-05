@@ -37,7 +37,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let board = Board::new();
     /// assert_eq!(board.get(0, 0), false);
     /// ```
@@ -54,7 +53,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// assert_eq!(board.get(0, 0), true);
@@ -76,7 +74,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(-1, 2, true);
@@ -113,7 +110,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// board.clear();
@@ -131,7 +127,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// board.set(0, 0, true);
     /// board.set(1, 0, true);
@@ -204,7 +199,6 @@ where
     /// ```
     /// use life_backend::Board;
     /// use std::collections::HashSet;
-    ///
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
@@ -232,7 +226,6 @@ where
     /// ```
     /// use life_backend::Board;
     /// use std::collections::HashSet;
-    ///
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
@@ -257,7 +250,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.iter().collect();
     /// assert_eq!(board.get(0, 0), false);
@@ -286,7 +278,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut pattern = [(1, 0), (0, 1)];
     /// let board: Board = pattern.into_iter().collect();
     /// assert_eq!(board.get(0, 0), false);
@@ -315,7 +306,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.iter());
@@ -345,7 +335,6 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    ///
     /// let mut board = Board::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.into_iter());
