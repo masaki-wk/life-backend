@@ -1,4 +1,3 @@
-use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive, Zero};
 use std::fmt;
 use std::hash::Hash;
@@ -83,30 +82,12 @@ where
         &self.curr_board
     }
 
-    // Creates an iterator over neighbour positions of the specified position, defined as Moore neighbourhood.
-    fn neighbour_positions(position: &Position<IndexType>) -> impl Iterator<Item = Position<IndexType>>
-    where
-        IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
-    {
-        let Position(x, y) = *position;
-        let min = IndexType::min_value();
-        let max = IndexType::max_value();
-        let one = IndexType::one();
-        let x_start = if x > min { x - one } else { x };
-        let x_stop = if x < max { x + one } else { x };
-        let y_start = if y > min { y - one } else { y };
-        let y_stop = if y < max { y + one } else { y };
-        range_inclusive(y_start, y_stop)
-            .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| Position(u, v)))
-            .filter(move |&Position(u, v)| u != x || v != y)
-    }
-
     // Returns the count of live neighbours of the specified position.
     fn live_neighbour_count(board: &Board<IndexType>, position: &Position<IndexType>) -> usize
     where
         IndexType: Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + One + Bounded + ToPrimitive,
     {
-        Self::neighbour_positions(position).filter(|pos| board.get(pos)).count()
+        position.moore_neighborhood_positions().filter(|pos| board.get(pos)).count()
     }
 
     /// Update the state of the game.
@@ -135,7 +116,7 @@ where
         self.curr_board.extend(
             self.prev_board
                 .iter()
-                .flat_map(|pos| Self::neighbour_positions(pos))
+                .flat_map(|pos| pos.moore_neighborhood_positions())
                 .filter(|pos| !self.prev_board.get(pos)),
         );
         self.curr_board.retain(|pos| {

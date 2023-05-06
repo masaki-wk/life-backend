@@ -1,5 +1,28 @@
+use num_iter::range_inclusive;
+use num_traits::{Bounded, One, ToPrimitive};
 use std::hash::Hash;
+use std::ops::{Add, Sub};
 
 /// A position of a cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Position<T>(pub T, pub T);
+
+impl<T> Position<T> {
+    /// Creates an iterator over neighbour positions of the self, defined as Moore neighbourhood.
+    pub fn moore_neighborhood_positions(&self) -> impl Iterator<Item = Self>
+    where
+        T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
+    {
+        let Position(x, y) = *self;
+        let min = T::min_value();
+        let max = T::max_value();
+        let one = T::one();
+        let x_start = if x > min { x - one } else { x };
+        let x_stop = if x < max { x + one } else { x };
+        let y_start = if y > min { y - one } else { y };
+        let y_stop = if y < max { y + one } else { y };
+        range_inclusive(y_start, y_stop)
+            .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| Position(u, v)))
+            .filter(move |&pos| pos != Position(x, y))
+    }
+}
