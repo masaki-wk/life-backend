@@ -160,7 +160,7 @@ impl<IndexType> Default for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Same as new().
+    /// Returns the default value of the type, same as the return value of `new()`.
     #[inline]
     fn default() -> Self {
         Self::new()
