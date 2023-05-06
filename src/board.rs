@@ -6,12 +6,12 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-/// The default index type of Board.
+/// The default index type of `Board`.
 type DefaultIndexType = i16;
 
 /// A representation of a two-dimensional orthogonal grid map of live/dead cells.
 ///
-/// The type parameter IndexType is used as the type of the x- and y-coordinate values for each cell.
+/// The type parameter `IndexType` is used as the type of the x- and y-coordinate values for each cell.
 ///
 /// # Examples
 ///
@@ -145,7 +145,7 @@ where
         self.live_cells.clear();
     }
 
-    /// Retains only the live cell positions specified by the predicate, similar as retain() of HashSet.
+    /// Retains only the live cell positions specified by the predicate, similar as `retain()` of `HashSet`.
     ///
     /// # Examples
     ///
@@ -282,7 +282,7 @@ impl<'a, IndexType> FromIterator<&'a (IndexType, IndexType)> for Board<IndexType
 where
     IndexType: Eq + Hash + Copy + 'a,
 {
-    /// Conversion from a non-owning iterator over a series of &(IndexType, IndexType).
+    /// Conversion from a non-owning iterator over a series of `&(IndexType, IndexType)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -310,7 +310,7 @@ impl<IndexType> FromIterator<(IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Conversion from an owning iterator over a series of (IndexType, IndexType).
+    /// Conversion from an owning iterator over a series of `(IndexType, IndexType)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
@@ -338,7 +338,7 @@ impl<'a, IndexType> Extend<&'a (IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash + Copy + 'a,
 {
-    /// Extend the board with the contents of the specified non-owning iterator over the series of &(IndexType, IndexType).
+    /// Extend the board with the contents of the specified non-owning iterator over the series of `&(IndexType, IndexType)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -367,7 +367,7 @@ impl<IndexType> Extend<(IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Extend the board with the contents of the specified owning iterator over the series of (IndexType, IndexType).
+    /// Extend the board with the contents of the specified owning iterator over the series of `(IndexType, IndexType)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
