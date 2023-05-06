@@ -68,8 +68,8 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board contains live cells, Some(x_min, x_max, y_min, y_max) will be returned.
-    /// Otherwise, None will be returned.
+    /// If the board contains some live cells, `Some(x_min, x_max, y_min, y_max)` will be returned.
+    /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
@@ -79,8 +79,7 @@ where
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(-1, 2, true);
     /// board.set(3, -2, true);
-    /// let bbox = board.bounding_box();
-    /// assert_eq!(bbox, Some((-1, 3, -2, 2)));
+    /// assert_eq!(board.bounding_box(), Some((-1, 3, -2, 2)));
     /// ```
     ///
     pub fn bounding_box(&self) -> Option<(IndexType, IndexType, IndexType, IndexType)>
