@@ -25,6 +25,15 @@ where
     IndexType: Eq + Hash,
 {
     /// Creates an empty board.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Board;
+    /// let board = Board::<i16>::new();
+    /// assert_eq!(board.iter().count(), 0);
+    /// ```
+    ///
     #[inline]
     pub fn new() -> Self {
         let live_cells = HashSet::default();
@@ -148,6 +157,21 @@ where
     IndexType: Eq + Hash,
 {
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Board;
+    /// use std::collections::HashSet;
+    /// let mut board = Board::<i16>::new();
+    /// board.set(1, 0, true);
+    /// board.set(0, 1, true);
+    /// let result: HashSet<_> = board.iter().collect();
+    /// assert_eq!(result.len(), 2);
+    /// assert!(result.contains(&(1, 0)));
+    /// assert!(result.contains(&(0, 1)));
+    /// ```
+    ///
     #[inline]
     pub fn iter(&'a self) -> hash_set::Iter<'a, (IndexType, IndexType)> {
         self.into_iter()
