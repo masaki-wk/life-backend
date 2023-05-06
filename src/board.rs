@@ -9,7 +9,25 @@ use std::hash::Hash;
 /// The default index type of Board.
 type DefaultIndexType = i16;
 
-/// A representation of boards.
+/// A representation of a two-dimensional orthogonal grid map of live/dead cells.
+///
+/// The type parameter IndexType is used as the type of the x- and y-coordinate values for each cell.
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::Board;
+/// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+/// let mut board: Board<i16> = pattern.iter().collect();
+/// assert_eq!(board.get(0, 0), true);
+/// assert_eq!(board.get(0, 1), false);
+/// assert_eq!(board.iter().count(), 4);
+/// board.clear();
+/// board.set(1, 0, true);
+/// board.set(0, 1, true);
+/// assert_eq!(board.iter().count(), 2);
+/// ```
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board<IndexType = DefaultIndexType>
 where
