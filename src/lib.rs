@@ -3,6 +3,9 @@
 mod rule;
 pub use rule::Rule;
 
+mod position;
+pub use position::Position;
+
 mod board;
 pub use board::Board;
 
