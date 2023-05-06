@@ -7,9 +7,9 @@ use std::ops::{Add, Sub};
 use life_backend::format;
 use life_backend::{Board, Game, Position};
 
-fn workload<IndexType>(game: &Game<IndexType>, steps: usize)
+fn workload<CoordinateType>(game: &Game<CoordinateType>, steps: usize)
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
+    CoordinateType: Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive,
 {
     let mut game = game.clone();
     for _ in 0..steps {
@@ -17,11 +17,12 @@ where
     }
 }
 
-fn do_benchmark<IndexType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
+fn do_benchmark<CoordinateType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    CoordinateType:
+        Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
 {
-    let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
+    let from_usize_unwrap = |x| CoordinateType::from_usize(x).unwrap();
     let handler = format::open(path_str)?;
     let rule = handler.rule();
     let board: Board<_> = handler
