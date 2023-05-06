@@ -9,6 +9,23 @@ pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
     /// Creates an iterator over neighbour positions of the self, defined as Moore neighbourhood.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Position;
+    /// use std::collections::HashSet;
+    /// let pos = Position(2, 3);
+    /// let result: HashSet<_> = pos
+    ///     .moore_neighborhood_positions()
+    ///     .collect();
+    /// let expected: HashSet<_> = [(1, 2), (2, 2), (3, 2), (1, 3), (3, 3), (1, 4), (2, 4), (3, 4)]
+    ///     .into_iter()
+    ///     .map(|(x, y)| Position(x, y))
+    ///     .collect();
+    /// assert_eq!(result, expected);
+    /// ```
+    ///
     pub fn moore_neighborhood_positions(&self) -> impl Iterator<Item = Self>
     where
         T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
