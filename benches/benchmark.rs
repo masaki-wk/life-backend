@@ -5,7 +5,7 @@ use std::hash::Hash;
 use std::ops::{Add, Sub};
 
 use life_backend::format;
-use life_backend::{Board, Game};
+use life_backend::{Board, Game, Position};
 
 fn workload<IndexType>(game: &Game<IndexType>, steps: usize)
 where
@@ -24,7 +24,10 @@ where
     let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
     let handler = format::open(path_str)?;
     let rule = handler.rule();
-    let board: Board<_> = handler.live_cells().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
+    let board: Board<_> = handler
+        .live_cells()
+        .map(|pos| Position(from_usize_unwrap(pos.0), from_usize_unwrap(pos.1)))
+        .collect();
     let game = Game::new(rule, board);
     c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())
