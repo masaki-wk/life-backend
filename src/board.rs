@@ -6,10 +6,28 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-/// The default index type of Board.
+/// The default index type of `Board`.
 type DefaultIndexType = i16;
 
-/// A representation of boards.
+/// A representation of a two-dimensional orthogonal grid map of live/dead cells.
+///
+/// The type parameter `IndexType` is used as the type of the x- and y-coordinate values for each cell.
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::Board;
+/// let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+/// let mut board: Board<i16> = pattern.iter().collect();
+/// assert_eq!(board.get(0, 0), true);
+/// assert_eq!(board.get(0, 1), false);
+/// assert_eq!(board.iter().count(), 4);
+/// board.clear();
+/// board.set(1, 0, true);
+/// board.set(0, 1, true);
+/// assert_eq!(board.iter().count(), 2);
+/// ```
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board<IndexType = DefaultIndexType>
 where
@@ -25,6 +43,15 @@ where
     IndexType: Eq + Hash,
 {
     /// Creates an empty board.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Board;
+    /// let board = Board::<i16>::new();
+    /// assert_eq!(board.iter().count(), 0);
+    /// ```
+    ///
     #[inline]
     pub fn new() -> Self {
         let live_cells = HashSet::default();
@@ -37,7 +64,7 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    /// let board = Board::new();
+    /// let board = Board::<i16>::new();
     /// assert_eq!(board.get(0, 0), false);
     /// ```
     ///
@@ -53,7 +80,7 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// board.set(0, 0, true);
     /// assert_eq!(board.get(0, 0), true);
     /// ```
@@ -68,19 +95,18 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board contains live cells, Some(x_min, x_max, y_min, y_max) will be returned.
-    /// Otherwise, None will be returned.
+    /// If the board contains some live cells, `Some(x_min, x_max, y_min, y_max)` will be returned.
+    /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(-1, 2, true);
     /// board.set(3, -2, true);
-    /// let bbox = board.bounding_box();
-    /// assert_eq!(bbox, Some((-1, 3, -2, 2)));
+    /// assert_eq!(board.bounding_box(), Some((-1, 3, -2, 2)));
     /// ```
     ///
     pub fn bounding_box(&self) -> Option<(IndexType, IndexType, IndexType, IndexType)>
@@ -108,7 +134,7 @@ where
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// board.set(0, 0, true);
     /// board.clear();
     /// assert_eq!(board.get(0, 0), false);
@@ -119,13 +145,13 @@ where
         self.live_cells.clear();
     }
 
-    /// Retains only the live cell positions specified by the predicate, similar as retain() of HashSet.
+    /// Retains only the live cell positions specified by the predicate, similar as `retain()` of `HashSet`.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// board.set(0, 0, true);
     /// board.set(1, 0, true);
     /// board.set(0, 1, true);
@@ -149,6 +175,21 @@ where
     IndexType: Eq + Hash,
 {
     /// Creates a non-owning iterator over the series of immutable live cell positions on the board in arbitrary order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Board;
+    /// use std::collections::HashSet;
+    /// let mut board = Board::<i16>::new();
+    /// board.set(1, 0, true);
+    /// board.set(0, 1, true);
+    /// let result: HashSet<_> = board.iter().collect();
+    /// assert_eq!(result.len(), 2);
+    /// assert!(result.contains(&(1, 0)));
+    /// assert!(result.contains(&(0, 1)));
+    /// ```
+    ///
     #[inline]
     pub fn iter(&'a self) -> hash_set::Iter<'a, (IndexType, IndexType)> {
         self.into_iter()
@@ -161,7 +202,7 @@ impl<IndexType> Default for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Same as new().
+    /// Returns the default value of the type, same as the return value of `new()`.
     #[inline]
     fn default() -> Self {
         Self::new()
@@ -198,7 +239,7 @@ where
     /// use life_backend::Board;
     /// use std::collections::HashSet;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter().collect();
+    /// let board: Board<i16> = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
     /// let expected: HashSet<_> = pattern.iter().collect();
     /// assert_eq!(result, expected);
@@ -225,7 +266,7 @@ where
     /// use life_backend::Board;
     /// use std::collections::HashSet;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter().collect();
+    /// let board: Board<i16> = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
     /// let expected: HashSet<_> = pattern.into_iter().collect();
     /// assert_eq!(result, expected);
@@ -241,7 +282,7 @@ impl<'a, IndexType> FromIterator<&'a (IndexType, IndexType)> for Board<IndexType
 where
     IndexType: Eq + Hash + Copy + 'a,
 {
-    /// Conversion from a non-owning iterator over a series of &(IndexType, IndexType).
+    /// Conversion from a non-owning iterator over a series of `&(IndexType, IndexType)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -249,7 +290,7 @@ where
     /// ```
     /// use life_backend::Board;
     /// let pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.iter().collect();
+    /// let board: Board<i16> = pattern.iter().collect();
     /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
     /// assert_eq!(board.get(0, 1), true);
@@ -269,7 +310,7 @@ impl<IndexType> FromIterator<(IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Conversion from an owning iterator over a series of (IndexType, IndexType).
+    /// Conversion from an owning iterator over a series of `(IndexType, IndexType)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
@@ -277,7 +318,7 @@ where
     /// ```
     /// use life_backend::Board;
     /// let mut pattern = [(1, 0), (0, 1)];
-    /// let board: Board = pattern.into_iter().collect();
+    /// let board: Board<i16> = pattern.into_iter().collect();
     /// assert_eq!(board.get(0, 0), false);
     /// assert_eq!(board.get(1, 0), true);
     /// assert_eq!(board.get(0, 1), true);
@@ -297,14 +338,14 @@ impl<'a, IndexType> Extend<&'a (IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash + Copy + 'a,
 {
-    /// Extend the board with the contents of the specified non-owning iterator over the series of &(IndexType, IndexType).
+    /// Extend the board with the contents of the specified non-owning iterator over the series of `&(IndexType, IndexType)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.iter());
     /// assert_eq!(board.get(0, 0), false);
@@ -326,14 +367,14 @@ impl<IndexType> Extend<(IndexType, IndexType)> for Board<IndexType>
 where
     IndexType: Eq + Hash,
 {
-    /// Extend the board with the contents of the specified owning iterator over the series of (IndexType, IndexType).
+    /// Extend the board with the contents of the specified owning iterator over the series of `(IndexType, IndexType)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::Board;
-    /// let mut board = Board::new();
+    /// let mut board = Board::<i16>::new();
     /// let pattern = [(1, 0), (0, 1)];
     /// board.extend(pattern.into_iter());
     /// assert_eq!(board.get(0, 0), false);
