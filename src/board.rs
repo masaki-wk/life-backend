@@ -1,12 +1,13 @@
 use fnv::FnvBuildHasher;
 use num_iter::range_inclusive;
-use num_traits::{One, ToPrimitive, Zero};
+use num_traits::{One, ToPrimitive};
 use std::collections::hash_set;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
+use std::ops::Add;
 
-use crate::Position;
+use crate::{BoardRange, Position};
 
 /// The default coordinate type of `Board`.
 type DefaultCoordinateType = i16;
@@ -98,37 +99,26 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board contains some live cells, `Some(x_min, x_max, y_min, y_max)` will be returned.
+    /// If the board contains any live cells, `Some(BoardRange)` will be returned.
     /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
     /// ```
-    /// use life_backend::{Board, Position};
+    /// use life_backend::{Board, BoardRange, Position};
     /// let mut board = Board::<i16>::new();
     /// assert_eq!(board.bounding_box(), None);
     /// board.set(&Position(-1, 2), true);
     /// board.set(&Position(3, -2), true);
-    /// assert_eq!(board.bounding_box(), Some((-1, 3, -2, 2)));
+    /// assert_eq!(board.bounding_box(), Some(BoardRange::new(-1..=3, -2..=2)));
     /// ```
     ///
-    pub fn bounding_box(&self) -> Option<(CoordinateType, CoordinateType, CoordinateType, CoordinateType)>
+    #[inline]
+    pub fn bounding_box(&self) -> Option<BoardRange<CoordinateType>>
     where
-        CoordinateType: Copy + PartialOrd + Zero,
+        CoordinateType: Copy + PartialOrd,
     {
-        let mut iter = self.live_cells.iter();
-        if let Some(&Position(init_x, init_y)) = iter.next() {
-            Some(iter.fold((init_x, init_x, init_y, init_y), |(x_min, x_max, y_min, y_max), &Position(x, y)| {
-                (
-                    if x_min < x { x_min } else { x },
-                    if x_max > x { x_max } else { x },
-                    if y_min < y { y_min } else { y },
-                    if y_max > y { y_max } else { y },
-                )
-            }))
-        } else {
-            None
-        }
+        BoardRange::new_from_contained(self.live_cells.iter().copied())
     }
 
     /// Removes all live cells in the board.
@@ -214,12 +204,12 @@ where
 
 impl<CoordinateType> fmt::Display for Board<CoordinateType>
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
+    CoordinateType: Eq + Hash + Copy + PartialOrd + One + Add<Output = CoordinateType> + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some((x_min, x_max, y_min, y_max)) = self.bounding_box() {
-            for y in range_inclusive(y_min, y_max) {
-                let line: String = range_inclusive(x_min, x_max)
+        if let Some(bbox) = self.bounding_box() {
+            for y in range_inclusive(*bbox.y().start(), *bbox.y().end()) {
+                let line: String = range_inclusive(*bbox.x().start(), *bbox.x().end())
                     .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
                     .collect();
                 writeln!(f, "{line}")?;

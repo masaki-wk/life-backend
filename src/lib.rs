@@ -6,6 +6,9 @@ pub use rule::Rule;
 mod position;
 pub use position::Position;
 
+mod boardrange;
+pub use boardrange::BoardRange;
+
 mod board;
 pub use board::Board;
 
