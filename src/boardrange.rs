@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::RangeInclusive;
 
 use crate::Position;
@@ -5,6 +6,8 @@ use crate::Position;
 /// A range on a board.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoardRange<T>(RangeInclusive<T>, RangeInclusive<T>);
+
+// Inherent methods
 
 impl<T> BoardRange<T> {
     /// Creates a new `BoardRange`.
@@ -85,5 +88,17 @@ impl<T> BoardRange<T> {
     #[inline]
     pub fn y(&self) -> &RangeInclusive<T> {
         &self.1
+    }
+}
+
+// Trait implementations
+
+impl<T> fmt::Display for BoardRange<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(x:[{}, {}] y:[{}, {}])", self.x().start(), self.x().end(), self.y().start(), self.y().end())?;
+        Ok(())
     }
 }
