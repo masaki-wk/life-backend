@@ -23,7 +23,7 @@ impl<T> BoardRange<T> {
     /// ```
     ///
     #[inline]
-    pub fn new(x: RangeInclusive<T>, y: RangeInclusive<T>) -> Self {
+    pub const fn new(x: RangeInclusive<T>, y: RangeInclusive<T>) -> Self {
         Self(x, y)
     }
 
@@ -72,7 +72,7 @@ impl<T> BoardRange<T> {
     /// ```
     ///
     #[inline]
-    pub fn x(&self) -> &RangeInclusive<T> {
+    pub const fn x(&self) -> &RangeInclusive<T> {
         &self.0
     }
 
@@ -87,7 +87,7 @@ impl<T> BoardRange<T> {
     /// ```
     ///
     #[inline]
-    pub fn y(&self) -> &RangeInclusive<T> {
+    pub const fn y(&self) -> &RangeInclusive<T> {
         &self.1
     }
 
