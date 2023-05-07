@@ -5,11 +5,11 @@ use std::hash::Hash;
 use std::ops::{Add, Sub};
 
 use life_backend::format;
-use life_backend::{Board, Game};
+use life_backend::{Board, Game, Position};
 
-fn workload<IndexType>(game: &Game<IndexType>, steps: usize)
+fn workload<CoordinateType>(game: &Game<CoordinateType>, steps: usize)
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive,
+    CoordinateType: Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive,
 {
     let mut game = game.clone();
     for _ in 0..steps {
@@ -17,14 +17,18 @@ where
     }
 }
 
-fn do_benchmark<IndexType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
+fn do_benchmark<CoordinateType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
 where
-    IndexType: Eq + Hash + Copy + PartialOrd + Add<Output = IndexType> + Sub<Output = IndexType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    CoordinateType:
+        Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
 {
-    let from_usize_unwrap = |x| IndexType::from_usize(x).unwrap();
+    let from_usize_unwrap = |x| CoordinateType::from_usize(x).unwrap();
     let handler = format::open(path_str)?;
     let rule = handler.rule();
-    let board: Board<_> = handler.live_cells().map(|(x, y)| (from_usize_unwrap(x), from_usize_unwrap(y))).collect();
+    let board: Board<_> = handler
+        .live_cells()
+        .map(|pos| Position(from_usize_unwrap(pos.0), from_usize_unwrap(pos.1)))
+        .collect();
     let game = Game::new(rule, board);
     c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())

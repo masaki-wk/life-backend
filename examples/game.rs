@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use std::env;
 
 use life_backend::format;
-use life_backend::{Board, Game};
+use life_backend::{Board, Game, Position};
 
 use i16 as I;
 
@@ -29,7 +29,7 @@ impl Config {
 fn run(config: Config) -> Result<()> {
     let handler = format::open(&config.path_str)?;
     let rule = handler.rule();
-    let board: Board<_> = handler.live_cells().map(|(x, y)| (x as I, y as I)).collect();
+    let board: Board<_> = handler.live_cells().map(|pos| Position(pos.0 as I, pos.1 as I)).collect();
     let game = Game::new(rule, board);
     simulate(game, config.generation, config.step_size);
     Ok(())

@@ -1,14 +1,14 @@
 use anyhow::Result;
 
 use life_backend::format;
-use life_backend::{Board, Game, Rule};
+use life_backend::{Board, Game, Position, Rule};
 
 use i16 as I;
 
 fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
     let handler = format::open(path_str)?;
     let rule = handler.rule();
-    let board: Board<_> = handler.live_cells().map(|(x, y)| (x as I, y as I)).collect();
+    let board: Board<_> = handler.live_cells().map(|pos| Position(pos.0 as I, pos.1 as I)).collect();
     Ok((rule, board))
 }
 
@@ -50,7 +50,10 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
     let (rule, init) = load(path_str)?;
 
     // Setup the expected board
-    let expected: Board<_> = init.iter().map(|&(x, y)| (x + relative_position.0, y + relative_position.1)).collect();
+    let expected: Board<_> = init
+        .iter()
+        .map(|pos| Position(pos.0 + relative_position.0, pos.1 + relative_position.1))
+        .collect();
 
     // Create the game
     let mut game = Game::new(rule, init);
