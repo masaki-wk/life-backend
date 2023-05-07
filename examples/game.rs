@@ -35,16 +35,25 @@ fn run(config: Config) -> Result<()> {
     Ok(())
 }
 
+fn print_game(game: &Game<I>, generation: usize) {
+    let bbox_str = if let Some(bbox) = game.board().bounding_box() {
+        format!("{bbox}")
+    } else {
+        "None".to_string()
+    };
+    let population = game.board().iter().count();
+    println!("Generation {generation}: bounding-box = {bbox_str}, population = {population}");
+    println!("{game}");
+}
+
 fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
     for i in 0..generation {
         if i % step_size == 0 {
-            println!("Generation {i}:");
-            println!("{game}");
+            print_game(&game, generation);
         }
         game.update();
     }
-    println!("Generation {generation}:");
-    println!("{game}");
+    print_game(&game, generation);
 }
 
 fn main() -> Result<()> {

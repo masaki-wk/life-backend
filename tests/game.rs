@@ -12,9 +12,14 @@ fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
     Ok((rule, board))
 }
 
-fn print_game_with_header(header: &str, game: &Game<I>) {
-    println!("{header}");
-    println!("(boundary: {:?})", game.board().bounding_box());
+fn print_game(game: &Game<I>, generation: usize) {
+    let bbox_str = if let Some(bbox) = game.board().bounding_box() {
+        format!("{bbox}")
+    } else {
+        "None".to_string()
+    };
+    let population = game.board().iter().count();
+    println!("Generation {generation}: bounding-box = {bbox_str}, population = {population}");
     println!("{game}");
 }
 
@@ -24,7 +29,7 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
 
     // Create the game
     let mut game = Game::new(rule, init.clone());
-    print_game_with_header("Generation 0:", &game);
+    print_game(&game, 0);
 
     // Advance the game to the target generation
     for i in 0..period {
@@ -33,7 +38,7 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
         }
         game.update();
     }
-    print_game_with_header(&format!("Generation {}:", period), &game);
+    print_game(&game, period);
 
     // Check the result
     let result = game.board();
@@ -57,13 +62,13 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
 
     // Create the game
     let mut game = Game::new(rule, init);
-    print_game_with_header("Generation 0:", &game);
+    print_game(&game, 0);
 
     // Advance the game to the target generation
     for _ in 0..period {
         game.update();
     }
-    print_game_with_header(&format!("Generation {}:", period), &game);
+    print_game(&game, period);
 
     // Check the result
     let result = game.board();
@@ -77,13 +82,13 @@ fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: u
 
     // Create the game
     let mut game = Game::new(rule, init);
-    print_game_with_header("Generation 0:", &game);
+    print_game(&game, 0);
 
     // Advance the game to the target generation
     for _ in 0..steps {
         game.update();
     }
-    print_game_with_header(&format!("Generation {}:", steps), &game);
+    print_game(&game, steps);
 
     // Check the result
     let result = game.board().iter().count();
