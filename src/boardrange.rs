@@ -35,11 +35,11 @@ impl<T> BoardRange<T> {
     /// ```
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from_contained(positions.into_iter());
+    /// let range = BoardRange::new_from(positions.into_iter());
     /// assert_eq!(range, Some(BoardRange::new(0..=2, 0..=1)));
     /// ```
     ///
-    pub fn new_from_contained<U>(mut iter: U) -> Option<Self>
+    pub fn new_from<U>(mut iter: U) -> Option<Self>
     where
         T: Copy + PartialOrd,
         U: Iterator<Item = Position<T>>,
