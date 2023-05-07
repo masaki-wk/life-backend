@@ -70,7 +70,7 @@ where
     /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// let board = game.board();
-    /// assert_eq!(board.bounding_box(), Some(BoardRange::new(0..=1, 0..=1)));
+    /// assert_eq!(board.bounding_box(), BoardRange::new(0..=1, 0..=1));
     /// assert_eq!(board.get(&Position(0, 0)), false);
     /// assert_eq!(board.get(&Position(1, 0)), true);
     /// assert_eq!(board.get(&Position(0, 1)), true);
@@ -101,7 +101,7 @@ where
     /// let mut game = Game::new(rule, board);
     /// game.update();
     /// let board = game.board();
-    /// assert_eq!(board.bounding_box(), Some(BoardRange::new(1..=1, 0..=2)));
+    /// assert_eq!(board.bounding_box(), BoardRange::new(1..=1, 0..=2));
     /// assert_eq!(board.get(&Position(1, 0)), true);
     /// assert_eq!(board.get(&Position(1, 1)), true);
     /// assert_eq!(board.get(&Position(1, 2)), true);

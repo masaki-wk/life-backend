@@ -1,3 +1,4 @@
+use num_traits::{One, Zero};
 use std::fmt;
 use std::ops::RangeInclusive;
 
@@ -36,16 +37,16 @@ impl<T> BoardRange<T> {
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
     /// let range = BoardRange::new_from(positions.into_iter());
-    /// assert_eq!(range, Some(BoardRange::new(0..=2, 0..=1)));
+    /// assert_eq!(range, BoardRange::new(0..=2, 0..=1));
     /// ```
     ///
-    pub fn new_from<U>(mut iter: U) -> Option<Self>
+    pub fn new_from<U>(mut iter: U) -> Self
     where
-        T: Copy + PartialOrd,
+        T: Copy + PartialOrd + Zero + One,
         U: Iterator<Item = Position<T>>,
     {
         if let Some(Position(init_x, init_y)) = iter.next() {
-            Some(iter.fold(Self::new(init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
+            iter.fold(Self::new(init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
                 let x_start = *acc.x().start();
                 let x_end = *acc.x().end();
                 let y_start = *acc.y().start();
@@ -54,9 +55,9 @@ impl<T> BoardRange<T> {
                     (if x_start < x { x_start } else { x })..=(if x_end > x { x_end } else { x }),
                     (if y_start < y { y_start } else { y })..=(if y_end > y { y_end } else { y }),
                 )
-            }))
+            })
         } else {
-            None
+            Self::new(T::one()..=T::zero(), T::one()..=T::zero())
         }
     }
 
@@ -89,16 +90,37 @@ impl<T> BoardRange<T> {
     pub fn y(&self) -> &RangeInclusive<T> {
         &self.1
     }
+
+    /// Returns `true` if the range contains no area.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::BoardRange;
+    /// let range = BoardRange::<i16>::new_from([].into_iter());
+    /// assert!(range.is_empty());
+    /// ```
+    ///
+    pub fn is_empty(&self) -> bool
+    where
+        T: PartialOrd,
+    {
+        self.x().is_empty() || self.y().is_empty()
+    }
 }
 
 // Trait implementations
 
 impl<T> fmt::Display for BoardRange<T>
 where
-    T: fmt::Display,
+    T: PartialOrd + fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "(x:[{}, {}] y:[{}, {}])", self.x().start(), self.x().end(), self.y().start(), self.y().end())?;
+        if self.is_empty() {
+            write!(f, "(empty)")?;
+        } else {
+            write!(f, "(x:[{}, {}] y:[{}, {}])", self.x().start(), self.x().end(), self.y().start(), self.y().end())?;
+        }
         Ok(())
     }
 }

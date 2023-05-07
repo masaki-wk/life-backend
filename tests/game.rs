@@ -13,13 +13,9 @@ fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
 }
 
 fn print_game(game: &Game<I>, generation: usize) {
-    let bbox_str = if let Some(bbox) = game.board().bounding_box() {
-        format!("{bbox}")
-    } else {
-        "None".to_string()
-    };
+    let bbox = game.board().bounding_box();
     let population = game.board().iter().count();
-    println!("Generation {generation}: bounding-box = {bbox_str}, population = {population}");
+    println!("Generation {generation}: bounding-box = {bbox}, population = {population}");
     println!("{game}");
 }
 

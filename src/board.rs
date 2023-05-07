@@ -1,11 +1,10 @@
 use fnv::FnvBuildHasher;
 use num_iter::range_inclusive;
-use num_traits::{One, ToPrimitive};
+use num_traits::{One, ToPrimitive, Zero};
 use std::collections::hash_set;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
-use std::ops::Add;
 
 use crate::{BoardRange, Position};
 
@@ -99,24 +98,21 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board contains any live cells, `Some(BoardRange)` will be returned.
-    /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::{Board, BoardRange, Position};
-    /// let mut board = Board::<i16>::new();
-    /// assert_eq!(board.bounding_box(), None);
+    /// let mut board = Board::new();
     /// board.set(&Position(-1, 2), true);
     /// board.set(&Position(3, -2), true);
-    /// assert_eq!(board.bounding_box(), Some(BoardRange::new(-1..=3, -2..=2)));
+    /// assert_eq!(board.bounding_box(), BoardRange::new(-1..=3, -2..=2));
     /// ```
     ///
     #[inline]
-    pub fn bounding_box(&self) -> Option<BoardRange<CoordinateType>>
+    pub fn bounding_box(&self) -> BoardRange<CoordinateType>
     where
-        CoordinateType: Copy + PartialOrd,
+        CoordinateType: Copy + PartialOrd + Zero + One,
     {
         BoardRange::new_from(self.live_cells.iter().copied())
     }
@@ -204,16 +200,15 @@ where
 
 impl<CoordinateType> fmt::Display for Board<CoordinateType>
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + One + Add<Output = CoordinateType> + ToPrimitive,
+    CoordinateType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some(bbox) = self.bounding_box() {
-            for y in range_inclusive(*bbox.y().start(), *bbox.y().end()) {
-                let line: String = range_inclusive(*bbox.x().start(), *bbox.x().end())
-                    .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
-                    .collect();
-                writeln!(f, "{line}")?;
-            }
+        let bbox = self.bounding_box();
+        for y in range_inclusive(*bbox.y().start(), *bbox.y().end()) {
+            let line: String = range_inclusive(*bbox.x().start(), *bbox.x().end())
+                .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
+                .collect();
+            writeln!(f, "{line}")?;
         }
         Ok(())
     }
