@@ -115,6 +115,19 @@ impl<T> BoardRange<T> {
 
 // Trait implementations
 
+impl<T> Default for BoardRange<T>
+where
+    T: Zero + One,
+{
+    /// Returns the default value of the type, same as the return value of [`new()`].
+    ///
+    /// [`new()`]: #method.new
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> fmt::Display for BoardRange<T>
 where
     T: PartialOrd + fmt::Display,
