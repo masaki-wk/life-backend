@@ -11,25 +11,24 @@ pub struct BoardRange<T>(RangeInclusive<T>, RangeInclusive<T>);
 // Inherent methods
 
 impl<T> BoardRange<T> {
-    /// Creates a new `BoardRange`.
+    /// Creates an empty `BoardRange`.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::BoardRange;
-    /// let range = BoardRange::new(0..=3, 1..=2);
-    /// assert_eq!(range.x(), &(0..=3));
-    /// assert_eq!(range.y(), &(1..=2));
+    /// let range = BoardRange::<i32>::new();
+    /// assert!(range.is_empty());
     /// ```
     ///
-    #[inline]
-    pub const fn new(x: RangeInclusive<T>, y: RangeInclusive<T>) -> Self {
-        Self(x, y)
+    pub fn new() -> Self
+    where
+        T: Zero + One,
+    {
+        Self(T::one()..=T::zero(), T::one()..=T::zero())
     }
 
     /// Creates a new `BoardRange` from the iterator over series of positions to be contained.
-    /// If the iterator contains any positions, `Some(BoardRange)` will be returned.
-    /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
@@ -37,7 +36,9 @@ impl<T> BoardRange<T> {
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
     /// let range = BoardRange::new_from(positions.into_iter());
-    /// assert_eq!(range, BoardRange::new(0..=2, 0..=1));
+    /// assert!(!range.is_empty());
+    /// assert_eq!(range.x(), &(0..=2));
+    /// assert_eq!(range.y(), &(0..=1));
     /// ```
     ///
     pub fn new_from<U>(mut iter: U) -> Self
@@ -46,18 +47,17 @@ impl<T> BoardRange<T> {
         U: Iterator<Item = Position<T>>,
     {
         if let Some(Position(init_x, init_y)) = iter.next() {
-            iter.fold(Self::new(init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
-                let x_start = *acc.x().start();
-                let x_end = *acc.x().end();
-                let y_start = *acc.y().start();
-                let y_end = *acc.y().end();
-                Self::new(
+            let range_pair = iter.fold((init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
+                let (x_start, x_end) = acc.0.into_inner();
+                let (y_start, y_end) = acc.1.into_inner();
+                (
                     (if x_start < x { x_start } else { x })..=(if x_end > x { x_end } else { x }),
                     (if y_start < y { y_start } else { y })..=(if y_end > y { y_end } else { y }),
                 )
-            })
+            });
+            Self(range_pair.0, range_pair.1)
         } else {
-            Self::new(T::one()..=T::zero(), T::one()..=T::zero())
+            Self::new()
         }
     }
 
@@ -66,9 +66,10 @@ impl<T> BoardRange<T> {
     /// # Examples
     ///
     /// ```
-    /// use life_backend::BoardRange;
-    /// let range = BoardRange::new(0..=3, 1..=2);
-    /// assert_eq!(range.x(), &(0..=3));
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range = BoardRange::new_from(positions.into_iter());
+    /// assert_eq!(range.x(), &(0..=2));
     /// ```
     ///
     #[inline]
@@ -81,9 +82,10 @@ impl<T> BoardRange<T> {
     /// # Examples
     ///
     /// ```
-    /// use life_backend::BoardRange;
-    /// let range = BoardRange::new(0..=3, 1..=2);
-    /// assert_eq!(range.y(), &(1..=2));
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range = BoardRange::new_from(positions.into_iter());
+    /// assert_eq!(range.y(), &(0..=1));
     /// ```
     ///
     #[inline]
@@ -96,16 +98,18 @@ impl<T> BoardRange<T> {
     /// # Examples
     ///
     /// ```
-    /// use life_backend::BoardRange;
-    /// let range = BoardRange::<i16>::new_from([].into_iter());
-    /// assert!(range.is_empty());
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range = BoardRange::new_from(positions.into_iter());
+    /// assert!(!range.is_empty());
     /// ```
     ///
+    #[inline]
     pub fn is_empty(&self) -> bool
     where
         T: PartialOrd,
     {
-        self.x().is_empty() || self.y().is_empty()
+        self.x().is_empty()
     }
 }
 

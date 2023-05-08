@@ -102,11 +102,13 @@ where
     /// # Examples
     ///
     /// ```
-    /// use life_backend::{Board, BoardRange, Position};
+    /// use life_backend::{Board, Position};
     /// let mut board = Board::new();
     /// board.set(&Position(-1, 2), true);
     /// board.set(&Position(3, -2), true);
-    /// assert_eq!(board.bounding_box(), BoardRange::new(-1..=3, -2..=2));
+    /// let bbox = board.bounding_box();
+    /// assert_eq!(bbox.x(), &(-1..=3));
+    /// assert_eq!(bbox.y(), &(-2..=2));
     /// ```
     ///
     #[inline]
