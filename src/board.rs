@@ -201,7 +201,9 @@ impl<CoordinateType> Default for Board<CoordinateType>
 where
     CoordinateType: Eq + Hash,
 {
-    /// Returns the default value of the type, same as the return value of `new()`.
+    /// Returns the default value of the type, same as the return value of [`new()`].
+    ///
+    /// [`new()`]: #method.new
     #[inline]
     fn default() -> Self {
         Self::new()
