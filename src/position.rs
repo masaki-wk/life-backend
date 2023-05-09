@@ -1,5 +1,6 @@
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive};
+use std::fmt;
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 
@@ -41,5 +42,25 @@ impl<T> Position<T> {
         range_inclusive(y_start, y_stop)
             .flat_map(move |v| range_inclusive(x_start, x_stop).map(move |u| Position(u, v)))
             .filter(move |&pos| pos != Position(x, y))
+    }
+}
+
+impl<T> fmt::Display for Position<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)?;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_display() {
+        let target = Position(1, 2);
+        assert_eq!(format!("{target}"), "(1, 2)".to_string());
     }
 }
