@@ -9,7 +9,7 @@ use std::ops::{Add, Sub};
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
-    /// Creates an iterator over neighbour positions of the self, defined as Moore neighbourhood.
+    /// Creates an iterator over neighbour positions of the self, defined as [Moore neighbourhood](https://conwaylife.com/wiki/Moore_neighbourhood).
     ///
     /// # Examples
     ///
