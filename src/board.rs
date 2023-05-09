@@ -300,12 +300,12 @@ where
     /// assert_eq!(board.get(&Position(1, 1)), false);
     /// ```
     ///
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = &'a Position<CoordinateType>>,
     {
-        let live_cells: HashSet<_, _> = iter.into_iter().copied().collect();
-        Self(live_cells)
+        Self::from_iter(iter.into_iter().copied())
     }
 }
 
