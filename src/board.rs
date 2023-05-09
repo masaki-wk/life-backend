@@ -31,12 +31,9 @@ type DefaultCoordinateType = i16;
 /// ```
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Board<CoordinateType = DefaultCoordinateType>
+pub struct Board<CoordinateType = DefaultCoordinateType>(HashSet<Position<CoordinateType>, FnvBuildHasher>)
 where
-    CoordinateType: Eq + Hash,
-{
-    live_cells: HashSet<Position<CoordinateType>, FnvBuildHasher>,
-}
+    CoordinateType: Eq + Hash;
 
 // Inherent methods
 
@@ -56,8 +53,7 @@ where
     ///
     #[inline]
     pub fn new() -> Self {
-        let live_cells = HashSet::default();
-        Self { live_cells }
+        Self(HashSet::default())
     }
 
     /// Returns the value of the specified position of the board.
@@ -72,7 +68,7 @@ where
     ///
     #[inline]
     pub fn get(&self, position: &Position<CoordinateType>) -> bool {
-        self.live_cells.contains(position)
+        self.0.contains(position)
     }
 
     /// Set the specified value on the specified position of the board.
@@ -91,9 +87,9 @@ where
         CoordinateType: Copy,
     {
         if value {
-            self.live_cells.insert(*position);
+            self.0.insert(*position);
         } else {
-            self.live_cells.remove(position);
+            self.0.remove(position);
         }
     }
 
@@ -116,7 +112,7 @@ where
     where
         CoordinateType: Copy + PartialOrd + Zero,
     {
-        let mut iter = self.live_cells.iter();
+        let mut iter = self.0.iter();
         if let Some(&Position(init_x, init_y)) = iter.next() {
             Some(iter.fold((init_x, init_x, init_y, init_y), |(x_min, x_max, y_min, y_max), &Position(x, y)| {
                 (
@@ -145,7 +141,7 @@ where
     ///
     #[inline]
     pub fn clear(&mut self) {
-        self.live_cells.clear();
+        self.0.clear();
     }
 
     /// Retains only the live cell positions specified by the predicate, similar as `retain()` of `HashSet`.
@@ -169,7 +165,7 @@ where
     where
         F: FnMut(&Position<CoordinateType>) -> bool,
     {
-        self.live_cells.retain(pred);
+        self.0.retain(pred);
     }
 }
 
@@ -252,7 +248,7 @@ where
     ///
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.live_cells.iter()
+        self.0.iter()
     }
 }
 
@@ -279,7 +275,7 @@ where
     ///
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.live_cells.into_iter()
+        self.0.into_iter()
     }
 }
 
@@ -307,7 +303,7 @@ where
         T: IntoIterator<Item = &'a Position<CoordinateType>>,
     {
         let live_cells: HashSet<_, _> = iter.into_iter().copied().collect();
-        Self { live_cells }
+        Self(live_cells)
     }
 }
 
@@ -335,7 +331,7 @@ where
         T: IntoIterator<Item = Position<CoordinateType>>,
     {
         let live_cells: HashSet<_, _> = iter.into_iter().collect();
-        Self { live_cells }
+        Self(live_cells)
     }
 }
 
@@ -364,7 +360,7 @@ where
     where
         T: IntoIterator<Item = &'a Position<CoordinateType>>,
     {
-        self.live_cells.extend(iter);
+        self.0.extend(iter);
     }
 }
 
@@ -393,6 +389,6 @@ where
     where
         T: IntoIterator<Item = Position<CoordinateType>>,
     {
-        self.live_cells.extend(iter);
+        self.0.extend(iter);
     }
 }
