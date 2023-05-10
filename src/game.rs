@@ -56,7 +56,7 @@ where
     /// ```
     ///
     #[inline]
-    pub fn rule(&self) -> &Rule {
+    pub const fn rule(&self) -> &Rule {
         &self.rule
     }
 
@@ -78,7 +78,7 @@ where
     /// ```
     ///
     #[inline]
-    pub fn board(&self) -> &Board<CoordinateType> {
+    pub const fn board(&self) -> &Board<CoordinateType> {
         &self.curr_board
     }
 
