@@ -92,7 +92,7 @@ impl Plaintext {
     /// ```
     ///
     #[inline]
-    pub fn comments(&self) -> &Vec<String> {
+    pub const fn comments(&self) -> &Vec<String> {
         &self.comments
     }
 
