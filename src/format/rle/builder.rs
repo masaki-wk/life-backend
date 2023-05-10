@@ -426,6 +426,23 @@ where
 
 // Trait implementations
 
+impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    // Implementation of from_iter
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (usize, usize)>,
+    {
+        let contents = iter.into_iter().collect();
+        Self {
+            name: RleBuilderNoName,
+            created: RleBuilderNoCreated,
+            comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
+            contents,
+        }
+    }
+}
+
 impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
     /// Conversion from a non-owning iterator over a series of &(usize, usize).
     /// Each item in the series represents an immutable reference of a live cell position.
@@ -444,18 +461,12 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     /// # }
     /// ```
     ///
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = &'a (usize, usize)>,
     {
-        let contents = iter.into_iter().copied().collect();
-        Self {
-            name: RleBuilderNoName,
-            created: RleBuilderNoCreated,
-            comment: RleBuilderNoComment,
-            rule: RleBuilderNoRule,
-            contents,
-        }
+        Self::from_iter(iter.into_iter().copied())
     }
 }
 
@@ -477,17 +488,11 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     /// # }
     /// ```
     ///
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = (usize, usize)>,
     {
-        let contents = iter.into_iter().collect();
-        Self {
-            name: RleBuilderNoName,
-            created: RleBuilderNoCreated,
-            comment: RleBuilderNoComment,
-            rule: RleBuilderNoRule,
-            contents,
-        }
+        Self::from_iter(iter)
     }
 }
