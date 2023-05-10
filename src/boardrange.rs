@@ -113,6 +113,12 @@ impl<T> BoardRange<T> {
 
     /// Returns `true` if the range contains no area.
     ///
+    /// If the range is empty, return values of methods are defined as the following:
+    ///
+    /// - `range.is_empty()` is `true`
+    /// - `range.x().is_empty()` and `range.y().is_empty()` are `true`
+    /// - `range.x().start()`, `range.x().end()`, `range.y().start()` and `range.y().end()` are unspecified
+    ///
     /// # Examples
     ///
     /// ```
