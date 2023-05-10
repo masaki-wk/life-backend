@@ -47,15 +47,15 @@ impl<T> BoardRange<T> {
         U: Iterator<Item = Position<T>>,
     {
         if let Some(Position(init_x, init_y)) = iter.next() {
-            let range_pair = iter.fold((init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
-                let (x_start, x_end) = acc.0.into_inner();
-                let (y_start, y_end) = acc.1.into_inner();
-                (
+            iter.fold(Self(init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
+                let (range_x, range_y) = acc.into_inner();
+                let (x_start, x_end) = range_x.into_inner();
+                let (y_start, y_end) = range_y.into_inner();
+                Self(
                     (if x_start < x { x_start } else { x })..=(if x_end > x { x_end } else { x }),
                     (if y_start < y { y_start } else { y })..=(if y_end > y { y_end } else { y }),
                 )
-            });
-            Self(range_pair.0, range_pair.1)
+            })
         } else {
             Self::new()
         }
@@ -91,6 +91,24 @@ impl<T> BoardRange<T> {
     #[inline]
     pub const fn y(&self) -> &RangeInclusive<T> {
         &self.1
+    }
+
+    /// Destructures the `BoardRange` into (range-x, range-y).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range = BoardRange::new_from(positions.into_iter());
+    /// let (range_x, range_y) = range.into_inner();
+    /// assert_eq!(range_x, 0..=2);
+    /// assert_eq!(range_y, 0..=1);
+    /// ```
+    ///
+    #[inline]
+    pub fn into_inner(self) -> (RangeInclusive<T>, RangeInclusive<T>) {
+        (self.0, self.1)
     }
 
     /// Returns `true` if the range contains no area.
