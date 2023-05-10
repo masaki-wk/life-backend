@@ -160,7 +160,14 @@ where
         if self.is_empty() {
             write!(f, "(empty)")?;
         } else {
-            write!(f, "(x:[{}, {}] y:[{}, {}])", self.x().start(), self.x().end(), self.y().start(), self.y().end())?;
+            write!(
+                f,
+                "(x:[{}, {}], y:[{}, {}])",
+                self.x().start(),
+                self.x().end(),
+                self.y().start(),
+                self.y().end()
+            )?;
         }
         Ok(())
     }
