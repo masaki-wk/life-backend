@@ -67,7 +67,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn width(&self) -> usize {
+    pub const fn width(&self) -> usize {
         self.header.width
     }
 
@@ -90,7 +90,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn height(&self) -> usize {
+    pub const fn height(&self) -> usize {
         self.header.height
     }
 
@@ -114,7 +114,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn rule(&self) -> &Rule {
+    pub const fn rule(&self) -> &Rule {
         &self.header.rule
     }
 
@@ -138,7 +138,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn comments(&self) -> &Vec<String> {
+    pub const fn comments(&self) -> &Vec<String> {
         &self.comments
     }
 
