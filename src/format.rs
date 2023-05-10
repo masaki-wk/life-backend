@@ -53,14 +53,15 @@ where
     let ext = path
         .as_ref()
         .extension()
-        .map(|s| s.to_str().unwrap_or_default())
         .with_context(|| format!("\"{}\" has no extension", path_to_display))?
-        .to_string();
+        .to_os_string();
     let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path_to_display))?;
-    let result: Box<dyn Format> = match &ext[..] {
-        "cells" => Box::new(Plaintext::new(file)?),
-        "rle" => Box::new(Rle::new(file)?),
-        _ => bail!("\"{}\" has unknown extension", path_to_display),
+    let result: Box<dyn Format> = if ext.as_os_str() == "cells" {
+        Box::new(Plaintext::new(file)?)
+    } else if ext.as_os_str() == "rle" {
+        Box::new(Rle::new(file)?)
+    } else {
+        bail!("\"{}\" has unknown extension", path_to_display);
     };
     Ok(result)
 }
