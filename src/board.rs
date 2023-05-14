@@ -116,7 +116,7 @@ where
     where
         CoordinateType: Copy + PartialOrd + Zero + One,
     {
-        BoardRange::new_from(self.live_cells.iter().copied())
+        self.live_cells.iter().collect::<BoardRange<_>>()
     }
 
     /// Removes all live cells in the board.

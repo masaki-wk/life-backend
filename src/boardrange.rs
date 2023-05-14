@@ -28,26 +28,16 @@ impl<T> BoardRange<T> {
         Self(T::one()..=T::zero(), T::one()..=T::zero())
     }
 
-    /// Creates a new `BoardRange` from the iterator over series of positions to be contained.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use life_backend::{BoardRange, Position};
-    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from(positions.into_iter());
-    /// assert!(!range.is_empty());
-    /// assert_eq!(range.x(), &(0..=2));
-    /// assert_eq!(range.y(), &(0..=1));
-    /// ```
-    ///
-    pub fn new_from<U>(mut iter: U) -> Self
+    // Implementation of public extend().
+    fn extend<U>(self, iter: U) -> Self
     where
         T: Copy + PartialOrd + Zero + One,
         U: Iterator<Item = Position<T>>,
     {
-        if let Some(Position(init_x, init_y)) = iter.next() {
-            iter.fold(Self(init_x..=init_x, init_y..=init_y), |acc, Position(x, y)| {
+        iter.fold(self, |acc, Position(x, y)| {
+            if acc.is_empty() {
+                Self(x..=x, y..=y)
+            } else {
                 let (range_x, range_y) = acc.into_inner();
                 let (x_start, x_end) = range_x.into_inner();
                 let (y_start, y_end) = range_y.into_inner();
@@ -55,10 +45,17 @@ impl<T> BoardRange<T> {
                     (if x_start < x { x_start } else { x })..=(if x_end > x { x_end } else { x }),
                     (if y_start < y { y_start } else { y })..=(if y_end > y { y_end } else { y }),
                 )
-            })
-        } else {
-            Self::new()
-        }
+            }
+        })
+    }
+
+    // Implementation of public from_iter().
+    fn from_iter<U>(iter: U) -> Self
+    where
+        T: Copy + PartialOrd + Zero + One,
+        U: Iterator<Item = Position<T>>,
+    {
+        Self::new().extend(iter)
     }
 
     /// Returns the range on the x-coordinate.
@@ -68,7 +65,7 @@ impl<T> BoardRange<T> {
     /// ```
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from(positions.into_iter());
+    /// let range: BoardRange<_> = positions.iter().collect();
     /// assert_eq!(range.x(), &(0..=2));
     /// ```
     ///
@@ -84,7 +81,7 @@ impl<T> BoardRange<T> {
     /// ```
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from(positions.into_iter());
+    /// let range: BoardRange<_> = positions.iter().collect();
     /// assert_eq!(range.y(), &(0..=1));
     /// ```
     ///
@@ -100,7 +97,7 @@ impl<T> BoardRange<T> {
     /// ```
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from(positions.into_iter());
+    /// let range: BoardRange<_> = positions.iter().collect();
     /// let (range_x, range_y) = range.into_inner();
     /// assert_eq!(range_x, 0..=2);
     /// assert_eq!(range_y, 0..=1);
@@ -124,7 +121,7 @@ impl<T> BoardRange<T> {
     /// ```
     /// use life_backend::{BoardRange, Position};
     /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-    /// let range = BoardRange::new_from(positions.into_iter());
+    /// let range: BoardRange<_> = positions.iter().collect();
     /// assert!(!range.is_empty());
     /// ```
     ///
@@ -173,18 +170,128 @@ where
     }
 }
 
+impl<'a, T> FromIterator<&'a Position<T>> for BoardRange<T>
+where
+    T: Copy + PartialOrd + Zero + One + 'a,
+{
+    /// Conversion from a non-owning iterator over a series of `&Position<T>`.
+    /// Each item in the series represents an immutable reference of a position to be contained to the range.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range: BoardRange<_> = positions.iter().collect();
+    /// assert!(!range.is_empty());
+    /// assert_eq!(range.x(), &(0..=2));
+    /// assert_eq!(range.y(), &(0..=1));
+    /// ```
+    ///
+    #[inline]
+    fn from_iter<U>(iter: U) -> Self
+    where
+        U: IntoIterator<Item = &'a Position<T>>,
+    {
+        Self::from_iter(iter.into_iter().copied())
+    }
+}
+
+impl<T> FromIterator<Position<T>> for BoardRange<T>
+where
+    T: Copy + PartialOrd + Zero + One,
+{
+    /// Conversion from an owning iterator over a series of `Position<T>`.
+    /// Each item in the series represents a moved position to be contained to the range.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let range: BoardRange<_> = positions.into_iter().collect();
+    /// assert!(!range.is_empty());
+    /// assert_eq!(range.x(), &(0..=2));
+    /// assert_eq!(range.y(), &(0..=1));
+    /// ```
+    ///
+    #[inline]
+    fn from_iter<U>(iter: U) -> Self
+    where
+        U: IntoIterator<Item = Position<T>>,
+    {
+        Self::from_iter(iter.into_iter())
+    }
+}
+
+impl<'a, T> Extend<&'a Position<T>> for BoardRange<T>
+where
+    T: Copy + PartialOrd + Zero + One + 'a,
+{
+    /// Extend the range with the contents of the specified non-owning iterator over the series of `&Position<T>`.
+    /// Each item in the series represents an immutable reference of a position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let mut range = BoardRange::new();
+    /// range.extend(positions.iter());
+    /// assert!(!range.is_empty());
+    /// assert_eq!(range.x(), &(0..=2));
+    /// assert_eq!(range.y(), &(0..=1));
+    /// ```
+    ///
+    fn extend<U>(&mut self, iter: U)
+    where
+        U: IntoIterator<Item = &'a Position<T>>,
+    {
+        *self = self.clone().extend(iter.into_iter().copied())
+    }
+}
+
+impl<T> Extend<Position<T>> for BoardRange<T>
+where
+    T: Copy + PartialOrd + Zero + One,
+{
+    /// Extend the range with the contents of the specified owning iterator over the series of `Position<T>`.
+    /// Each item in the series represents a moved position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{BoardRange, Position};
+    /// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+    /// let mut range = BoardRange::new();
+    /// range.extend(positions.into_iter());
+    /// assert!(!range.is_empty());
+    /// assert_eq!(range.x(), &(0..=2));
+    /// assert_eq!(range.y(), &(0..=1));
+    /// ```
+    ///
+    fn extend<U>(&mut self, iter: U)
+    where
+        U: IntoIterator<Item = Position<T>>,
+    {
+        *self = self.clone().extend(iter.into_iter())
+    }
+}
+
+// Unit tests
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn test_display_notempty() {
-        let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-        let target = BoardRange::new_from(positions.into_iter());
-        assert_eq!(format!("{target}"), "(x:[0, 2], y:[0, 1])".to_string());
-    }
-    #[test]
     fn test_display_empty() {
         let target = BoardRange::<i32>::new();
         assert_eq!(format!("{target}"), "(empty)".to_string());
+    }
+    #[test]
+    fn test_display_notempty() {
+        let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+        let target: BoardRange<_> = positions.iter().collect();
+        assert_eq!(format!("{target}"), "(x:[0, 2], y:[0, 1])".to_string());
     }
 }
