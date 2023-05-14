@@ -6,6 +6,8 @@ use crate::Position;
 
 /// A representation of a range on a board.
 ///
+/// The type parameter `T` is used as the type of the x- and y-coordinate values.
+///
 /// # Examples
 ///
 /// ```
