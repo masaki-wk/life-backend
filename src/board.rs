@@ -8,9 +8,6 @@ use std::hash::Hash;
 
 use crate::{BoardRange, Position};
 
-/// The default coordinate type of `Board`.
-type DefaultCoordinateType = i16;
-
 /// A representation of a two-dimensional orthogonal grid map of live/dead cells.
 ///
 /// The type parameter `CoordinateType` is used as the type of the x- and y-coordinate values for each cell.
@@ -31,7 +28,7 @@ type DefaultCoordinateType = i16;
 /// ```
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Board<CoordinateType = DefaultCoordinateType>(HashSet<Position<CoordinateType>, FnvBuildHasher>)
+pub struct Board<CoordinateType>(HashSet<Position<CoordinateType>, FnvBuildHasher>)
 where
     CoordinateType: Eq + Hash;
 

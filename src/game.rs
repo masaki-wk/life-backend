@@ -31,7 +31,7 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// ```
     ///
@@ -50,7 +50,7 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule.clone(), board);
     /// assert_eq!(game.rule(), &rule);
     /// ```
@@ -67,7 +67,7 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// let board = game.board();
     /// let bbox = board.bounding_box();
@@ -99,7 +99,7 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(0, 1), Position(1, 1), Position(2, 1)].iter().collect(); // Blinker pattern
+    /// let board: Board<_> = [Position(0, 1), Position(1, 1), Position(2, 1)].iter().collect(); // Blinker pattern
     /// let mut game = Game::new(rule, board);
     /// game.update();
     /// let board = game.board();
