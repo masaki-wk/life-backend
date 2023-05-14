@@ -6,9 +6,6 @@ use std::ops::{Add, Sub};
 
 use crate::{Board, Position, Rule};
 
-/// The default coordinate type of `Game`.
-type DefaultCoordinateType = i16;
-
 /// A representation of games.
 ///
 /// The type parameter `T` is used as the type of the x- and y-coordinate values for each cell.
@@ -36,7 +33,7 @@ type DefaultCoordinateType = i16;
 /// ```
 ///
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Game<T = DefaultCoordinateType>
+pub struct Game<T>
 where
     T: Eq + Hash,
 {
