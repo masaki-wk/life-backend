@@ -10,6 +10,31 @@ use crate::{Board, Position, Rule};
 type DefaultCoordinateType = i16;
 
 /// A representation of games.
+///
+/// The type parameter `CoordinateType` is used as the type of the x- and y-coordinate values for each cell.
+/// The following operations are supported:
+///
+/// - Constructing from `Rule` and `Board`
+/// - Advancing a generation
+/// - Returning the current state
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::{Board, Game, Position, Rule};
+/// let rule = Rule::conways_life();
+/// let board: Board<_> = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)] // Glider pattern
+///     .into_iter()
+///     .map(|(x, y)| Position(x, y))
+///     .collect();
+/// let mut game = Game::new(rule, board);
+/// game.update();
+/// let board = game.board();
+/// let bbox = board.bounding_box();
+/// assert_eq!(bbox.x(), &(0..=2));
+/// assert_eq!(bbox.y(), &(1..=3));
+/// ```
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Game<CoordinateType = DefaultCoordinateType>
 where
