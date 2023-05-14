@@ -4,7 +4,24 @@ use std::ops::RangeInclusive;
 
 use crate::Position;
 
-/// A range on a board.
+/// A representation of a range on a board.
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::{BoardRange, Position};
+/// let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
+/// let range: BoardRange<_> = positions.iter().collect();
+/// let min_x = range.x().start();
+/// let max_x = range.x().end();
+/// let min_y = range.y().start();
+/// let max_y = range.y().end();
+/// assert_eq!(min_x, &0);
+/// assert_eq!(max_x, &2);
+/// assert_eq!(min_y, &0);
+/// assert_eq!(max_y, &1);
+/// ```
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoardRange<T>(RangeInclusive<T>, RangeInclusive<T>);
 
