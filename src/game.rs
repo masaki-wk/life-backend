@@ -11,7 +11,7 @@ type DefaultCoordinateType = i16;
 
 /// A representation of games.
 ///
-/// The type parameter `CoordinateType` is used as the type of the x- and y-coordinate values for each cell.
+/// The type parameter `T` is used as the type of the x- and y-coordinate values for each cell.
 /// The following operations are supported:
 ///
 /// - Constructing from `Rule` and `Board`
@@ -36,18 +36,18 @@ type DefaultCoordinateType = i16;
 /// ```
 ///
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Game<CoordinateType = DefaultCoordinateType>
+pub struct Game<T = DefaultCoordinateType>
 where
-    CoordinateType: Eq + Hash,
+    T: Eq + Hash,
 {
     rule: Rule,
-    curr_board: Board<CoordinateType>,
-    prev_board: Board<CoordinateType>,
+    curr_board: Board<T>,
+    prev_board: Board<T>,
 }
 
-impl<CoordinateType> Game<CoordinateType>
+impl<T> Game<T>
 where
-    CoordinateType: Eq + Hash,
+    T: Eq + Hash,
 {
     /// Creates from the specified rule and the board.
     ///
@@ -60,7 +60,7 @@ where
     /// let game = Game::new(rule, board);
     /// ```
     ///
-    pub fn new(rule: Rule, board: Board<CoordinateType>) -> Self {
+    pub fn new(rule: Rule, board: Board<T>) -> Self {
         Self {
             rule,
             curr_board: board,
@@ -105,14 +105,14 @@ where
     /// ```
     ///
     #[inline]
-    pub const fn board(&self) -> &Board<CoordinateType> {
+    pub const fn board(&self) -> &Board<T> {
         &self.curr_board
     }
 
     // Returns the count of live neighbours of the specified position.
-    fn live_neighbour_count(board: &Board<CoordinateType>, position: &Position<CoordinateType>) -> usize
+    fn live_neighbour_count(board: &Board<T>, position: &Position<T>) -> usize
     where
-        CoordinateType: Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + One + Bounded + ToPrimitive,
+        T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
         position.moore_neighborhood_positions().filter(|pos| board.get(pos)).count()
     }
@@ -138,7 +138,7 @@ where
     ///
     pub fn update(&mut self)
     where
-        CoordinateType: Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + One + Bounded + ToPrimitive,
+        T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
         mem::swap(&mut self.curr_board, &mut self.prev_board);
         self.curr_board.clear();
@@ -159,9 +159,9 @@ where
     }
 }
 
-impl<CoordinateType> fmt::Display for Game<CoordinateType>
+impl<T> fmt::Display for Game<T>
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
