@@ -142,7 +142,7 @@ impl Rle {
         &self.comments
     }
 
-    /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
+    /// Creates an owning iterator over the series of live cell positions in ascending order.
     ///
     /// # Examples
     ///
