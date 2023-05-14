@@ -17,7 +17,7 @@ pub trait Format: fmt::Display {
     fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_>;
 }
 
-/// Attempts to open a file with the file format hander specified by the file extension.
+/// Attempts to open a file with the file format handler specified by the file extension.
 ///
 /// # Examples
 ///
