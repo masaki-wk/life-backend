@@ -5,6 +5,21 @@ use std::hash::Hash;
 use std::ops::{Add, Sub};
 
 /// A position of a cell.
+///
+/// `Position<T>` is a tuple `(T, T)`. The first field is the x-coordinate value of the position and the second field is the y-coordinaate value of the potition.
+/// The type parameter `T` is used as the type of the x- and y-coordinate values of positions.
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::Position;
+/// let pos = Position(2, 3);
+/// let pos_x = pos.0;
+/// let pos_y = pos.1;
+/// assert_eq!(pos_x, 2);
+/// assert_eq!(pos_y, 3);
+/// ```
+///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Position<T>(pub T, pub T);
 
