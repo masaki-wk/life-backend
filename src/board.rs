@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-use crate::Position;
+use crate::{BoardRange, Position};
 
 /// The default coordinate type of `Board`.
 type DefaultCoordinateType = i16;
@@ -94,37 +94,25 @@ where
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
-    /// If the board contains some live cells, `Some(x_min, x_max, y_min, y_max)` will be returned.
-    /// Otherwise, `None` will be returned.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::{Board, Position};
-    /// let mut board = Board::<i16>::new();
-    /// assert_eq!(board.bounding_box(), None);
+    /// let mut board = Board::new();
     /// board.set(&Position(-1, 2), true);
     /// board.set(&Position(3, -2), true);
-    /// assert_eq!(board.bounding_box(), Some((-1, 3, -2, 2)));
+    /// let bbox = board.bounding_box();
+    /// assert_eq!(bbox.x(), &(-1..=3));
+    /// assert_eq!(bbox.y(), &(-2..=2));
     /// ```
     ///
-    pub fn bounding_box(&self) -> Option<(CoordinateType, CoordinateType, CoordinateType, CoordinateType)>
+    #[inline]
+    pub fn bounding_box(&self) -> BoardRange<CoordinateType>
     where
-        CoordinateType: Copy + PartialOrd + Zero,
+        CoordinateType: Copy + PartialOrd + Zero + One,
     {
-        let mut iter = self.0.iter();
-        if let Some(&Position(init_x, init_y)) = iter.next() {
-            Some(iter.fold((init_x, init_x, init_y, init_y), |(x_min, x_max, y_min, y_max), &Position(x, y)| {
-                (
-                    if x_min < x { x_min } else { x },
-                    if x_max > x { x_max } else { x },
-                    if y_min < y { y_min } else { y },
-                    if y_max > y { y_max } else { y },
-                )
-            }))
-        } else {
-            None
-        }
+        self.0.iter().collect::<BoardRange<_>>()
     }
 
     /// Removes all live cells in the board.
@@ -215,13 +203,12 @@ where
     CoordinateType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some((x_min, x_max, y_min, y_max)) = self.bounding_box() {
-            for y in range_inclusive(y_min, y_max) {
-                let line: String = range_inclusive(x_min, x_max)
-                    .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
-                    .collect();
-                writeln!(f, "{line}")?;
-            }
+        let bbox = self.bounding_box();
+        for y in range_inclusive(*bbox.y().start(), *bbox.y().end()) {
+            let line: String = range_inclusive(*bbox.x().start(), *bbox.x().end())
+                .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
+                .collect();
+            writeln!(f, "{line}")?;
         }
         Ok(())
     }
