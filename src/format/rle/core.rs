@@ -23,7 +23,10 @@ pub struct Rle {
 // Inherent methods
 
 impl Rle {
-    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
+    /// Creates from the specified implementor of [`Read`], such as [`File`] or `&[u8]`.
+    ///
+    /// [`Read`]: std::io::Read
+    /// [`File`]: std::fs::File
     ///
     /// # Examples
     ///
