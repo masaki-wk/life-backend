@@ -76,7 +76,9 @@ where
     Name: PlaintextBuilderName,
     Comment: PlaintextBuilderComment,
 {
-    /// Builds the specified Plaintext value.
+    /// Builds the [`Plaintext`] value.
+    ///
+    /// [`Plaintext`]: Plaintext
     ///
     /// # Examples
     ///
@@ -151,7 +153,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls name() twice or more will fail at compile time.  For example:
+    /// Code that calls [`name()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`name()`]: #method.name
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
@@ -167,7 +171,10 @@ where
     /// # }
     /// ```
     ///
-    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    /// [`build()`] returns an error if the string passed by [`name()`] includes multiple lines.  For example:
+    ///
+    /// [`build()`]: #method.build
+    /// [`name()`]: #method.name
     ///
     /// ```should_panic
     /// use life_backend::format::PlaintextBuilder;
@@ -196,7 +203,11 @@ impl<Name> PlaintextBuilder<Name, PlaintextBuilderNoComment>
 where
     Name: PlaintextBuilderName,
 {
-    /// Set the comment.  If the argument includes newlines, the instance of Plaintext built by build() includes multiple comment lines.
+    /// Set the comment.
+    /// If the argument includes newlines, the instance of [`Plaintext`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Plaintext`]: Plaintext
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
@@ -218,7 +229,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    /// Code that calls [`comment()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`comment()`]: #method.comment
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
@@ -262,7 +275,7 @@ impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
 }
 
 impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from a non-owning iterator over a series of &(usize, usize).
+    /// Conversion from a non-owning iterator over a series of `&(usize, usize)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -284,7 +297,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
 }
 
 impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from an owning iterator over a series of (usize, usize).
+    /// Conversion from an owning iterator over a series of `(usize, usize)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
