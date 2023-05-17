@@ -62,10 +62,8 @@ where
     /// use life_backend::format::PlaintextBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern
-    ///     .iter()
-    ///     .collect::<PlaintextBuilder>()
-    ///     .build()?;
+    /// let builder: PlaintextBuilder = pattern.iter().collect();
+    /// let target = builder.build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -249,14 +247,9 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .iter()
-    ///     .collect::<PlaintextBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// let iter = pattern.iter();
+    /// let builder: PlaintextBuilder = iter.collect();
     /// ```
     ///
     #[inline]
@@ -276,14 +269,9 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .into_iter()
-    ///     .collect::<PlaintextBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// let iter = pattern.into_iter();
+    /// let builder: PlaintextBuilder = iter.collect();
     /// ```
     ///
     #[inline]
