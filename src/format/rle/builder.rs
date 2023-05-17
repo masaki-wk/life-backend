@@ -112,7 +112,9 @@ where
     Comment: RleBuilderComment,
     RuleSpec: RleBuilderRule,
 {
-    /// Builds the specified Rle value.
+    /// Builds the [`Rle`] value.
+    ///
+    /// [`Rle`]: Rle
     ///
     /// # Examples
     ///
@@ -233,7 +235,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls name() twice or more will fail at compile time.  For example:
+    /// Code that calls [`name()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`name()`]: #method.name
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
@@ -249,7 +253,10 @@ where
     /// # }
     /// ```
     ///
-    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    /// [`build()`] returns an error if the string passed by [`name()`] includes multiple lines.  For example:
+    ///
+    /// [`build()`]: #method.build
+    /// [`name()`]: #method.name
     ///
     /// ```should_panic
     /// use life_backend::format::RleBuilder;
@@ -282,7 +289,11 @@ where
     Comment: RleBuilderComment,
     Rule: RleBuilderRule,
 {
-    /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    /// Set the information when and by whom the pattern was created.
+    /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Rle`]: Rle
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
@@ -303,7 +314,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls created() twice or more will fail at compile time.  For example:
+    /// Code that calls [`created()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`created()`]: #method.created
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
@@ -337,7 +350,11 @@ where
     Created: RleBuilderCreated,
     Rule: RleBuilderRule,
 {
-    /// Set the comment. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    /// Set the comment.
+    /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Rle`]: Rle
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
@@ -359,7 +376,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    /// Code that calls [`comment()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`comment()`]: #method.comment
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
@@ -414,7 +433,9 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls rule() twice or more will fail at compile time.  For example:
+    /// Code that calls [`rule()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`rule()`]: #method.rule
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
@@ -463,7 +484,7 @@ impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleB
 }
 
 impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from a non-owning iterator over a series of &(usize, usize).
+    /// Conversion from a non-owning iterator over a series of `&(usize, usize)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -485,7 +506,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
 }
 
 impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from an owning iterator over a series of (usize, usize).
+    /// Conversion from an owning iterator over a series of `(usize, usize)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
