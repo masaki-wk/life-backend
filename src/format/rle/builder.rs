@@ -4,7 +4,28 @@ use std::collections::{HashMap, HashSet};
 use super::{Rle, RleHeader, RleRunsTriple};
 use crate::Rule;
 
-/// A builder of Rle.
+/// A builder of [`Rle`].
+///
+/// [`Rle`]: Rle
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::format::RleBuilder;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
+/// let builder = pattern.iter().collect::<RleBuilder>();
+/// let target = builder.name("R-pentomino").build()?;
+/// let expected = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3, rule = B3/S23\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where

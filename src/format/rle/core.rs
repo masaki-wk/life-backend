@@ -13,6 +13,38 @@ use crate::{Format, Rule};
 /// - [Run Length Encoded - LifeWiki](https://conwaylife.com/wiki/Run_Length_Encoded)
 /// - [Golly Help: File Formats > Extended RLE format](https://golly.sourceforge.net/Help/formats.html#rle)
 ///
+/// # Examples
+///
+/// Parses the given RLE file, and checks live cells included in it:
+///
+/// ```
+/// use std::fs::File;
+/// use std::path::Path;
+/// use life_backend::format::Rle;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let file = File::open(concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.rle"))?;
+/// let parser = Rle::new(file)?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Parses the given string in RLE format:
+///
+/// ```
+/// use life_backend::format::Rle;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// let parser = pattern.parse::<Rle>()?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct Rle {
     pub(super) header: RleHeader,
