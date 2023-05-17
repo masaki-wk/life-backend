@@ -108,7 +108,7 @@ impl Rle {
     ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes())?;
-    /// assert_eq!(*parser.rule(), Rule::conways_life());
+    /// assert_eq!(parser.rule(), &Rule::conways_life());
     /// # Ok(())
     /// # }
     /// ```
@@ -155,12 +155,7 @@ impl Rle {
     ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes())?;
-    /// let mut iter = parser.live_cells();
-    /// assert_eq!(iter.next(), Some((0, 0)));
-    /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 0)));
-    /// assert_eq!(iter.next(), Some((1, 1)));
-    /// assert_eq!(iter.next(), None);
+    /// assert!(parser.live_cells().eq([(0, 0), (1, 0), (2, 0), (1, 1)]));
     /// # Ok(())
     /// # }
     /// ```
