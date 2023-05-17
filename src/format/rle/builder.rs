@@ -99,10 +99,8 @@ where
     /// use life_backend::format::RleBuilder;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern
-    ///     .iter()
-    ///     .collect::<RleBuilder>()
-    ///     .build()?;
+    /// let builder: RleBuilder = pattern.iter().collect();
+    /// let target = builder.build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -451,14 +449,9 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .iter()
-    ///     .collect::<RleBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// let iter = pattern.iter();
+    /// let builder: RleBuilder = iter.collect();
     /// ```
     ///
     #[inline]
@@ -478,14 +471,9 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .into_iter()
-    ///     .collect::<RleBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// let iter = pattern.into_iter();
+    /// let builder: RleBuilder = iter.collect();
     /// ```
     ///
     #[inline]
