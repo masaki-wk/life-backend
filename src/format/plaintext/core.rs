@@ -22,7 +22,10 @@ pub struct Plaintext {
 // Inherent methods
 
 impl Plaintext {
-    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
+    /// Creates from the specified implementor of [`Read`], such as [`File`] or `&[u8]`.
+    ///
+    /// [`Read`]: std::io::Read
+    /// [`File`]: std::fs::File
     ///
     /// # Examples
     ///
