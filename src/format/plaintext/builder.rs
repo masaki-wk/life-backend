@@ -3,7 +3,29 @@ use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
 
-/// A builder of Plaintext.
+/// A builder of [`Plaintext`].
+///
+/// [`Plaintext`]: Plaintext
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::format::PlaintextBuilder;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
+/// let builder: PlaintextBuilder = pattern.iter().collect();
+/// let target = builder.name("R-pentomino").build()?;
+/// let expected = "\
+///     !Name: R-pentomino\n\
+///     .OO\n\
+///     OO.\n\
+///     .O.\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
