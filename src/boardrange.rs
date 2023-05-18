@@ -4,7 +4,7 @@ use std::ops::RangeInclusive;
 
 use crate::Position;
 
-/// A representation of a range on a board.
+/// A range on a board.
 ///
 /// The type parameter `T` is used as the type of the x- and y-coordinate values.
 ///
@@ -30,7 +30,7 @@ pub struct BoardRange<T>(RangeInclusive<T>, RangeInclusive<T>);
 // Inherent methods
 
 impl<T> BoardRange<T> {
-    /// Creates an empty `BoardRange`.
+    /// Creates an empty range.
     ///
     /// # Examples
     ///
@@ -109,7 +109,9 @@ impl<T> BoardRange<T> {
         &self.1
     }
 
-    /// Destructures the `BoardRange` into (range-x, range-y).
+    /// Destructures [`BoardRange`] into (range-x, range-y).
+    ///
+    /// [`BoardRange`]: BoardRange
     ///
     /// # Examples
     ///
@@ -162,6 +164,7 @@ where
     /// Returns the default value of the type, same as the return value of [`new()`].
     ///
     /// [`new()`]: #method.new
+    ///
     #[inline]
     fn default() -> Self {
         Self::new()
@@ -193,8 +196,10 @@ impl<'a, T> FromIterator<&'a Position<T>> for BoardRange<T>
 where
     T: Copy + PartialOrd + Zero + One + 'a,
 {
-    /// Conversion from a non-owning iterator over a series of `&Position<T>`.
+    /// Creates a value from a non-owning iterator over a series of [`&Position<T>`].
     /// Each item in the series represents an immutable reference of a position to be contained to the range.
+    ///
+    /// [`&Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -220,8 +225,10 @@ impl<T> FromIterator<Position<T>> for BoardRange<T>
 where
     T: Copy + PartialOrd + Zero + One,
 {
-    /// Conversion from an owning iterator over a series of `Position<T>`.
+    /// Creates a value from an owning iterator over a series of [`Position<T>`].
     /// Each item in the series represents a moved position to be contained to the range.
+    ///
+    /// [`Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -247,8 +254,10 @@ impl<'a, T> Extend<&'a Position<T>> for BoardRange<T>
 where
     T: Copy + PartialOrd + Zero + One + 'a,
 {
-    /// Extend the range with the contents of the specified non-owning iterator over the series of `&Position<T>`.
+    /// Extends the range with the contents of the specified non-owning iterator over the series of [`&Position<T>`].
     /// Each item in the series represents an immutable reference of a position.
+    ///
+    /// [`&Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -274,8 +283,10 @@ impl<T> Extend<Position<T>> for BoardRange<T>
 where
     T: Copy + PartialOrd + Zero + One,
 {
-    /// Extend the range with the contents of the specified owning iterator over the series of `Position<T>`.
+    /// Extends the range with the contents of the specified owning iterator over the series of [`Position<T>`].
     /// Each item in the series represents a moved position.
+    ///
+    /// [`Position<T>`]: Position
     ///
     /// # Examples
     ///
