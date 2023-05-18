@@ -6,7 +6,8 @@ use std::ops::{Add, Sub};
 
 /// A position of a cell.
 ///
-/// `Position<T>` is a tuple `(T, T)`. The first field is the x-coordinate value of the position and the second field is the y-coordinaate value of the potition.
+/// `Position<T>` is a tuple `(T, T)`.
+/// The first field is the x-coordinate value of the position and the second field is the y-coordinate value of the potition.
 /// The type parameter `T` is used as the type of the x- and y-coordinate values of positions.
 ///
 /// # Examples
@@ -24,7 +25,8 @@ use std::ops::{Add, Sub};
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
-    /// Creates an iterator over neighbour positions of the self, defined as [Moore neighbourhood](https://conwaylife.com/wiki/Moore_neighbourhood).
+    /// Creates an owning iterator over neighbour positions of the self position in arbitrary order.
+    /// The neighbour positions are defined in [Moore neighbourhood](https://conwaylife.com/wiki/Moore_neighbourhood).
     ///
     /// # Examples
     ///
