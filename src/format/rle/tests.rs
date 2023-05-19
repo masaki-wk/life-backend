@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use super::{Rle, RleBuilder};
-use crate::Rule;
+use crate::{Position, Rule};
 
 const RULE_HIGHLIFE: Rule = Rule::new(
     &[false, false, false, true, false, false, true, false, false],
@@ -330,7 +330,7 @@ fn test_new_trailing_ignored_line() -> Result<()> {
 
 #[test]
 fn test_build() -> Result<()> {
-    let pattern = [(0, 0), (1, 0), (2, 0), (1, 1)];
+    let pattern = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
     let target = pattern.iter().collect::<RleBuilder>().build()?;
     do_check(&target, 3, 2, &Rule::conways_life(), &Vec::new(), &[(0, 0, 3), (1, 1, 1)], None);
     Ok(())
@@ -338,7 +338,7 @@ fn test_build() -> Result<()> {
 
 #[test]
 fn test_build_singleline_name() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().name("name").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#N name"], &[(0, 0, 1)], None);
     Ok(())
@@ -346,7 +346,7 @@ fn test_build_singleline_name() -> Result<()> {
 
 #[test]
 fn test_build_blank_name() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().name("").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#N"], &[(0, 0, 1)], None);
     Ok(())
@@ -354,14 +354,14 @@ fn test_build_blank_name() -> Result<()> {
 
 #[test]
 fn test_build_multiline_name() {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().name("name\nname").build();
     assert!(target.is_err());
 }
 
 #[test]
 fn test_build_created() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().created("created").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#O created"], &[(0, 0, 1)], None);
     Ok(())
@@ -369,7 +369,7 @@ fn test_build_created() -> Result<()> {
 
 #[test]
 fn test_build_blank_created() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().created("").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#O"], &[(0, 0, 1)], None);
     Ok(())
@@ -377,7 +377,7 @@ fn test_build_blank_created() -> Result<()> {
 
 #[test]
 fn test_build_createds() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().created("created0\ncreated1").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#O created0", "#O created1"], &[(0, 0, 1)], None);
     Ok(())
@@ -385,7 +385,7 @@ fn test_build_createds() -> Result<()> {
 
 #[test]
 fn test_build_comment() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().comment("comment").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#C comment"], &[(0, 0, 1)], None);
     Ok(())
@@ -393,7 +393,7 @@ fn test_build_comment() -> Result<()> {
 
 #[test]
 fn test_build_blank_comment() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().comment("").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#C"], &[(0, 0, 1)], None);
     Ok(())
@@ -401,7 +401,7 @@ fn test_build_blank_comment() -> Result<()> {
 
 #[test]
 fn test_build_comments() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().comment("comment0\ncomment1").build()?;
     do_check(&target, 1, 1, &Rule::conways_life(), &["#C comment0", "#C comment1"], &[(0, 0, 1)], None);
     Ok(())
@@ -409,7 +409,7 @@ fn test_build_comments() -> Result<()> {
 
 #[test]
 fn test_build_rule() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern.iter().collect::<RleBuilder>().rule(RULE_HIGHLIFE.clone()).build()?;
     do_check(&target, 1, 1, &RULE_HIGHLIFE, &Vec::new(), &[(0, 0, 1)], None);
     Ok(())
@@ -417,7 +417,7 @@ fn test_build_rule() -> Result<()> {
 
 #[test]
 fn test_build_name_created_comment() -> Result<()> {
-    let pattern = [(0, 0)];
+    let pattern = [Position(0, 0)];
     let target = pattern
         .iter()
         .collect::<RleBuilder>()

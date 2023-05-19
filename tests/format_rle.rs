@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::Path;
 
 use life_backend::format::{Rle, RleBuilder};
-use life_backend::Rule;
+use life_backend::{Position, Rule};
 
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
@@ -36,7 +36,7 @@ fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, 
 fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Option<String>, comment: Option<String>, rule: Option<Rule>) -> Result<()> {
     // Create the target with the pattern, the name, the created, the comment and the rule
     let target = {
-        let builder = pattern.iter().collect::<RleBuilder>();
+        let builder = pattern.iter().map(|&(x, y)| Position(x, y)).collect::<RleBuilder>();
         match (name, created, comment, rule) {
             (None, None, None, None) => builder.build()?,
             (Some(name), None, None, None) => builder.name(&name).build()?,

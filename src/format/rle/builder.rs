@@ -2,7 +2,7 @@ use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
 use super::{Rle, RleHeader, RleRunsTriple};
-use crate::Rule;
+use crate::{Position, Rule};
 
 /// A builder of [`Rle`].
 ///
@@ -12,8 +12,9 @@ use crate::Rule;
 ///
 /// ```
 /// use life_backend::format::RleBuilder;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let pattern = [(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
 /// let builder = pattern.iter().collect::<RleBuilder>();
 /// let target = builder.name("R-pentomino").build()?;
 /// let expected = "\
@@ -38,7 +39,7 @@ where
     created: Created,
     comment: Comment,
     rule: Rule,
-    contents: HashSet<(usize, usize)>,
+    contents: HashSet<Position<usize>>,
 }
 
 // Traits and types for RleBuilder's typestate
@@ -120,8 +121,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let builder: RleBuilder = pattern.iter().collect();
     /// let target = builder.build()?;
     /// # Ok(())
@@ -160,7 +162,7 @@ where
                 .collect()
         };
         let rule = self.rule.drain().unwrap_or(Rule::conways_life());
-        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, Position(x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
         });
@@ -220,8 +222,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -241,8 +244,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -260,8 +264,9 @@ where
     ///
     /// ```should_panic
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -299,8 +304,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -320,8 +326,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -360,8 +367,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -382,8 +390,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -418,9 +427,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// use life_backend::Rule;
+    /// use life_backend::{Position, Rule};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -439,9 +448,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
-    /// use life_backend::Rule;
+    /// use life_backend::{Position, Rule};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -470,7 +479,7 @@ impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleB
     // Implementation of from_iter
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = Position<usize>>,
     {
         let contents = iter.into_iter().collect();
         Self {
@@ -483,15 +492,18 @@ impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleB
     }
 }
 
-impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Creates a value from a non-owning iterator over a series of `&(usize, usize)`.
+impl<'a> FromIterator<&'a Position<usize>> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a value from a non-owning iterator over a series of [`&Position<usize>`].
     /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// let pattern = [(1, 0), (0, 1)];
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let iter = pattern.iter();
     /// let builder: RleBuilder = iter.collect();
     /// ```
@@ -499,21 +511,24 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
     #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = &'a (usize, usize)>,
+        T: IntoIterator<Item = &'a Position<usize>>,
     {
         Self::from_iter(iter.into_iter().copied())
     }
 }
 
-impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Creates a value from an owning iterator over a series of `(usize, usize)`.
+impl FromIterator<Position<usize>> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a value from an owning iterator over a series of [`Position<usize>`].
     /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// let pattern = [(1, 0), (0, 1)];
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let iter = pattern.into_iter();
     /// let builder: RleBuilder = iter.collect();
     /// ```
@@ -521,7 +536,7 @@ impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoC
     #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = Position<usize>>,
     {
         Self::from_iter(iter)
     }
