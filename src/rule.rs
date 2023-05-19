@@ -4,17 +4,21 @@ use std::str::FromStr;
 
 const TRUTH_TABLE_SIZE: usize = 9;
 
-/// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
+/// A representation of a rule of [Life-like cellular automaton](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
 /// The following operations are supported:
 ///
 /// - Constructing from a pair of truth tables
-/// - Parsing a string into a value of this type, ex. "B3/S23". The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
-///   - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
-///   - S/B notation (ex. "23/3")
+/// - Parsing a string into a value of this type, ex. `"B3/S23"`.
+///   The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
+///   - The birth/survival notation (ex. `"B3/S23"`). Lowercase `'b'` or `'s'` are also allowed in the notation instead of `'B'` or `'S'`
+///   - S/B notation (ex. `"23/3"`)
 /// - Determining whether a new cell will be born from the specified number of alive neighbors
 /// - Determining whether a cell surrounded by the specified number of alive neighbors will survive
-/// - Converting into a String value, ex. "B3/S23". This operation only supports the birth/survival notation
+/// - Converting into a [`String`] value, ex. `"B3/S23"`.
+///   This operation only supports the birth/survival notation
+///
+/// [`String`]: std::string::String
 ///
 /// # Examples
 ///
