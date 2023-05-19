@@ -6,14 +6,18 @@ use std::ops::{Add, Sub};
 
 use crate::{Board, Position, Rule};
 
-/// A representation of games.
+/// A representation of a game.
 ///
 /// The type parameter `T` is used as the type of the x- and y-coordinate values for each cell.
+///
 /// The following operations are supported:
 ///
-/// - Constructing from `Rule` and `Board`
+/// - Constructing from [`Rule`] and [`Board`]
 /// - Advancing a generation
 /// - Returning the current state
+///
+/// [`Rule`]: Rule
+/// [`Board`]: Board
 ///
 /// # Examples
 ///
@@ -114,7 +118,7 @@ where
         position.moore_neighborhood_positions().filter(|pos| board.get(pos)).count()
     }
 
-    /// Update the state of the game.
+    /// Updates the state of the game.
     ///
     /// # Examples
     ///
