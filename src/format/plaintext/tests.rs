@@ -1,6 +1,7 @@
 use anyhow::Result;
 
 use super::{Plaintext, PlaintextBuilder, PlaintextLine};
+use crate::Position;
 
 fn do_check(target: &Plaintext, expected_name: &Option<&str>, expected_comments: &[&str], expected_contents: &[PlaintextLine]) {
     let expected_name = expected_name.map(String::from);
@@ -135,7 +136,7 @@ fn test_new_wrong_content_with_comment() {
 
 #[test]
 fn test_build() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = None;
     let expected_comments = Vec::new();
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -146,7 +147,7 @@ fn test_build() -> Result<()> {
 
 #[test]
 fn test_build_singleline_name() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = Some("test");
     let expected_comments = Vec::new();
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -157,7 +158,7 @@ fn test_build_singleline_name() -> Result<()> {
 
 #[test]
 fn test_build_blank_name() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = Some("");
     let expected_comments = Vec::new();
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -168,14 +169,14 @@ fn test_build_blank_name() -> Result<()> {
 
 #[test]
 fn test_build_multiline_name() {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let target = pattern.iter().collect::<PlaintextBuilder>().name("name\nname").build();
     assert!(target.is_err());
 }
 
 #[test]
 fn test_build_comment() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = None;
     let expected_comments = vec!["comment"];
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -186,7 +187,7 @@ fn test_build_comment() -> Result<()> {
 
 #[test]
 fn test_build_blank_comment() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = None;
     let expected_comments = vec![""];
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -197,7 +198,7 @@ fn test_build_blank_comment() -> Result<()> {
 
 #[test]
 fn test_build_comments() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = None;
     let expected_comments = vec!["comment0", "comment1"];
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];
@@ -208,7 +209,7 @@ fn test_build_comments() -> Result<()> {
 
 #[test]
 fn test_build_name_comment() -> Result<()> {
-    let pattern = [(1, 0), (0, 1)];
+    let pattern = [Position(1, 0), Position(0, 1)];
     let expected_name = Some("test");
     let expected_comments = vec!["comment"];
     let expected_contents = vec![PlaintextLine(0, vec![1]), PlaintextLine(1, vec![0])];

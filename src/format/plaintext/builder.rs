@@ -2,6 +2,7 @@ use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
+use crate::Position;
 
 /// A builder of [`Plaintext`].
 ///
@@ -11,8 +12,9 @@ use super::{Plaintext, PlaintextLine};
 ///
 /// ```
 /// use life_backend::format::PlaintextBuilder;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let pattern = [(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
 /// let builder: PlaintextBuilder = pattern.iter().collect();
 /// let target = builder.name("R-pentomino").build()?;
 /// let expected = "\
@@ -34,7 +36,7 @@ where
 {
     name: Name,
     comment: Comment,
-    contents: HashSet<(usize, usize)>,
+    contents: HashSet<Position<usize>>,
 }
 
 // Traits and types for PlaintextBuilder's typestate
@@ -84,8 +86,9 @@ where
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let builder: PlaintextBuilder = pattern.iter().collect();
     /// let target = builder.build()?;
     /// # Ok(())
@@ -109,7 +112,7 @@ where
             }
             None => Vec::new(),
         };
-        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, Position(x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
         });
@@ -139,8 +142,9 @@ where
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -159,8 +163,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -178,8 +183,9 @@ where
     ///
     /// ```should_panic
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -213,8 +219,9 @@ where
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -235,8 +242,9 @@ where
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -263,7 +271,7 @@ impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
     // Implementation of from_iter
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = Position<usize>>,
     {
         let contents = iter.into_iter().collect();
         Self {
@@ -274,15 +282,18 @@ impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
     }
 }
 
-impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Creates a value from a non-owning iterator over a series of `&(usize, usize)`.
+impl<'a> FromIterator<&'a Position<usize>> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a value from a non-owning iterator over a series of [`&Position<usize>`].
     /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
-    /// let pattern = [(1, 0), (0, 1)];
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let iter = pattern.iter();
     /// let builder: PlaintextBuilder = iter.collect();
     /// ```
@@ -290,21 +301,24 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
     #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = &'a (usize, usize)>,
+        T: IntoIterator<Item = &'a Position<usize>>,
     {
         Self::from_iter(iter.into_iter().copied())
     }
 }
 
-impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Creates a value from an owning iterator over a series of `(usize, usize)`.
+impl FromIterator<Position<usize>> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a value from an owning iterator over a series of [`Position<usize>`].
     /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
-    /// let pattern = [(1, 0), (0, 1)];
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let iter = pattern.into_iter();
     /// let builder: PlaintextBuilder = iter.collect();
     /// ```
@@ -312,7 +326,7 @@ impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, P
     #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = Position<usize>>,
     {
         Self::from_iter(iter)
     }

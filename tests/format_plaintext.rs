@@ -4,6 +4,7 @@ use std::io::Read;
 use std::path::Path;
 
 use life_backend::format::{Plaintext, PlaintextBuilder};
+use life_backend::Position;
 
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
@@ -36,7 +37,7 @@ fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, 
 fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Option<String>) -> Result<()> {
     // Create the target with the pattern, the name and the comment
     let target = {
-        let builder = pattern.iter().collect::<PlaintextBuilder>();
+        let builder = pattern.iter().map(|&(x, y)| Position(x, y)).collect::<PlaintextBuilder>();
         match (&name, &comment) {
             (None, None) => builder.build()?,
             (Some(name), None) => builder.name(name).build()?,
