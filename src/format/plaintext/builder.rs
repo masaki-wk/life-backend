@@ -275,7 +275,7 @@ impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
 }
 
 impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from a non-owning iterator over a series of `&(usize, usize)`.
+    /// Creates a value from a non-owning iterator over a series of `&(usize, usize)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -297,7 +297,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderN
 }
 
 impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from an owning iterator over a series of `(usize, usize)`.
+    /// Creates a value from an owning iterator over a series of `(usize, usize)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
