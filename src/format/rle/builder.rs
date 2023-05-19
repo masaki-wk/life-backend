@@ -106,6 +106,28 @@ impl RleBuilderRule for RleBuilderWithRule {
 
 // Inherent methods
 
+impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a builder that contains no live cells.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// let builder = RleBuilder::new();
+    /// ```
+    ///
+    #[inline]
+    pub fn new() -> Self {
+        Self {
+            name: RleBuilderNoName,
+            created: RleBuilderNoCreated,
+            comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
+            contents: HashSet::new(),
+        }
+    }
+}
+
 impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
 where
     Name: RleBuilderName,
@@ -475,20 +497,43 @@ where
 
 // Trait implementations
 
+impl Default for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Returns the default value of the type, same as the return value of [`new()`].
+    ///
+    /// [`new()`]: #method.new
+    ///
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    // Implementation of public extend()
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.contents.extend(iter);
+    }
+}
+
 impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    // Implementation of from_iter
+    // Implementation of public from_iter()
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = Position<usize>>,
     {
-        let contents = iter.into_iter().collect();
-        Self {
-            name: RleBuilderNoName,
-            created: RleBuilderNoCreated,
-            comment: RleBuilderNoComment,
-            rule: RleBuilderNoRule,
-            contents,
-        }
+        let mut v = Self::new();
+        v.extend(iter);
+        v
     }
 }
 
@@ -539,5 +584,69 @@ impl FromIterator<Position<usize>> for RleBuilder<RleBuilderNoName, RleBuilderNo
         T: IntoIterator<Item = Position<usize>>,
     {
         Self::from_iter(iter)
+    }
+}
+
+impl<'a, Name, Created, Comment, RuleSpec> Extend<&'a Position<usize>> for RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    /// Extends the builder with the contents of the specified non-owning iterator over the series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let mut builder = RleBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = &'a Position<usize>>,
+    {
+        self.extend(iter.into_iter().copied());
+    }
+}
+
+impl<Name, Created, Comment, RuleSpec> Extend<Position<usize>> for RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    /// Extends the builder with the contents of the specified owning iterator over the series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let mut builder = RleBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.extend(iter);
     }
 }
