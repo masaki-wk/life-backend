@@ -10,13 +10,42 @@ use crate::{Position, Rule};
 ///
 /// # Examples
 ///
+/// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Rle`] via [`build()`]:
+///
+/// [`collect()`]: std::iter::Iterator::collect
+/// [`name()`]: #method.name
+/// [`build()`]: #method.build
+///
 /// ```
 /// use life_backend::format::RleBuilder;
 /// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
-/// let builder = pattern.iter().collect::<RleBuilder>();
-/// let target = builder.name("R-pentomino").build()?;
+/// let builder = pattern.iter().collect::<RleBuilder>().name("R-pentomino");
+/// let target = builder.build()?;
+/// let expected = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3, rule = B3/S23\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Creates an empty builder via [`new()`], set a name via [`name()`], injects live cell positions via [`extend()`], then builds [`Rle`] via [`build()`]:
+///
+/// [`new()`]: #method.new
+/// [`extend()`]: #method.extend
+///
+/// ```
+/// use life_backend::format::RleBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let mut builder = RleBuilder::new().name("R-pentomino");
+/// builder.extend(pattern.iter());
+/// let target = builder.build()?;
 /// let expected = "\
 ///     #N R-pentomino\n\
 ///     x = 3, y = 3, rule = B3/S23\n\
