@@ -10,13 +10,43 @@ use crate::Position;
 ///
 /// # Examples
 ///
+/// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Plaintext`] via [`build()`]:
+///
+/// [`collect()`]: std::iter::Iterator::collect
+/// [`name()`]: #method.name
+/// [`build()`]: #method.build
+///
 /// ```
 /// use life_backend::format::PlaintextBuilder;
 /// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
-/// let builder: PlaintextBuilder = pattern.iter().collect();
-/// let target = builder.name("R-pentomino").build()?;
+/// let builder = pattern.iter().collect::<PlaintextBuilder>().name("R-pentomino");
+/// let target = builder.build()?;
+/// let expected = "\
+///     !Name: R-pentomino\n\
+///     .OO\n\
+///     OO.\n\
+///     .O.\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Creates an empty builder via [`new()`], set a name via [`name()`], injects live cell positions via [`extend()`], then builds [`Plaintext`] via [`build()`]:
+///
+/// [`new()`]: #method.new
+/// [`extend()`]: #method.extend
+///
+/// ```
+/// use life_backend::format::PlaintextBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let mut builder = PlaintextBuilder::new().name("R-pentomino");
+/// builder.extend(pattern.iter());
+/// let target = builder.build()?;
 /// let expected = "\
 ///     !Name: R-pentomino\n\
 ///     .OO\n\
