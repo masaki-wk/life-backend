@@ -8,7 +8,7 @@ use std::hash::Hash;
 
 use crate::{BoardRange, Position};
 
-/// A representation of a two-dimensional orthogonal grid map of live/dead cells.
+/// A two-dimensional orthogonal grid map of live/dead cells.
 ///
 /// The type parameter `T` is used as the type of the x- and y-coordinate values for each cell.
 ///
@@ -129,7 +129,10 @@ where
         self.0.clear();
     }
 
-    /// Retains only the live cell positions specified by the predicate, similar as `retain()` of `HashSet`.
+    /// Retains only the live cell positions specified by the predicate, similar as [`retain()`] of [`HashSet`].
+    ///
+    /// [`retain()`]: std::collections::HashSet::retain
+    /// [`HashSet`]: std::collections::HashSet
     ///
     /// # Examples
     ///
@@ -189,6 +192,7 @@ where
     /// Returns the default value of the type, same as the return value of [`new()`].
     ///
     /// [`new()`]: #method.new
+    ///
     #[inline]
     fn default() -> Self {
         Self::new()
@@ -269,8 +273,10 @@ impl<'a, T> FromIterator<&'a Position<T>> for Board<T>
 where
     T: Eq + Hash + Copy + 'a,
 {
-    /// Conversion from a non-owning iterator over a series of `&Position<T>`.
+    /// Creates a value from a non-owning iterator over a series of [`&Position<T>`].
     /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -297,8 +303,10 @@ impl<T> FromIterator<Position<T>> for Board<T>
 where
     T: Eq + Hash,
 {
-    /// Conversion from an owning iterator over a series of `Position<T>`.
+    /// Creates a value from an owning iterator over a series of [`Position<T>`].
     /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -325,8 +333,10 @@ impl<'a, T> Extend<&'a Position<T>> for Board<T>
 where
     T: Eq + Hash + Copy + 'a,
 {
-    /// Extend the board with the contents of the specified non-owning iterator over the series of `&Position<T>`.
+    /// Extends the board with the contents of the specified non-owning iterator over the series of [`&Position<T>`].
     /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<T>`]: Position
     ///
     /// # Examples
     ///
@@ -354,8 +364,10 @@ impl<T> Extend<Position<T>> for Board<T>
 where
     T: Eq + Hash,
 {
-    /// Extend the board with the contents of the specified owning iterator over the series of `Position<T>`.
+    /// Extends the board with the contents of the specified owning iterator over the series of [`Position<T>`].
     /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<T>`]: Position
     ///
     /// # Examples
     ///
