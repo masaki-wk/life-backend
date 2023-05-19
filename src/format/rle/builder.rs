@@ -484,7 +484,7 @@ impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleB
 }
 
 impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from a non-owning iterator over a series of `&(usize, usize)`.
+    /// Creates a value from a non-owning iterator over a series of `&(usize, usize)`.
     /// Each item in the series represents an immutable reference of a live cell position.
     ///
     /// # Examples
@@ -506,7 +506,7 @@ impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBu
 }
 
 impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from an owning iterator over a series of `(usize, usize)`.
+    /// Creates a value from an owning iterator over a series of `(usize, usize)`.
     /// Each item in the series represents a moved live cell position.
     ///
     /// # Examples
