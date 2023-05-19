@@ -73,6 +73,26 @@ impl PlaintextBuilderComment for PlaintextBuilderWithComment {
 
 // Inherent methods
 
+impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a builder that contains no live cells.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// let builder = PlaintextBuilder::new();
+    /// ```
+    ///
+    #[inline]
+    pub fn new() -> Self {
+        Self {
+            name: PlaintextBuilderNoName,
+            comment: PlaintextBuilderNoComment,
+            contents: HashSet::new(),
+        }
+    }
+}
+
 impl<Name, Comment> PlaintextBuilder<Name, Comment>
 where
     Name: PlaintextBuilderName,
@@ -267,18 +287,41 @@ where
 
 // Trait implementations
 
+impl Default for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Returns the default value of the type, same as the return value of [`new()`].
+    ///
+    /// [`new()`]: #method.new
+    ///
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<Name, Comment> PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    // Implementation of public extend()
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.contents.extend(iter);
+    }
+}
+
 impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    // Implementation of from_iter
+    // Implementation of public from_iter()
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = Position<usize>>,
     {
-        let contents = iter.into_iter().collect();
-        Self {
-            name: PlaintextBuilderNoName,
-            comment: PlaintextBuilderNoComment,
-            contents,
-        }
+        let mut v = Self::new();
+        v.extend(iter);
+        v
     }
 }
 
@@ -329,5 +372,65 @@ impl FromIterator<Position<usize>> for PlaintextBuilder<PlaintextBuilderNoName, 
         T: IntoIterator<Item = Position<usize>>,
     {
         Self::from_iter(iter)
+    }
+}
+
+impl<'a, Name, Comment> Extend<&'a Position<usize>> for PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    /// Extends the builder with the contents of the specified non-owning iterator over the series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let mut builder = PlaintextBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = &'a Position<usize>>,
+    {
+        self.extend(iter.into_iter().copied());
+    }
+}
+
+impl<Name, Comment> Extend<Position<usize>> for PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    /// Extends the builder with the contents of the specified owning iterator over the series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let mut builder = PlaintextBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.extend(iter);
     }
 }
