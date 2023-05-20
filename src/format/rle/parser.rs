@@ -63,7 +63,7 @@ impl RleParser {
                 self.finished = terminated;
             }
         } else if Self::is_comment_line(line) {
-            self.comments.push(line.to_string());
+            self.comments.push(line.to_owned());
         } else {
             let header = Self::parse_header_line(line)?;
             self.header = Some(header);

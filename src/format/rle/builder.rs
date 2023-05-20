@@ -185,7 +185,7 @@ where
         let comments: Vec<_> = {
             fn parse_to_comments(str: Option<String>, prefix: &str) -> Vec<String> {
                 fn append_prefix(str: &str, prefix: &str) -> String {
-                    let mut buf = prefix.to_string();
+                    let mut buf = prefix.to_owned();
                     if !str.is_empty() {
                         buf.push(' ');
                         buf.push_str(str);
@@ -195,7 +195,7 @@ where
                 match str {
                     Some(str) => {
                         if str.is_empty() {
-                            vec![prefix.to_string()]
+                            vec![prefix.to_owned()]
                         } else {
                             str.lines().map(|s| append_prefix(s, prefix)).collect::<Vec<_>>()
                         }
@@ -328,7 +328,7 @@ where
     /// ```
     ///
     pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment, Rule> {
-        let name = RleBuilderWithName(str.to_string());
+        let name = RleBuilderWithName(str.to_owned());
         RleBuilder {
             name,
             created: self.created,
@@ -391,7 +391,7 @@ where
     /// ```
     ///
     pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment, Rule> {
-        let created = RleBuilderWithCreated(str.to_string());
+        let created = RleBuilderWithCreated(str.to_owned());
         RleBuilder {
             name: self.name,
             created,
@@ -455,7 +455,7 @@ where
     /// ```
     ///
     pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment, Rule> {
-        let comment = RleBuilderWithComment(str.to_string());
+        let comment = RleBuilderWithComment(str.to_owned());
         RleBuilder {
             name: self.name,
             created: self.created,
