@@ -49,19 +49,19 @@ pub fn open<P>(path: P) -> Result<Box<dyn Format>>
 where
     P: AsRef<Path>,
 {
-    let path_to_display = path.as_ref().display().to_string();
+    let path_for_display = path.as_ref().to_owned();
     let ext = path
         .as_ref()
         .extension()
-        .with_context(|| format!("\"{}\" has no extension", path_to_display))?
-        .to_os_string();
-    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path_to_display))?;
+        .with_context(|| format!("\"{}\" has no extension", path_for_display.display()))?
+        .to_owned();
+    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path_for_display.display()))?;
     let result: Box<dyn Format> = if ext.as_os_str() == "cells" {
         Box::new(Plaintext::new(file)?)
     } else if ext.as_os_str() == "rle" {
         Box::new(Rle::new(file)?)
     } else {
-        bail!("\"{}\" has unknown extension", path_to_display);
+        bail!("\"{}\" has unknown extension", path_for_display.display());
     };
     Ok(result)
 }
