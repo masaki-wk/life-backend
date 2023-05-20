@@ -3,6 +3,7 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
 use std::hash::Hash;
 use std::ops::{Add, Sub};
+use std::path::Path;
 
 use life_backend::format;
 use life_backend::{Board, Game, Position};
@@ -17,13 +18,14 @@ where
     }
 }
 
-fn do_benchmark<CoordinateType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
+fn do_benchmark<CoordinateType, P>(c: &mut Criterion, id: &str, path: P, steps: usize) -> Result<()>
 where
     CoordinateType:
         Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    P: AsRef<Path>,
 {
     let from_usize_unwrap = |x| CoordinateType::from_usize(x).unwrap();
-    let handler = format::open(path_str)?;
+    let handler = format::open(path)?;
     let rule = handler.rule();
     let board: Board<_> = handler
         .live_cells()
@@ -38,9 +40,9 @@ macro_rules! create_benchmark_function {
     ($function_name:ident, $id:literal, $relative_path_string:literal, $steps:expr) => {
         fn $function_name(c: &mut Criterion) {
             let id = $id;
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
             let steps = $steps;
-            do_benchmark::<i8>(c, id, path_str, steps).unwrap();
+            do_benchmark::<i8, _>(c, id, path, steps).unwrap();
         }
     };
 }

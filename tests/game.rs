@@ -1,12 +1,16 @@
 use anyhow::Result;
+use std::path::Path;
 
 use life_backend::format;
 use life_backend::{Board, Game, Position, Rule};
 
 use i16 as I;
 
-fn load(path_str: &str) -> Result<(Rule, Board<I>)> {
-    let handler = format::open(path_str)?;
+fn load<P>(path: P) -> Result<(Rule, Board<I>)>
+where
+    P: AsRef<Path>,
+{
+    let handler = format::open(path)?;
     let rule = handler.rule();
     let board: Board<_> = handler.live_cells().map(|pos| Position(pos.0 as I, pos.1 as I)).collect();
     Ok((rule, board))
@@ -19,9 +23,12 @@ fn print_game(game: &Game<I>, generation: usize) {
     println!("{game}");
 }
 
-fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
+fn do_oscillator_test<P>(path: P, period: usize) -> Result<()>
+where
+    P: AsRef<Path>,
+{
     // Load the rule and the board
-    let (rule, init) = load(path_str)?;
+    let (rule, init) = load(path)?;
 
     // Create the game
     let mut game = Game::new(rule, init.clone());
@@ -42,13 +49,19 @@ fn do_oscillator_test(path_str: &str, period: usize) -> Result<()> {
     Ok(())
 }
 
-fn do_stilllife_test(path_str: &str) -> Result<()> {
-    do_oscillator_test(path_str, 1)
+fn do_stilllife_test<P>(path: P) -> Result<()>
+where
+    P: AsRef<Path>,
+{
+    do_oscillator_test(path, 1)
 }
 
-fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -> Result<()> {
+fn do_spaceship_test<P>(path: P, period: usize, relative_position: (I, I)) -> Result<()>
+where
+    P: AsRef<Path>,
+{
     // Load the rule and the board
-    let (rule, init) = load(path_str)?;
+    let (rule, init) = load(path)?;
 
     // Setup the expected board
     let expected: Board<_> = init
@@ -72,9 +85,12 @@ fn do_spaceship_test(path_str: &str, period: usize, relative_position: (I, I)) -
     Ok(())
 }
 
-fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: usize) -> Result<()> {
+fn do_methuselah_test<P>(path: P, steps: usize, expected_final_population: usize) -> Result<()>
+where
+    P: AsRef<Path>,
+{
     // Load the rule and the board
-    let (rule, init) = load(path_str)?;
+    let (rule, init) = load(path)?;
 
     // Create the game
     let mut game = Game::new(rule, init);
@@ -92,16 +108,19 @@ fn do_methuselah_test(path_str: &str, steps: usize, expected_final_population: u
     Ok(())
 }
 
-fn do_diehard_test(path_str: &str, steps: usize) -> Result<()> {
-    do_methuselah_test(path_str, steps, 0)
+fn do_diehard_test<P>(path: P, steps: usize) -> Result<()>
+where
+    P: AsRef<Path>,
+{
+    do_methuselah_test(path, steps, 0)
 }
 
 macro_rules! create_stilllife_test_function {
     ($function_name:ident, $relative_path_string:literal) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_stilllife_test(path_str)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_stilllife_test(path)
         }
     };
 }
@@ -110,8 +129,8 @@ macro_rules! create_oscillator_test_function {
     ($function_name:ident, $relative_path_string:literal, $period:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_oscillator_test(path_str, $period)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_oscillator_test(path, $period)
         }
     };
 }
@@ -120,8 +139,8 @@ macro_rules! create_spaceship_test_function {
     ($function_name:ident, $relative_path_string:literal, $period:expr, $relative_position:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_spaceship_test(path_str, $period, $relative_position)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_spaceship_test(path, $period, $relative_position)
         }
     };
 }
@@ -130,16 +149,16 @@ macro_rules! create_methuselah_test_function {
     ($function_name:ident, $relative_path_string:literal, $steps:expr, $expected_final_population:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_methuselah_test(path_str, $steps, $expected_final_population)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_methuselah_test(path, $steps, $expected_final_population)
         }
     };
     ($function_name:ident, $relative_path_string:literal, $steps:expr, $expected_final_population:expr, ignore = $reason:literal) => {
         #[test]
         #[ignore = $reason]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_methuselah_test(path_str, $steps, $expected_final_population)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_methuselah_test(path, $steps, $expected_final_population)
         }
     };
 }
@@ -148,8 +167,8 @@ macro_rules! create_diehard_test_function {
     ($function_name:ident, $relative_path_string:literal, $steps:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
-            do_diehard_test(path_str, $steps)
+            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            do_diehard_test(path, $steps)
         }
     };
 }
