@@ -119,7 +119,7 @@ macro_rules! create_stilllife_test_function {
     ($function_name:ident, $relative_path_string:literal) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_stilllife_test(path)
         }
     };
@@ -129,7 +129,7 @@ macro_rules! create_oscillator_test_function {
     ($function_name:ident, $relative_path_string:literal, $period:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_oscillator_test(path, $period)
         }
     };
@@ -139,7 +139,7 @@ macro_rules! create_spaceship_test_function {
     ($function_name:ident, $relative_path_string:literal, $period:expr, $relative_position:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_spaceship_test(path, $period, $relative_position)
         }
     };
@@ -149,7 +149,7 @@ macro_rules! create_methuselah_test_function {
     ($function_name:ident, $relative_path_string:literal, $steps:expr, $expected_final_population:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_methuselah_test(path, $steps, $expected_final_population)
         }
     };
@@ -157,7 +157,7 @@ macro_rules! create_methuselah_test_function {
         #[test]
         #[ignore = $reason]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_methuselah_test(path, $steps, $expected_final_population)
         }
     };
@@ -167,7 +167,7 @@ macro_rules! create_diehard_test_function {
     ($function_name:ident, $relative_path_string:literal, $steps:expr) => {
         #[test]
         fn $function_name() -> Result<()> {
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             do_diehard_test(path, $steps)
         }
     };

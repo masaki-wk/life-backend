@@ -40,7 +40,7 @@ macro_rules! create_benchmark_function {
     ($function_name:ident, $id:literal, $relative_path_string:literal, $steps:expr) => {
         fn $function_name(c: &mut Criterion) {
             let id = $id;
-            let path = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             let steps = $steps;
             do_benchmark::<i8, _>(c, id, path, steps).unwrap();
         }
