@@ -50,7 +50,6 @@ create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker
 create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.rle", 1000);
 create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.rle", 1000);
 create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.rle", 1000);
-create_benchmark_function!(moldon30p25_1k_benchmark, "moldon30p25-1k", "patterns/moldon30p25.rle", 1000);
 create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.rle", 1000);
 
 criterion_group!(
@@ -59,7 +58,6 @@ criterion_group!(
     pentadecathlon_1k_benchmark,
     queenbeeshuttle_1k_benchmark,
     p60glidershuttle_1k_benchmark,
-    moldon30p25_1k_benchmark,
     centinal_1k_benchmark
 );
 criterion_main!(benches);
