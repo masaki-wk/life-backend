@@ -18,7 +18,6 @@ use crate::{Format, Rule};
 ///
 /// ```
 /// use std::fs::File;
-/// use std::path::Path;
 /// use life_backend::format::Plaintext;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let file = File::open(concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells"))?;
