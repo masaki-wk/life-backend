@@ -84,7 +84,7 @@ fn format_rle_new_with_string_test() -> Result<()> {
 
 #[test]
 fn format_rle_new_with_file_test() -> Result<()> {
-    let input_path = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.rle");
+    let input_path = "patterns/rpentomino.rle";
     let expected_positions = vec![(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
     do_new_test_with_path(input_path, &expected_positions)
 }

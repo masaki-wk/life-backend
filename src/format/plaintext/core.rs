@@ -20,7 +20,7 @@ use crate::{Format, Rule};
 /// use std::fs::File;
 /// use life_backend::format::Plaintext;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let file = File::open(concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.cells"))?;
+/// let file = File::open("patterns/rpentomino.cells")?;
 /// let parser = Plaintext::new(file)?;
 /// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
 /// # Ok(())
