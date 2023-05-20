@@ -320,12 +320,12 @@ where
     /// assert_eq!(board.get(&Position(1, 1)), false);
     /// ```
     ///
+    #[inline]
     fn from_iter<U>(iter: U) -> Self
     where
         U: IntoIterator<Item = Position<T>>,
     {
-        let live_cells: HashSet<_, _> = iter.into_iter().collect();
-        Self(live_cells)
+        Self(HashSet::<Position<T>, _>::from_iter(iter))
     }
 }
 
