@@ -8,9 +8,9 @@ use std::path::Path;
 use life_backend::format;
 use life_backend::{Board, Game, Position};
 
-fn workload<CoordinateType>(game: &Game<CoordinateType>, steps: usize)
+fn workload<T>(game: &Game<T>, steps: usize)
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive,
 {
     let mut game = game.clone();
     for _ in 0..steps {
@@ -18,13 +18,12 @@ where
     }
 }
 
-fn do_benchmark<CoordinateType, P>(c: &mut Criterion, id: &str, path: P, steps: usize) -> Result<()>
+fn do_benchmark<T, P>(c: &mut Criterion, id: &str, path: P, steps: usize) -> Result<()>
 where
-    CoordinateType:
-        Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
     P: AsRef<Path>,
 {
-    let from_usize_unwrap = |x| CoordinateType::from_usize(x).unwrap();
+    let from_usize_unwrap = |x| T::from_usize(x).unwrap();
     let handler = format::open(path)?;
     let rule = handler.rule();
     let board: Board<_> = handler
