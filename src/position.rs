@@ -31,8 +31,8 @@ impl<T> Position<T> {
     /// # Examples
     ///
     /// ```
-    /// use life_backend::Position;
     /// use std::collections::HashSet;
+    /// use life_backend::Position;
     /// let pos = Position(2, 3);
     /// let result: HashSet<_> = pos
     ///     .moore_neighborhood_positions()

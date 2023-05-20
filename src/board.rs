@@ -166,8 +166,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use life_backend::{Board, Position};
     /// use std::collections::HashSet;
+    /// use life_backend::{Board, Position};
     /// let mut board = Board::<i16>::new();
     /// board.set(&Position(1, 0), true);
     /// board.set(&Position(0, 1), true);
@@ -227,8 +227,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use life_backend::{Board, Position};
     /// use std::collections::HashSet;
+    /// use life_backend::{Board, Position};
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let board: Board<i16> = pattern.iter().collect();
     /// let result: HashSet<_> = (&board).into_iter().collect();
@@ -254,8 +254,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use life_backend::{Board, Position};
     /// use std::collections::HashSet;
+    /// use life_backend::{Board, Position};
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let board: Board<i16> = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
