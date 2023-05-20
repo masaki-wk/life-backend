@@ -46,18 +46,33 @@ macro_rules! create_benchmark_function {
     };
 }
 
-create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker.rle", 1000);
-create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.rle", 1000);
-create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.rle", 1000);
-create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.rle", 1000);
-create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.rle", 1000);
+create_benchmark_function!(oscillator_blinker_benchmark, "oscillator-blinker", "patterns/blinker.rle", 2);
+create_benchmark_function!(
+    oscillator_pentadecathlon_benchmark,
+    "oscillator-pentadecathlon",
+    "patterns/pentadecathlon.rle",
+    15
+);
+create_benchmark_function!(
+    oscillator_queenbeeshuttle_benchmark,
+    "oscillator-queenbeeshuttle",
+    "patterns/transqueenbeeshuttle.rle",
+    30
+);
+create_benchmark_function!(
+    oscillator_p60glidershuttle_benchmark,
+    "oscillator-p60glidershuttle",
+    "patterns/p60glidershuttle.rle",
+    60
+);
+create_benchmark_function!(oscillator_centinal_benchmark, "oscillator-centinal", "patterns/centinal.rle", 100);
 
 criterion_group!(
     benches,
-    blinker_1k_benchmark,
-    pentadecathlon_1k_benchmark,
-    queenbeeshuttle_1k_benchmark,
-    p60glidershuttle_1k_benchmark,
-    centinal_1k_benchmark
+    oscillator_blinker_benchmark,
+    oscillator_pentadecathlon_benchmark,
+    oscillator_queenbeeshuttle_benchmark,
+    oscillator_p60glidershuttle_benchmark,
+    oscillator_centinal_benchmark
 );
 criterion_main!(benches);
