@@ -21,8 +21,7 @@ use crate::{Position, Rule};
 /// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
-/// let builder = pattern.iter().collect::<RleBuilder>().name("R-pentomino");
-/// let target = builder.build()?;
+/// let target = pattern.iter().collect::<RleBuilder>().name("R-pentomino").build()?;
 /// let expected = "\
 ///     #N R-pentomino\n\
 ///     x = 3, y = 3, rule = B3/S23\n\
