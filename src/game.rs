@@ -99,10 +99,10 @@ where
     /// let bbox = board.bounding_box();
     /// assert_eq!(bbox.x(), &(0..=1));
     /// assert_eq!(bbox.y(), &(0..=1));
-    /// assert_eq!(board.get(&Position(0, 0)), false);
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(0, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), false);
     /// ```
     ///
     #[inline]
@@ -115,7 +115,7 @@ where
     where
         T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
-        position.moore_neighborhood_positions().filter(|pos| board.get(pos)).count()
+        position.moore_neighborhood_positions().filter(|pos| board.contains(pos)).count()
     }
 
     /// Updates the state of the game.
@@ -132,9 +132,9 @@ where
     /// let bbox = board.bounding_box();
     /// assert_eq!(bbox.x(), &(1..=1));
     /// assert_eq!(bbox.y(), &(0..=2));
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 2)), true);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 2)), true);
     /// ```
     ///
     pub fn update(&mut self)
@@ -147,7 +147,7 @@ where
             self.prev_board
                 .iter()
                 .flat_map(|pos| pos.moore_neighborhood_positions())
-                .filter(|pos| !self.prev_board.get(pos)),
+                .filter(|pos| !self.prev_board.contains(pos)),
         );
         self.curr_board.retain(|pos| {
             let count = Self::live_neighbour_count(&self.prev_board, pos);
