@@ -21,8 +21,7 @@ use crate::Position;
 /// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
-/// let builder = pattern.iter().collect::<PlaintextBuilder>().name("R-pentomino");
-/// let target = builder.build()?;
+/// let target = pattern.iter().collect::<PlaintextBuilder>().name("R-pentomino").build()?;
 /// let expected = "\
 ///     !Name: R-pentomino\n\
 ///     .OO\n\
