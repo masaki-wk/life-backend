@@ -54,6 +54,8 @@ mod benchmarks {
     create_benchmark_function!(oscillator_queenbeeshuttle_benchmark, "oscillator-queenbeeshuttle", "patterns/transqueenbeeshuttle.rle", 30);
     create_benchmark_function!(oscillator_p60glidershuttle_benchmark, "oscillator-p60glidershuttle", "patterns/p60glidershuttle.rle", 60);
     create_benchmark_function!(oscillator_centinal_benchmark, "oscillator-centinal", "patterns/centinal.rle", 100);
+    create_benchmark_function!(methuselah_bheptomino_benchmark, "methuselah-bheptomino", "patterns/bheptomino.rle", 148);
+    create_benchmark_function!(methuselah_rpentomino_benchmark, "methuselah-rpentomino", "patterns/rpentomino.rle", 1103);
 }
 
 criterion_group!(
@@ -62,6 +64,8 @@ criterion_group!(
     benchmarks::oscillator_pentadecathlon_benchmark,
     benchmarks::oscillator_queenbeeshuttle_benchmark,
     benchmarks::oscillator_p60glidershuttle_benchmark,
-    benchmarks::oscillator_centinal_benchmark
+    benchmarks::oscillator_centinal_benchmark,
+    benchmarks::methuselah_bheptomino_benchmark,
+    benchmarks::methuselah_rpentomino_benchmark,
 );
 criterion_main!(benches);
