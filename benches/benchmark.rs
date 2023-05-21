@@ -37,7 +37,7 @@ where
 
 macro_rules! create_benchmark_function {
     ($function_name:ident, $id:literal, $relative_path_string:literal, $steps:expr) => {
-        fn $function_name(c: &mut Criterion) {
+        pub fn $function_name(c: &mut Criterion) {
             let id = $id;
             let path = $relative_path_string;
             let steps = $steps;
@@ -46,33 +46,22 @@ macro_rules! create_benchmark_function {
     };
 }
 
-create_benchmark_function!(oscillator_blinker_benchmark, "oscillator-blinker", "patterns/blinker.rle", 2);
-create_benchmark_function!(
-    oscillator_pentadecathlon_benchmark,
-    "oscillator-pentadecathlon",
-    "patterns/pentadecathlon.rle",
-    15
-);
-create_benchmark_function!(
-    oscillator_queenbeeshuttle_benchmark,
-    "oscillator-queenbeeshuttle",
-    "patterns/transqueenbeeshuttle.rle",
-    30
-);
-create_benchmark_function!(
-    oscillator_p60glidershuttle_benchmark,
-    "oscillator-p60glidershuttle",
-    "patterns/p60glidershuttle.rle",
-    60
-);
-create_benchmark_function!(oscillator_centinal_benchmark, "oscillator-centinal", "patterns/centinal.rle", 100);
+#[rustfmt::skip]
+mod benchmarks {
+    use super::*;
+    create_benchmark_function!(oscillator_blinker_benchmark, "oscillator-blinker", "patterns/blinker.rle", 2);
+    create_benchmark_function!(oscillator_pentadecathlon_benchmark, "oscillator-pentadecathlon", "patterns/pentadecathlon.rle", 15);
+    create_benchmark_function!(oscillator_queenbeeshuttle_benchmark, "oscillator-queenbeeshuttle", "patterns/transqueenbeeshuttle.rle", 30);
+    create_benchmark_function!(oscillator_p60glidershuttle_benchmark, "oscillator-p60glidershuttle", "patterns/p60glidershuttle.rle", 60);
+    create_benchmark_function!(oscillator_centinal_benchmark, "oscillator-centinal", "patterns/centinal.rle", 100);
+}
 
 criterion_group!(
     benches,
-    oscillator_blinker_benchmark,
-    oscillator_pentadecathlon_benchmark,
-    oscillator_queenbeeshuttle_benchmark,
-    oscillator_p60glidershuttle_benchmark,
-    oscillator_centinal_benchmark
+    benchmarks::oscillator_blinker_benchmark,
+    benchmarks::oscillator_pentadecathlon_benchmark,
+    benchmarks::oscillator_queenbeeshuttle_benchmark,
+    benchmarks::oscillator_p60glidershuttle_benchmark,
+    benchmarks::oscillator_centinal_benchmark
 );
 criterion_main!(benches);
