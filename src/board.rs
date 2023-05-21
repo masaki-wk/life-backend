@@ -18,12 +18,12 @@ use crate::{BoardRange, Position};
 /// use life_backend::{Board, Position};
 /// let pattern = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
 /// let mut board: Board<i16> = pattern.iter().collect();
-/// assert_eq!(board.get(&Position(0, 0)), true);
-/// assert_eq!(board.get(&Position(0, 1)), false);
+/// assert_eq!(board.contains(&Position(0, 0)), true);
+/// assert_eq!(board.contains(&Position(0, 1)), false);
 /// assert_eq!(board.iter().count(), 4);
 /// board.clear();
-/// board.set(&Position(1, 0), true);
-/// board.set(&Position(0, 1), true);
+/// board.insert(Position(1, 0));
+/// board.insert(Position(0, 1));
 /// assert_eq!(board.iter().count(), 2);
 /// ```
 ///
@@ -53,41 +53,60 @@ where
         Self(HashSet::default())
     }
 
-    /// Returns the value of the specified position of the board.
+    /// Returns `true` if the board contains the specified position.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::{Board, Position};
     /// let board = Board::<i16>::new();
-    /// assert_eq!(board.get(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
     /// ```
     ///
     #[inline]
-    pub fn get(&self, position: &Position<T>) -> bool {
+    pub fn contains(&self, position: &Position<T>) -> bool {
         self.0.contains(position)
     }
 
-    /// Set the specified value on the specified position of the board.
+    /// Adds the specified position to the board.
+    /// Returns whether the position was newly inserted, like as [`insert()`] of [`HashSet`].
+    ///
+    /// [`insert()`]: std::collections::HashSet::insert
+    /// [`HashSet`]: std::collections::HashSet
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::{Board, Position};
     /// let mut board = Board::<i16>::new();
-    /// board.set(&Position(0, 0), true);
-    /// assert_eq!(board.get(&Position(0, 0)), true);
+    /// assert_eq!(board.insert(Position(0, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 0)), true);
     /// ```
     ///
-    pub fn set(&mut self, position: &Position<T>, value: bool)
-    where
-        T: Copy,
-    {
-        if value {
-            self.0.insert(*position);
-        } else {
-            self.0.remove(position);
-        }
+    #[inline]
+    pub fn insert(&mut self, position: Position<T>) -> bool {
+        self.0.insert(position)
+    }
+
+    /// Removes the specified position from the board.
+    /// Returns whether the position was contained in the board, like as [`remove()`] of [`HashSet`].
+    ///
+    /// [`remove()`]: std::collections::HashSet::remove
+    /// [`HashSet`]: std::collections::HashSet
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{Board, Position};
+    /// let mut board = Board::<i16>::new();
+    /// assert_eq!(board.insert(Position(0, 0)), true);
+    /// assert_eq!(board.remove(&Position(0, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// ```
+    ///
+    #[inline]
+    pub fn remove(&mut self, position: &Position<T>) -> bool {
+        self.0.remove(position)
     }
 
     /// Returns the minimum bounding box of all live cells on the board.
@@ -97,8 +116,8 @@ where
     /// ```
     /// use life_backend::{Board, Position};
     /// let mut board = Board::new();
-    /// board.set(&Position(-1, 2), true);
-    /// board.set(&Position(3, -2), true);
+    /// board.insert(Position(-1, 2));
+    /// board.insert(Position(3, -2));
     /// let bbox = board.bounding_box();
     /// assert_eq!(bbox.x(), &(-1..=3));
     /// assert_eq!(bbox.y(), &(-2..=2));
@@ -119,9 +138,9 @@ where
     /// ```
     /// use life_backend::{Board, Position};
     /// let mut board = Board::<i16>::new();
-    /// board.set(&Position(0, 0), true);
+    /// board.insert(Position(0, 0));
     /// board.clear();
-    /// assert_eq!(board.get(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
     /// ```
     ///
     #[inline]
@@ -139,13 +158,13 @@ where
     /// ```
     /// use life_backend::{Board, Position};
     /// let mut board = Board::<i16>::new();
-    /// board.set(&Position(0, 0), true);
-    /// board.set(&Position(1, 0), true);
-    /// board.set(&Position(0, 1), true);
+    /// board.insert(Position(0, 0));
+    /// board.insert(Position(1, 0));
+    /// board.insert(Position(0, 1));
     /// board.retain(|&pos| pos.0 == pos.1);
-    /// assert_eq!(board.get(&Position(0, 0)), true);
-    /// assert_eq!(board.get(&Position(1, 0)), false);
-    /// assert_eq!(board.get(&Position(0, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), true);
+    /// assert_eq!(board.contains(&Position(1, 0)), false);
+    /// assert_eq!(board.contains(&Position(0, 1)), false);
     /// ```
     ///
     #[inline]
@@ -169,8 +188,8 @@ where
     /// use std::collections::HashSet;
     /// use life_backend::{Board, Position};
     /// let mut board = Board::<i16>::new();
-    /// board.set(&Position(1, 0), true);
-    /// board.set(&Position(0, 1), true);
+    /// board.insert(Position(1, 0));
+    /// board.insert(Position(0, 1));
     /// let result: HashSet<_> = board.iter().collect();
     /// assert_eq!(result.len(), 2);
     /// assert!(result.contains(&Position(1, 0)));
@@ -207,7 +226,7 @@ where
         let bbox = self.bounding_box();
         for y in range_inclusive(*bbox.y().start(), *bbox.y().end()) {
             let line: String = range_inclusive(*bbox.x().start(), *bbox.x().end())
-                .map(|x| if self.get(&Position(x, y)) { 'O' } else { '.' })
+                .map(|x| if self.contains(&Position(x, y)) { 'O' } else { '.' })
                 .collect();
             writeln!(f, "{line}")?;
         }
@@ -284,10 +303,10 @@ where
     /// use life_backend::{Board, Position};
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let board: Board<i16> = pattern.iter().collect();
-    /// assert_eq!(board.get(&Position(0, 0)), false);
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(0, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), false);
     /// ```
     ///
     #[inline]
@@ -314,10 +333,10 @@ where
     /// use life_backend::{Board, Position};
     /// let mut pattern = [Position(1, 0), Position(0, 1)];
     /// let board: Board<i16> = pattern.into_iter().collect();
-    /// assert_eq!(board.get(&Position(0, 0)), false);
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(0, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), false);
     /// ```
     ///
     #[inline]
@@ -345,10 +364,10 @@ where
     /// let mut board = Board::<i16>::new();
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// board.extend(pattern.iter());
-    /// assert_eq!(board.get(&Position(0, 0)), false);
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(0, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), false);
     /// ```
     ///
     #[inline]
@@ -376,10 +395,10 @@ where
     /// let mut board = Board::<i16>::new();
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// board.extend(pattern.into_iter());
-    /// assert_eq!(board.get(&Position(0, 0)), false);
-    /// assert_eq!(board.get(&Position(1, 0)), true);
-    /// assert_eq!(board.get(&Position(0, 1)), true);
-    /// assert_eq!(board.get(&Position(1, 1)), false);
+    /// assert_eq!(board.contains(&Position(0, 0)), false);
+    /// assert_eq!(board.contains(&Position(1, 0)), true);
+    /// assert_eq!(board.contains(&Position(0, 1)), true);
+    /// assert_eq!(board.contains(&Position(1, 1)), false);
     /// ```
     ///
     #[inline]
