@@ -12,6 +12,38 @@ use crate::{Format, Rule};
 ///
 /// - [Plaintext - LifeWiki](https://conwaylife.com/wiki/Plaintext)
 ///
+/// # Examples
+///
+/// Parses the given Plaintext file, and checks live cells included in it:
+///
+/// ```
+/// use std::fs::File;
+/// use life_backend::format::Plaintext;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let file = File::open("patterns/rpentomino.cells")?;
+/// let parser = Plaintext::new(file)?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Parses the given string in Plaintext format:
+///
+/// ```
+/// use life_backend::format::Plaintext;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = "\
+///     !Name: R-pentomino\n\
+///     .OO\n\
+///     OO.\n\
+///     .O.\n\
+/// ";
+/// let parser = pattern.parse::<Plaintext>()?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct Plaintext {
     pub(super) name: Option<String>,
@@ -22,7 +54,10 @@ pub struct Plaintext {
 // Inherent methods
 
 impl Plaintext {
-    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
+    /// Creates from the specified implementor of [`Read`], such as [`File`] or `&[u8]`.
+    ///
+    /// [`Read`]: std::io::Read
+    /// [`File`]: std::fs::File
     ///
     /// # Examples
     ///
@@ -92,11 +127,11 @@ impl Plaintext {
     /// ```
     ///
     #[inline]
-    pub fn comments(&self) -> &Vec<String> {
+    pub const fn comments(&self) -> &Vec<String> {
         &self.comments
     }
 
-    /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
+    /// Creates an owning iterator over the series of live cell positions in ascending order.
     ///
     /// # Examples
     ///
@@ -109,12 +144,7 @@ impl Plaintext {
     ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes())?;
-    /// let mut iter = parser.live_cells();
-    /// assert_eq!(iter.next(), Some((0, 0)));
-    /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 0)));
-    /// assert_eq!(iter.next(), Some((1, 1)));
-    /// assert_eq!(iter.next(), None);
+    /// assert!(parser.live_cells().eq([(0, 0), (1, 0), (2, 0), (1, 1)]));
     /// # Ok(())
     /// # }
     /// ```

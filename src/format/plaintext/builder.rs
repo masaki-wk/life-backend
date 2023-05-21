@@ -2,8 +2,61 @@ use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
 use super::{Plaintext, PlaintextLine};
+use crate::Position;
 
-/// A builder of Plaintext.
+/// A builder of [`Plaintext`].
+///
+/// [`Plaintext`]: Plaintext
+///
+/// # Examples
+///
+/// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Plaintext`] via [`build()`]:
+///
+/// [`collect()`]: std::iter::Iterator::collect
+/// [`name()`]: #method.name
+/// [`build()`]: #method.build
+///
+/// ```
+/// use life_backend::format::PlaintextBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let target = pattern.iter().collect::<PlaintextBuilder>().name("R-pentomino").build()?;
+/// let expected = "\
+///     !Name: R-pentomino\n\
+///     .OO\n\
+///     OO.\n\
+///     .O.\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Creates an empty builder via [`new()`], set a name via [`name()`], injects live cell positions via [`extend()`], then builds [`Plaintext`] via [`build()`]:
+///
+/// [`new()`]: #method.new
+/// [`extend()`]: #method.extend
+///
+/// ```
+/// use life_backend::format::PlaintextBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let mut builder = PlaintextBuilder::new().name("R-pentomino");
+/// builder.extend(pattern.iter());
+/// let target = builder.build()?;
+/// let expected = "\
+///     !Name: R-pentomino\n\
+///     .OO\n\
+///     OO.\n\
+///     .O.\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
@@ -12,7 +65,7 @@ where
 {
     name: Name,
     comment: Comment,
-    contents: HashSet<(usize, usize)>,
+    contents: HashSet<Position<usize>>,
 }
 
 // Traits and types for PlaintextBuilder's typestate
@@ -49,23 +102,44 @@ impl PlaintextBuilderComment for PlaintextBuilderWithComment {
 
 // Inherent methods
 
-impl<Name, Comment> PlaintextBuilder<Name, Comment>
-where
-    Name: PlaintextBuilderName,
-    Comment: PlaintextBuilderComment,
-{
-    /// Builds the specified Plaintext value.
+impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a builder that contains no live cells.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// let builder = PlaintextBuilder::new();
+    /// ```
+    ///
+    #[inline]
+    pub fn new() -> Self {
+        Self {
+            name: PlaintextBuilderNoName,
+            comment: PlaintextBuilderNoComment,
+            contents: HashSet::new(),
+        }
+    }
+}
+
+impl<Name, Comment> PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    /// Builds the [`Plaintext`] value.
+    ///
+    /// [`Plaintext`]: Plaintext
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern
-    ///     .iter()
-    ///     .collect::<PlaintextBuilder>()
-    ///     .build()?;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let builder: PlaintextBuilder = pattern.iter().collect();
+    /// let target = builder.build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -87,7 +161,7 @@ where
             }
             None => Vec::new(),
         };
-        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, Position(x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
         });
@@ -117,8 +191,9 @@ where
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -131,12 +206,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls name() twice or more will fail at compile time.  For example:
+    /// Code that calls [`name()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`name()`]: #method.name
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -147,12 +225,16 @@ where
     /// # }
     /// ```
     ///
-    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    /// [`build()`] returns an error if the string passed by [`name()`] includes multiple lines.  For example:
+    ///
+    /// [`build()`]: #method.build
+    /// [`name()`]: #method.name
     ///
     /// ```should_panic
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -163,7 +245,7 @@ where
     /// ```
     ///
     pub fn name(self, str: &str) -> PlaintextBuilder<PlaintextBuilderWithName, Comment> {
-        let name = PlaintextBuilderWithName(str.to_string());
+        let name = PlaintextBuilderWithName(str.to_owned());
         PlaintextBuilder {
             name,
             comment: self.comment,
@@ -176,14 +258,19 @@ impl<Name> PlaintextBuilder<Name, PlaintextBuilderNoComment>
 where
     Name: PlaintextBuilderName,
 {
-    /// Set the comment.  If the argument includes newlines, the instance of Plaintext built by build() includes multiple comment lines.
+    /// Set the comment.
+    /// If the argument includes newlines, the instance of [`Plaintext`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Plaintext`]: Plaintext
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -198,12 +285,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    /// Code that calls [`comment()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`comment()`]: #method.comment
     ///
     /// ```compile_fail
     /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<PlaintextBuilder>()
@@ -215,7 +305,7 @@ where
     /// ```
     ///
     pub fn comment(self, str: &str) -> PlaintextBuilder<Name, PlaintextBuilderWithComment> {
-        let comment = PlaintextBuilderWithComment(str.to_string());
+        let comment = PlaintextBuilderWithComment(str.to_owned());
         PlaintextBuilder {
             name: self.name,
             comment,
@@ -226,64 +316,150 @@ where
 
 // Trait implementations
 
-impl<'a> FromIterator<&'a (usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from a non-owning iterator over a series of &(usize, usize).
-    /// Each item in the series represents an immutable reference of a live cell position.
+impl Default for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Returns the default value of the type, same as the return value of [`new()`].
     ///
-    /// # Examples
+    /// [`new()`]: #method.new
     ///
-    /// ```
-    /// use life_backend::format::PlaintextBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .iter()
-    ///     .collect::<PlaintextBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    ///
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = &'a (usize, usize)>,
-    {
-        let contents = iter.into_iter().copied().collect();
-        Self {
-            name: PlaintextBuilderNoName,
-            comment: PlaintextBuilderNoComment,
-            contents,
-        }
+    #[inline]
+    fn default() -> Self {
+        Self::new()
     }
 }
 
-impl FromIterator<(usize, usize)> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
-    /// Conversion from an owning iterator over a series of (usize, usize).
-    /// Each item in the series represents a moved live cell position.
+impl<Name, Comment> PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    // Implementation of public extend()
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.contents.extend(iter);
+    }
+}
+
+impl PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    // Implementation of public from_iter()
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        let mut v = Self::new();
+        v.extend(iter);
+        v
+    }
+}
+
+impl<'a> FromIterator<&'a Position<usize>> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a value from a non-owning iterator over a series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::PlaintextBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .into_iter()
-    ///     .collect::<PlaintextBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let builder: PlaintextBuilder = iter.collect();
     /// ```
     ///
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = &'a Position<usize>>,
     {
-        let contents = iter.into_iter().collect();
-        Self {
-            name: PlaintextBuilderNoName,
-            comment: PlaintextBuilderNoComment,
-            contents,
-        }
+        Self::from_iter(iter.into_iter().copied())
+    }
+}
+
+impl FromIterator<Position<usize>> for PlaintextBuilder<PlaintextBuilderNoName, PlaintextBuilderNoComment> {
+    /// Creates a value from an owning iterator over a series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let builder: PlaintextBuilder = iter.collect();
+    /// ```
+    ///
+    #[inline]
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        Self::from_iter(iter)
+    }
+}
+
+impl<'a, Name, Comment> Extend<&'a Position<usize>> for PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    /// Extends the builder with the contents of the specified non-owning iterator over the series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let mut builder = PlaintextBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = &'a Position<usize>>,
+    {
+        self.extend(iter.into_iter().copied());
+    }
+}
+
+impl<Name, Comment> Extend<Position<usize>> for PlaintextBuilder<Name, Comment>
+where
+    Name: PlaintextBuilderName,
+    Comment: PlaintextBuilderComment,
+{
+    /// Extends the builder with the contents of the specified owning iterator over the series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::PlaintextBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let mut builder = PlaintextBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.extend(iter);
     }
 }

@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::Path;
 
 use life_backend::format::{Rle, RleBuilder};
-use life_backend::Rule;
+use life_backend::{Position, Rule};
 
 fn do_new_test<R>(read: R, expected_positions: &[(usize, usize)]) -> Result<()>
 where
@@ -27,16 +27,19 @@ fn do_new_test_with_string(input_string: &str, expected_positions: &[(usize, usi
     do_new_test(input_string.as_bytes(), expected_positions)
 }
 
-fn do_new_test_with_path(input_path_string: &str, expected_positions: &[(usize, usize)]) -> Result<()> {
-    let path = Path::new(input_path_string);
-    let file = File::open(path).with_context(|| format!("Failed to open \"{}\"", path.display()))?;
+fn do_new_test_with_path<P>(input_path: P, expected_positions: &[(usize, usize)]) -> Result<()>
+where
+    P: AsRef<Path>,
+{
+    let input_path_for_display = input_path.as_ref().to_owned();
+    let file = File::open(input_path).with_context(|| format!("Failed to open \"{}\"", input_path_for_display.display()))?;
     do_new_test(file, expected_positions)
 }
 
 fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Option<String>, comment: Option<String>, rule: Option<Rule>) -> Result<()> {
     // Create the target with the pattern, the name, the created, the comment and the rule
     let target = {
-        let builder = pattern.iter().collect::<RleBuilder>();
+        let builder = pattern.iter().map(|&(x, y)| Position(x, y)).collect::<RleBuilder>();
         match (name, created, comment, rule) {
             (None, None, None, None) => builder.build()?,
             (Some(name), None, None, None) => builder.name(&name).build()?,
@@ -81,9 +84,9 @@ fn format_rle_new_with_string_test() -> Result<()> {
 
 #[test]
 fn format_rle_new_with_file_test() -> Result<()> {
-    let input_path_string = concat!(env!("CARGO_MANIFEST_DIR"), "/patterns/rpentomino.rle");
+    let input_path = "patterns/rpentomino.rle";
     let expected_positions = vec![(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
-    do_new_test_with_path(input_path_string, &expected_positions)
+    do_new_test_with_path(input_path, &expected_positions)
 }
 
 #[test]

@@ -4,17 +4,21 @@ use std::str::FromStr;
 
 const TRUTH_TABLE_SIZE: usize = 9;
 
-/// A representation of the rules of [Life-like cellular automatons](https://conwaylife.com/wiki/Life-like_cellular_automaton).
+/// A representation of a rule of [Life-like cellular automaton](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
 /// The following operations are supported:
 ///
 /// - Constructing from a pair of truth tables
-/// - Parsing a string into a value of this type, ex. "B3/S23". The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
-///   - The birth/survival notation (ex. "B3/S23"). Lowercase "b" or "s" are also allowed in the notation instead of "B" or "S"
-///   - S/B notation (ex. "23/3")
+/// - Parsing a string into a value of this type, ex. `"B3/S23"`.
+///   The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
+///   - The birth/survival notation (ex. `"B3/S23"`). Lowercase `'b'` or `'s'` are also allowed in the notation instead of `'B'` or `'S'`
+///   - S/B notation (ex. `"23/3"`)
 /// - Determining whether a new cell will be born from the specified number of alive neighbors
 /// - Determining whether a cell surrounded by the specified number of alive neighbors will survive
-/// - Converting into a String value, ex. "B3/S23". This operation only supports the birth/survival notation
+/// - Converting into a [`String`] value, ex. `"B3/S23"`.
+///   This operation only supports the birth/survival notation
+///
+/// [`String`]: std::string::String
 ///
 /// # Examples
 ///
@@ -136,17 +140,23 @@ impl Rule {
 
 impl fmt::Display for Rule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn count_slice_numbers(slice: &[bool]) -> usize {
+            slice.iter().filter(|x| **x).count()
+        }
         fn convert_slice_to_string(slice: &[bool]) -> String {
             slice
                 .iter()
                 .enumerate()
                 .filter_map(|(i, &x)| if x { Some(i) } else { None })
-                .map(|n| n.to_string())
-                .collect::<Vec<_>>()
-                .join("")
+                .map(|n| char::from_digit(n as u32, TRUTH_TABLE_SIZE as u32).unwrap()) // this unwrap never panic because `n < TRUTH_TABLE_SIZE` is always guaranteed
+                .collect()
         }
-        let s = ["B", &convert_slice_to_string(&self.birth), "/S", &convert_slice_to_string(&self.survival)].join("");
-        f.write_str(&s)?;
+        let mut buf = String::with_capacity(count_slice_numbers(&self.birth) + count_slice_numbers(&self.survival));
+        buf += "B";
+        buf += &convert_slice_to_string(&self.birth);
+        buf += "/S";
+        buf += &convert_slice_to_string(&self.survival);
+        f.write_str(&buf)?;
         Ok(())
     }
 }

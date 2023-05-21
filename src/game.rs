@@ -6,23 +6,49 @@ use std::ops::{Add, Sub};
 
 use crate::{Board, Position, Rule};
 
-/// The default coordinate type of `Game`.
-type DefaultCoordinateType = i16;
-
-/// A representation of games.
+/// A representation of a game.
+///
+/// The type parameter `T` is used as the type of the x- and y-coordinate values for each cell.
+///
+/// The following operations are supported:
+///
+/// - Constructing from [`Rule`] and [`Board`]
+/// - Advancing a generation
+/// - Returning the current state
+///
+/// [`Rule`]: Rule
+/// [`Board`]: Board
+///
+/// # Examples
+///
+/// ```
+/// use life_backend::{Board, Game, Position, Rule};
+/// let rule = Rule::conways_life();
+/// let board: Board<_> = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)] // Glider pattern
+///     .into_iter()
+///     .map(|(x, y)| Position(x, y))
+///     .collect();
+/// let mut game = Game::new(rule, board);
+/// game.update();
+/// let board = game.board();
+/// let bbox = board.bounding_box();
+/// assert_eq!(bbox.x(), &(0..=2));
+/// assert_eq!(bbox.y(), &(1..=3));
+/// ```
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Game<CoordinateType = DefaultCoordinateType>
+pub struct Game<T>
 where
-    CoordinateType: Eq + Hash,
+    T: Eq + Hash,
 {
     rule: Rule,
-    curr_board: Board<CoordinateType>,
-    prev_board: Board<CoordinateType>,
+    curr_board: Board<T>,
+    prev_board: Board<T>,
 }
 
-impl<CoordinateType> Game<CoordinateType>
+impl<T> Game<T>
 where
-    CoordinateType: Eq + Hash,
+    T: Eq + Hash,
 {
     /// Creates from the specified rule and the board.
     ///
@@ -31,11 +57,11 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// ```
     ///
-    pub fn new(rule: Rule, board: Board<CoordinateType>) -> Self {
+    pub fn new(rule: Rule, board: Board<T>) -> Self {
         Self {
             rule,
             curr_board: board,
@@ -50,13 +76,13 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule.clone(), board);
     /// assert_eq!(game.rule(), &rule);
     /// ```
     ///
     #[inline]
-    pub fn rule(&self) -> &Rule {
+    pub const fn rule(&self) -> &Rule {
         &self.rule
     }
 
@@ -67,7 +93,7 @@ where
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(1, 0), Position(0, 1)].iter().collect();
+    /// let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
     /// let game = Game::new(rule, board);
     /// let board = game.board();
     /// let bbox = board.bounding_box();
@@ -80,26 +106,26 @@ where
     /// ```
     ///
     #[inline]
-    pub fn board(&self) -> &Board<CoordinateType> {
+    pub const fn board(&self) -> &Board<T> {
         &self.curr_board
     }
 
     // Returns the count of live neighbours of the specified position.
-    fn live_neighbour_count(board: &Board<CoordinateType>, position: &Position<CoordinateType>) -> usize
+    fn live_neighbour_count(board: &Board<T>, position: &Position<T>) -> usize
     where
-        CoordinateType: Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + One + Bounded + ToPrimitive,
+        T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
         position.moore_neighborhood_positions().filter(|pos| board.get(pos)).count()
     }
 
-    /// Update the state of the game.
+    /// Updates the state of the game.
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::{Board, Game, Position, Rule};
     /// let rule = Rule::conways_life();
-    /// let board: Board = [Position(0, 1), Position(1, 1), Position(2, 1)].iter().collect(); // Blinker pattern
+    /// let board: Board<_> = [Position(0, 1), Position(1, 1), Position(2, 1)].iter().collect(); // Blinker pattern
     /// let mut game = Game::new(rule, board);
     /// game.update();
     /// let board = game.board();
@@ -113,7 +139,7 @@ where
     ///
     pub fn update(&mut self)
     where
-        CoordinateType: Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + One + Bounded + ToPrimitive,
+        T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
         mem::swap(&mut self.curr_board, &mut self.prev_board);
         self.curr_board.clear();
@@ -134,9 +160,9 @@ where
     }
 }
 
-impl<CoordinateType> fmt::Display for Game<CoordinateType>
+impl<T> fmt::Display for Game<T>
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

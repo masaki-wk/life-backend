@@ -13,6 +13,37 @@ use crate::{Format, Rule};
 /// - [Run Length Encoded - LifeWiki](https://conwaylife.com/wiki/Run_Length_Encoded)
 /// - [Golly Help: File Formats > Extended RLE format](https://golly.sourceforge.net/Help/formats.html#rle)
 ///
+/// # Examples
+///
+/// Parses the given RLE file, and checks live cells included in it:
+///
+/// ```
+/// use std::fs::File;
+/// use life_backend::format::Rle;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let file = File::open("patterns/rpentomino.rle")?;
+/// let parser = Rle::new(file)?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Parses the given string in RLE format:
+///
+/// ```
+/// use life_backend::format::Rle;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// let parser = pattern.parse::<Rle>()?;
+/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct Rle {
     pub(super) header: RleHeader,
@@ -23,7 +54,10 @@ pub struct Rle {
 // Inherent methods
 
 impl Rle {
-    /// Creates from the specified implementor of Read, such as File or `&[u8]`.
+    /// Creates from the specified implementor of [`Read`], such as [`File`] or `&[u8]`.
+    ///
+    /// [`Read`]: std::io::Read
+    /// [`File`]: std::fs::File
     ///
     /// # Examples
     ///
@@ -67,7 +101,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn width(&self) -> usize {
+    pub const fn width(&self) -> usize {
         self.header.width
     }
 
@@ -90,7 +124,7 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn height(&self) -> usize {
+    pub const fn height(&self) -> usize {
         self.header.height
     }
 
@@ -108,13 +142,13 @@ impl Rle {
     ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes())?;
-    /// assert_eq!(*parser.rule(), Rule::conways_life());
+    /// assert_eq!(parser.rule(), &Rule::conways_life());
     /// # Ok(())
     /// # }
     /// ```
     ///
     #[inline]
-    pub fn rule(&self) -> &Rule {
+    pub const fn rule(&self) -> &Rule {
         &self.header.rule
     }
 
@@ -138,11 +172,11 @@ impl Rle {
     /// ```
     ///
     #[inline]
-    pub fn comments(&self) -> &Vec<String> {
+    pub const fn comments(&self) -> &Vec<String> {
         &self.comments
     }
 
-    /// Creates a non-owning iterator over the series of immutable live cell positions in ascending order.
+    /// Creates an owning iterator over the series of live cell positions in ascending order.
     ///
     /// # Examples
     ///
@@ -155,12 +189,7 @@ impl Rle {
     ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes())?;
-    /// let mut iter = parser.live_cells();
-    /// assert_eq!(iter.next(), Some((0, 0)));
-    /// assert_eq!(iter.next(), Some((1, 0)));
-    /// assert_eq!(iter.next(), Some((2, 0)));
-    /// assert_eq!(iter.next(), Some((1, 1)));
-    /// assert_eq!(iter.next(), None);
+    /// assert!(parser.live_cells().eq([(0, 0), (1, 0), (2, 0), (1, 1)]));
     /// # Ok(())
     /// # }
     /// ```

@@ -3,13 +3,14 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
 use std::hash::Hash;
 use std::ops::{Add, Sub};
+use std::path::Path;
 
 use life_backend::format;
 use life_backend::{Board, Game, Position};
 
-fn workload<CoordinateType>(game: &Game<CoordinateType>, steps: usize)
+fn workload<T>(game: &Game<T>, steps: usize)
 where
-    CoordinateType: Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive,
 {
     let mut game = game.clone();
     for _ in 0..steps {
@@ -17,13 +18,13 @@ where
     }
 }
 
-fn do_benchmark<CoordinateType>(c: &mut Criterion, id: &str, path_str: &str, steps: usize) -> Result<()>
+fn do_benchmark<T, P>(c: &mut Criterion, id: &str, path: P, steps: usize) -> Result<()>
 where
-    CoordinateType:
-        Eq + Hash + Copy + PartialOrd + Add<Output = CoordinateType> + Sub<Output = CoordinateType> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    P: AsRef<Path>,
 {
-    let from_usize_unwrap = |x| CoordinateType::from_usize(x).unwrap();
-    let handler = format::open(path_str)?;
+    let from_usize_unwrap = |x| T::from_usize(x).unwrap();
+    let handler = format::open(path)?;
     let rule = handler.rule();
     let board: Board<_> = handler
         .live_cells()
@@ -36,29 +37,35 @@ where
 
 macro_rules! create_benchmark_function {
     ($function_name:ident, $id:literal, $relative_path_string:literal, $steps:expr) => {
-        fn $function_name(c: &mut Criterion) {
+        pub fn $function_name(c: &mut Criterion) {
             let id = $id;
-            let path_str = concat!(env!("CARGO_MANIFEST_DIR"), "/", $relative_path_string);
+            let path = $relative_path_string;
             let steps = $steps;
-            do_benchmark::<i8>(c, id, path_str, steps).unwrap();
+            do_benchmark::<i8, _>(c, id, path, steps).unwrap();
         }
     };
 }
 
-create_benchmark_function!(blinker_1k_benchmark, "blinker-1k", "patterns/blinker.rle", 1000);
-create_benchmark_function!(pentadecathlon_1k_benchmark, "pentadecathlon-1k", "patterns/pentadecathlon.rle", 1000);
-create_benchmark_function!(queenbeeshuttle_1k_benchmark, "queenbeeshuttle-1k", "patterns/transqueenbeeshuttle.rle", 1000);
-create_benchmark_function!(p60glidershuttle_1k_benchmark, "p60glidershuttle-1k", "patterns/p60glidershuttle.rle", 1000);
-create_benchmark_function!(moldon30p25_1k_benchmark, "moldon30p25-1k", "patterns/moldon30p25.rle", 1000);
-create_benchmark_function!(centinal_1k_benchmark, "centinal-1k", "patterns/centinal.rle", 1000);
+#[rustfmt::skip]
+mod benchmarks {
+    use super::*;
+    create_benchmark_function!(oscillator_blinker_benchmark, "oscillator-blinker", "patterns/blinker.rle", 2);
+    create_benchmark_function!(oscillator_pentadecathlon_benchmark, "oscillator-pentadecathlon", "patterns/pentadecathlon.rle", 15);
+    create_benchmark_function!(oscillator_queenbeeshuttle_benchmark, "oscillator-queenbeeshuttle", "patterns/transqueenbeeshuttle.rle", 30);
+    create_benchmark_function!(oscillator_p60glidershuttle_benchmark, "oscillator-p60glidershuttle", "patterns/p60glidershuttle.rle", 60);
+    create_benchmark_function!(oscillator_centinal_benchmark, "oscillator-centinal", "patterns/centinal.rle", 100);
+    create_benchmark_function!(methuselah_bheptomino_benchmark, "methuselah-bheptomino", "patterns/bheptomino.rle", 148);
+    create_benchmark_function!(methuselah_rpentomino_benchmark, "methuselah-rpentomino", "patterns/rpentomino.rle", 1103);
+}
 
 criterion_group!(
     benches,
-    blinker_1k_benchmark,
-    pentadecathlon_1k_benchmark,
-    queenbeeshuttle_1k_benchmark,
-    p60glidershuttle_1k_benchmark,
-    moldon30p25_1k_benchmark,
-    centinal_1k_benchmark
+    benchmarks::oscillator_blinker_benchmark,
+    benchmarks::oscillator_pentadecathlon_benchmark,
+    benchmarks::oscillator_queenbeeshuttle_benchmark,
+    benchmarks::oscillator_p60glidershuttle_benchmark,
+    benchmarks::oscillator_centinal_benchmark,
+    benchmarks::methuselah_bheptomino_benchmark,
+    benchmarks::methuselah_rpentomino_benchmark,
 );
 criterion_main!(benches);

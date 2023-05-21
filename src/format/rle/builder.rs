@@ -2,9 +2,59 @@ use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 
 use super::{Rle, RleHeader, RleRunsTriple};
-use crate::Rule;
+use crate::{Position, Rule};
 
-/// A builder of Rle.
+/// A builder of [`Rle`].
+///
+/// [`Rle`]: Rle
+///
+/// # Examples
+///
+/// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Rle`] via [`build()`]:
+///
+/// [`collect()`]: std::iter::Iterator::collect
+/// [`name()`]: #method.name
+/// [`build()`]: #method.build
+///
+/// ```
+/// use life_backend::format::RleBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let target = pattern.iter().collect::<RleBuilder>().name("R-pentomino").build()?;
+/// let expected = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3, rule = B3/S23\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Creates an empty builder via [`new()`], set a name via [`name()`], injects live cell positions via [`extend()`], then builds [`Rle`] via [`build()`]:
+///
+/// [`new()`]: #method.new
+/// [`extend()`]: #method.extend
+///
+/// ```
+/// use life_backend::format::RleBuilder;
+/// use life_backend::Position;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let pattern = [Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)];
+/// let mut builder = RleBuilder::new().name("R-pentomino");
+/// builder.extend(pattern.iter());
+/// let target = builder.build()?;
+/// let expected = "\
+///     #N R-pentomino\n\
+///     x = 3, y = 3, rule = B3/S23\n\
+///     b2o$2o$bo!\n\
+/// ";
+/// assert_eq!(format!("{target}"), expected);
+/// # Ok(())
+/// # }
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
@@ -17,7 +67,7 @@ where
     created: Created,
     comment: Comment,
     rule: Rule,
-    contents: HashSet<(usize, usize)>,
+    contents: HashSet<Position<usize>>,
 }
 
 // Traits and types for RleBuilder's typestate
@@ -84,6 +134,28 @@ impl RleBuilderRule for RleBuilderWithRule {
 
 // Inherent methods
 
+impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a builder that contains no live cells.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// let builder = RleBuilder::new();
+    /// ```
+    ///
+    #[inline]
+    pub fn new() -> Self {
+        Self {
+            name: RleBuilderNoName,
+            created: RleBuilderNoCreated,
+            comment: RleBuilderNoComment,
+            rule: RleBuilderNoRule,
+            contents: HashSet::new(),
+        }
+    }
+}
+
 impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
 where
     Name: RleBuilderName,
@@ -91,18 +163,19 @@ where
     Comment: RleBuilderComment,
     RuleSpec: RleBuilderRule,
 {
-    /// Builds the specified Rle value.
+    /// Builds the [`Rle`] value.
+    ///
+    /// [`Rle`]: Rle
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let target = pattern
-    ///     .iter()
-    ///     .collect::<RleBuilder>()
-    ///     .build()?;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let builder: RleBuilder = pattern.iter().collect();
+    /// let target = builder.build()?;
     /// # Ok(())
     /// # }
     /// ```
@@ -111,7 +184,7 @@ where
         let comments: Vec<_> = {
             fn parse_to_comments(str: Option<String>, prefix: &str) -> Vec<String> {
                 fn append_prefix(str: &str, prefix: &str) -> String {
-                    let mut buf = prefix.to_string();
+                    let mut buf = prefix.to_owned();
                     if !str.is_empty() {
                         buf.push(' ');
                         buf.push_str(str);
@@ -121,7 +194,7 @@ where
                 match str {
                     Some(str) => {
                         if str.is_empty() {
-                            vec![prefix.to_string()]
+                            vec![prefix.to_owned()]
                         } else {
                             str.lines().map(|s| append_prefix(s, prefix)).collect::<Vec<_>>()
                         }
@@ -139,7 +212,7 @@ where
                 .collect()
         };
         let rule = self.rule.drain().unwrap_or(Rule::conways_life());
-        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, (x, y)| {
+        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, Position(x, y)| {
             acc.entry(y).or_insert_with(Vec::new).push(x);
             acc
         });
@@ -199,8 +272,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -214,12 +288,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls name() twice or more will fail at compile time.  For example:
+    /// Code that calls [`name()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`name()`]: #method.name
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -230,12 +307,16 @@ where
     /// # }
     /// ```
     ///
-    /// build() returns an error if the string passed by name(str) includes multiple lines.  For example:
+    /// [`build()`] returns an error if the string passed by [`name()`] includes multiple lines.  For example:
+    ///
+    /// [`build()`]: #method.build
+    /// [`name()`]: #method.name
     ///
     /// ```should_panic
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -246,7 +327,7 @@ where
     /// ```
     ///
     pub fn name(self, str: &str) -> RleBuilder<RleBuilderWithName, Created, Comment, Rule> {
-        let name = RleBuilderWithName(str.to_string());
+        let name = RleBuilderWithName(str.to_owned());
         RleBuilder {
             name,
             created: self.created,
@@ -263,14 +344,19 @@ where
     Comment: RleBuilderComment,
     Rule: RleBuilderRule,
 {
-    /// Set the information when and by whom the pattern was created. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    /// Set the information when and by whom the pattern was created.
+    /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Rle`]: Rle
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -284,12 +370,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls created() twice or more will fail at compile time.  For example:
+    /// Code that calls [`created()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`created()`]: #method.created
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -301,7 +390,7 @@ where
     /// ```
     ///
     pub fn created(self, str: &str) -> RleBuilder<Name, RleBuilderWithCreated, Comment, Rule> {
-        let created = RleBuilderWithCreated(str.to_string());
+        let created = RleBuilderWithCreated(str.to_owned());
         RleBuilder {
             name: self.name,
             created,
@@ -318,14 +407,19 @@ where
     Created: RleBuilderCreated,
     Rule: RleBuilderRule,
 {
-    /// Set the comment. If the argument includes newlines, the instance of Rle built by build() includes multiple comment lines.
+    /// Set the comment.
+    /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
+    ///
+    /// [`Rle`]: Rle
+    /// [`build()`]: #method.build
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -340,12 +434,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls comment() twice or more will fail at compile time.  For example:
+    /// Code that calls [`comment()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`comment()`]: #method.comment
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -357,7 +454,7 @@ where
     /// ```
     ///
     pub fn comment(self, str: &str) -> RleBuilder<Name, Created, RleBuilderWithComment, Rule> {
-        let comment = RleBuilderWithComment(str.to_string());
+        let comment = RleBuilderWithComment(str.to_owned());
         RleBuilder {
             name: self.name,
             created: self.created,
@@ -380,9 +477,9 @@ where
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// use life_backend::Rule;
+    /// use life_backend::{Position, Rule};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -395,13 +492,15 @@ where
     ///
     /// # Errors
     ///
-    /// Code that calls rule() twice or more will fail at compile time.  For example:
+    /// Code that calls [`rule()`] twice or more will fail at compile time.  For example:
+    ///
+    /// [`rule()`]: #method.rule
     ///
     /// ```compile_fail
     /// use life_backend::format::RleBuilder;
-    /// use life_backend::Rule;
+    /// use life_backend::{Position, Rule};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
+    /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let target = pattern
     ///     .iter()
     ///     .collect::<RleBuilder>()
@@ -426,68 +525,156 @@ where
 
 // Trait implementations
 
-impl<'a> FromIterator<&'a (usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from a non-owning iterator over a series of &(usize, usize).
-    /// Each item in the series represents an immutable reference of a live cell position.
+impl Default for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Returns the default value of the type, same as the return value of [`new()`].
     ///
-    /// # Examples
+    /// [`new()`]: #method.new
     ///
-    /// ```
-    /// use life_backend::format::RleBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .iter()
-    ///     .collect::<RleBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    ///
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = &'a (usize, usize)>,
-    {
-        let contents = iter.into_iter().copied().collect();
-        Self {
-            name: RleBuilderNoName,
-            created: RleBuilderNoCreated,
-            comment: RleBuilderNoComment,
-            rule: RleBuilderNoRule,
-            contents,
-        }
+    #[inline]
+    fn default() -> Self {
+        Self::new()
     }
 }
 
-impl FromIterator<(usize, usize)> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
-    /// Conversion from an owning iterator over a series of (usize, usize).
-    /// Each item in the series represents a moved live cell position.
+impl<Name, Created, Comment, RuleSpec> RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    // Implementation of public extend()
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.contents.extend(iter);
+    }
+}
+
+impl RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    // Implementation of public from_iter()
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        let mut v = Self::new();
+        v.extend(iter);
+        v
+    }
+}
+
+impl<'a> FromIterator<&'a Position<usize>> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a value from a non-owning iterator over a series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
     ///
     /// # Examples
     ///
     /// ```
     /// use life_backend::format::RleBuilder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let pattern = [(1, 0), (0, 1)];
-    /// let builder = pattern
-    ///     .into_iter()
-    ///     .collect::<RleBuilder>();
-    /// let target = builder.build()?;
-    /// # Ok(())
-    /// # }
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let builder: RleBuilder = iter.collect();
     /// ```
     ///
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (usize, usize)>,
+        T: IntoIterator<Item = &'a Position<usize>>,
     {
-        let contents = iter.into_iter().collect();
-        Self {
-            name: RleBuilderNoName,
-            created: RleBuilderNoCreated,
-            comment: RleBuilderNoComment,
-            rule: RleBuilderNoRule,
-            contents,
-        }
+        Self::from_iter(iter.into_iter().copied())
+    }
+}
+
+impl FromIterator<Position<usize>> for RleBuilder<RleBuilderNoName, RleBuilderNoCreated, RleBuilderNoComment, RleBuilderNoRule> {
+    /// Creates a value from an owning iterator over a series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let builder: RleBuilder = iter.collect();
+    /// ```
+    ///
+    #[inline]
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        Self::from_iter(iter)
+    }
+}
+
+impl<'a, Name, Created, Comment, RuleSpec> Extend<&'a Position<usize>> for RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    /// Extends the builder with the contents of the specified non-owning iterator over the series of [`&Position<usize>`].
+    /// Each item in the series represents an immutable reference of a live cell position.
+    ///
+    /// [`&Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.iter();
+    /// let mut builder = RleBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = &'a Position<usize>>,
+    {
+        self.extend(iter.into_iter().copied());
+    }
+}
+
+impl<Name, Created, Comment, RuleSpec> Extend<Position<usize>> for RleBuilder<Name, Created, Comment, RuleSpec>
+where
+    Name: RleBuilderName,
+    Created: RleBuilderCreated,
+    Comment: RleBuilderComment,
+    RuleSpec: RleBuilderRule,
+{
+    /// Extends the builder with the contents of the specified owning iterator over the series of [`Position<usize>`].
+    /// Each item in the series represents a moved live cell position.
+    ///
+    /// [`Position<usize>`]: Position
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::format::RleBuilder;
+    /// use life_backend::Position;
+    /// let pattern = [Position(1, 0), Position(0, 1)];
+    /// let iter = pattern.into_iter();
+    /// let mut builder = RleBuilder::new();
+    /// builder.extend(iter);
+    /// ```
+    ///
+    #[inline]
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = Position<usize>>,
+    {
+        self.extend(iter);
     }
 }
