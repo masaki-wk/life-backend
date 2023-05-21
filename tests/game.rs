@@ -2,18 +2,19 @@ use anyhow::Result;
 use std::path::Path;
 
 use life_backend::format;
-use life_backend::{Board, Game, Position, Rule};
+use life_backend::{Board, Game, Position};
 
 use i16 as I;
 
-fn load<P>(path: P) -> Result<(Rule, Board<I>)>
+fn load_game<P>(path: P) -> Result<Game<I>>
 where
     P: AsRef<Path>,
 {
     let handler = format::open(path)?;
     let rule = handler.rule();
     let board: Board<_> = handler.live_cells().map(|pos| Position(pos.0 as I, pos.1 as I)).collect();
-    Ok((rule, board))
+    let game = Game::new(rule, board);
+    Ok(game)
 }
 
 fn print_game(game: &Game<I>, generation: usize) {
@@ -23,24 +24,44 @@ fn print_game(game: &Game<I>, generation: usize) {
     println!("{game}");
 }
 
+fn advance_game(mut game: Game<I>, steps: usize) -> Game<I> {
+    for _ in 0..steps {
+        game.update();
+    }
+    game
+}
+
+fn advance_game_with_check(mut game: Game<I>, steps: usize, init: &Board<I>) -> Game<I> {
+    for i in 0..steps {
+        if i > 0 {
+            assert_ne!(game.board(), init);
+        }
+        game.update();
+    }
+    game
+}
+
+fn shift_board(board: &Board<I>, relative_position: (I, I)) -> Board<I> {
+    let board: Board<_> = board
+        .iter()
+        .map(|pos| Position(pos.0 + relative_position.0, pos.1 + relative_position.1))
+        .collect();
+    board
+}
+
 fn do_oscillator_test<P>(path: P, period: usize) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    // Load the rule and the board
-    let (rule, init) = load(path)?;
-
-    // Create the game
-    let mut game = Game::new(rule, init.clone());
+    // Load the given file and create a game
+    let game = load_game(path)?;
     print_game(&game, 0);
 
+    // Set the initial pattern to the variable
+    let init = game.board().to_owned();
+
     // Advance the game to the target generation
-    for i in 0..period {
-        if i > 0 {
-            assert_ne!(game.board(), &init);
-        }
-        game.update();
-    }
+    let game = advance_game_with_check(game, period, &init);
     print_game(&game, period);
 
     // Check the result
@@ -60,23 +81,15 @@ fn do_spaceship_test<P>(path: P, period: usize, relative_position: (I, I)) -> Re
 where
     P: AsRef<Path>,
 {
-    // Load the rule and the board
-    let (rule, init) = load(path)?;
-
-    // Setup the expected board
-    let expected: Board<_> = init
-        .iter()
-        .map(|pos| Position(pos.0 + relative_position.0, pos.1 + relative_position.1))
-        .collect();
-
-    // Create the game
-    let mut game = Game::new(rule, init);
+    // Load the given file and create a game
+    let game = load_game(path)?;
     print_game(&game, 0);
 
+    // Set the expected pattern to the variable
+    let expected = shift_board(game.board(), relative_position);
+
     // Advance the game to the target generation
-    for _ in 0..period {
-        game.update();
-    }
+    let game = advance_game(game, period);
     print_game(&game, period);
 
     // Check the result
@@ -89,17 +102,12 @@ fn do_methuselah_test<P>(path: P, steps: usize, expected_final_population: usize
 where
     P: AsRef<Path>,
 {
-    // Load the rule and the board
-    let (rule, init) = load(path)?;
-
-    // Create the game
-    let mut game = Game::new(rule, init);
+    // Load the given file and create a game
+    let game = load_game(path)?;
     print_game(&game, 0);
 
     // Advance the game to the target generation
-    for _ in 0..steps {
-        game.update();
-    }
+    let game = advance_game(game, steps);
     print_game(&game, steps);
 
     // Check the result
