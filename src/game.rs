@@ -46,6 +46,8 @@ where
     prev_board: Board<T>,
 }
 
+// Inherent methods
+
 impl<T> Game<T>
 where
     T: Eq + Hash,
@@ -159,6 +161,8 @@ where
         }));
     }
 }
+
+// Trait implementations
 
 impl<T> fmt::Display for Game<T>
 where
