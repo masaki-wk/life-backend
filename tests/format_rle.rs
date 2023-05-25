@@ -72,7 +72,7 @@ fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Opti
 }
 
 #[test]
-fn format_rle_new_with_string_test() -> Result<()> {
+fn new_with_string() -> Result<()> {
     let input_pattern = "\
         #N Glider\n\
         x = 3, y = 3\n\
@@ -83,14 +83,14 @@ fn format_rle_new_with_string_test() -> Result<()> {
 }
 
 #[test]
-fn format_rle_new_with_file_test() -> Result<()> {
+fn new_with_file() -> Result<()> {
     let input_path = "patterns/rpentomino.rle";
     let expected_positions = vec![(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
     do_new_test_with_path(input_path, &expected_positions)
 }
 
 #[test]
-fn format_rle_build_test() -> Result<()> {
+fn build() -> Result<()> {
     let pattern = vec![(0, 0), (1, 0), (2, 0), (1, 1)];
     let name = Some("T-tetromino".to_string());
     let comment = Some("----".to_string());
