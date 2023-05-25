@@ -76,7 +76,7 @@ where
 mod tests {
     use super::*;
     #[test]
-    fn test_display() {
+    fn display() {
         let target = Position(1, 2);
         assert_eq!(format!("{target}"), "(1, 2)".to_string());
     }

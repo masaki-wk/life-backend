@@ -314,12 +314,12 @@ where
 mod tests {
     use super::*;
     #[test]
-    fn test_display_empty() {
+    fn display_empty() {
         let target = BoardRange::<i32>::new();
         assert_eq!(format!("{target}"), "(empty)".to_string());
     }
     #[test]
-    fn test_display_notempty() {
+    fn display_notempty() {
         let positions = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
         let target: BoardRange<_> = positions.iter().collect();
         assert_eq!(format!("{target}"), "(x:[0, 2], y:[0, 1])".to_string());

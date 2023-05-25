@@ -229,7 +229,7 @@ mod tests {
         }
     }
     #[test]
-    fn test_new_conways_life() {
+    fn new_conways_life() {
         let target = Rule::new(
             &[false, false, false, true, false, false, false, false, false],
             &[false, false, true, true, false, false, false, false, false],
@@ -237,7 +237,7 @@ mod tests {
         check_value(&target, &[3], &[2, 3]);
     }
     #[test]
-    fn test_new_highlife() {
+    fn new_highlife() {
         let target = Rule::new(
             &[false, false, false, true, false, false, true, false, false],
             &[false, false, true, true, false, false, false, false, false],
@@ -245,78 +245,78 @@ mod tests {
         check_value(&target, &[3, 6], &[2, 3]);
     }
     #[test]
-    fn test_conways_life() {
+    fn conways_life() {
         let target = Rule::conways_life();
         check_value(&target, &[3], &[2, 3]);
     }
     #[test]
-    fn test_display_conways_life() {
+    fn display_conways_life() {
         let target = Rule::conways_life();
         assert_eq!(target.to_string(), "B3/S23");
     }
     #[test]
-    fn test_display_highlife() {
+    fn display_highlife() {
         let target = RULE_HIGHLIFE;
         assert_eq!(target.to_string(), "B36/S23");
     }
     #[test]
-    fn test_from_str_birth_survival_notation() -> Result<()> {
+    fn from_str_birth_survival_notation() -> Result<()> {
         let target: Rule = "B3/S23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
     #[test]
-    fn test_from_str_s_b_notation() -> Result<()> {
+    fn from_str_s_b_notation() -> Result<()> {
         let target: Rule = "23/3".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
     #[test]
-    fn test_from_str_birth_survival_notation_without_birth_number() -> Result<()> {
+    fn from_str_birth_survival_notation_without_birth_number() -> Result<()> {
         let target: Rule = "B/S23".parse()?;
         check_value(&target, &[], &[2, 3]);
         Ok(())
     }
     #[test]
-    fn test_from_str_birth_survival_notation_without_survival_number() -> Result<()> {
+    fn from_str_birth_survival_notation_without_survival_number() -> Result<()> {
         let target: Rule = "B3/S".parse()?;
         check_value(&target, &[3], &[]);
         Ok(())
     }
     #[test]
-    fn test_from_str_birth_survival_notation_lowercase_b() -> Result<()> {
+    fn from_str_birth_survival_notation_lowercase_b() -> Result<()> {
         let target: Rule = "b3/S23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
     #[test]
-    fn test_from_str_birth_survival_notation_lowercase_s() -> Result<()> {
+    fn from_str_birth_survival_notation_lowercase_s() -> Result<()> {
         let target: Rule = "B3/s23".parse()?;
         check_value(&target, &[3], &[2, 3]);
         Ok(())
     }
     #[test]
-    fn test_from_str_no_separator() {
+    fn from_str_no_separator() {
         let target = "B0S0".parse::<Rule>();
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_too_many_separators() {
+    fn from_str_too_many_separators() {
         let target = "B0/S0/C0".parse::<Rule>();
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_no_label_birth() {
+    fn from_str_no_label_birth() {
         let target = "0/S0".parse::<Rule>();
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_no_label_survival() {
+    fn from_str_no_label_survival() {
         let target = "B0/0".parse::<Rule>();
         assert!(target.is_err());
     }
     #[test]
-    fn test_from_str_birth_survival_notation_too_large_number() {
+    fn from_str_birth_survival_notation_too_large_number() {
         let target = "B9/S0".parse::<Rule>();
         assert!(target.is_err());
     }
