@@ -678,3 +678,15 @@ where
         self.extend(iter);
     }
 }
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn default() {
+        let target = RleBuilder::default();
+        assert!(target.contents.is_empty());
+    }
+}

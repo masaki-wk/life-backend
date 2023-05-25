@@ -409,3 +409,16 @@ where
         self.0.extend(iter);
     }
 }
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn default() {
+        let target = Board::<i16>::default();
+        let expected = Board::<i16>::new();
+        assert_eq!(target, expected);
+    }
+}

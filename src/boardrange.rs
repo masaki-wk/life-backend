@@ -314,6 +314,12 @@ where
 mod tests {
     use super::*;
     #[test]
+    fn default() {
+        let target = BoardRange::<i32>::default();
+        let expected = BoardRange::<i32>::new();
+        assert_eq!(target, expected);
+    }
+    #[test]
     fn display_empty() {
         let target = BoardRange::<i32>::new();
         assert_eq!(format!("{target}"), "(empty)".to_string());

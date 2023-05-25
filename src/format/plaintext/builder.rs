@@ -463,3 +463,15 @@ where
         self.extend(iter);
     }
 }
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn default() {
+        let target = PlaintextBuilder::default();
+        assert!(target.contents.is_empty());
+    }
+}
