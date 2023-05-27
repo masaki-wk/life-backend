@@ -173,3 +173,17 @@ where
         self.board().fmt(f)
     }
 }
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn display() {
+        let rule = Rule::conways_life();
+        let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
+        let target = Game::new(rule, board);
+        println!("{target}");
+    }
+}
