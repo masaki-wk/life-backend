@@ -167,6 +167,12 @@ fn new_header_invalid_height() {
 }
 
 #[test]
+fn new_header_invalid_order() {
+    let pattern = "y = 0, x = 0\n";
+    do_new_test_to_be_failed(pattern)
+}
+
+#[test]
 fn new_header_without_width() {
     let pattern = "y = 0\n";
     do_new_test_to_be_failed(pattern)
