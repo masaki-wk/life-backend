@@ -1,5 +1,5 @@
 // An internal struct, used in Plaintext
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 struct PlaintextLine(usize, Vec<usize>);
 
 mod core;

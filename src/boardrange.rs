@@ -24,7 +24,7 @@ use crate::Position;
 /// assert_eq!(max_y, &1);
 /// ```
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct BoardRange<T>(RangeInclusive<T>, RangeInclusive<T>);
 
 // Inherent methods

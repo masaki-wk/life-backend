@@ -36,7 +36,7 @@ use crate::{Board, Position, Rule};
 /// assert_eq!(bbox.y(), &(1..=3));
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Game<T>
 where
     T: Eq + Hash,

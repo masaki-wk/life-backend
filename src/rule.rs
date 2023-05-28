@@ -35,7 +35,7 @@ const TRUTH_TABLE_SIZE: usize = 9;
 /// # }
 /// ```
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Rule {
     birth: [bool; TRUTH_TABLE_SIZE],
     survival: [bool; TRUTH_TABLE_SIZE],

@@ -21,7 +21,7 @@ use std::ops::{Add, Sub};
 /// assert_eq!(pos_y, 3);
 /// ```
 ///
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {

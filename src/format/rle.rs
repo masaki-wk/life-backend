@@ -1,13 +1,13 @@
 use crate::Rule;
 
 // Internal structs, used in Rle
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 struct RleHeader {
     width: usize,
     height: usize,
     rule: Rule,
 }
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 struct RleRunsTriple {
     pad_lines: usize,
     pad_dead_cells: usize,
