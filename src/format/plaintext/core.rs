@@ -44,7 +44,7 @@ use crate::{Format, Rule};
 /// # }
 /// ```
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Plaintext {
     pub(super) name: Option<String>,
     pub(super) comments: Vec<String>,

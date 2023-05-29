@@ -186,55 +186,55 @@ mod game {
     use super::*;
 
     // Still life tests
-    create_stilllife_test_function!(stilllife_block_test, "patterns/block.rle");
-    create_stilllife_test_function!(stilllife_boat_test, "patterns/boat.rle");
-    create_stilllife_test_function!(stilllife_spiral_test, "patterns/spiral.rle");
-    create_stilllife_test_function!(stilllife_34life_block_test, "patterns/34life_block.rle");
-    create_stilllife_test_function!(stilllife_34life_36bitfortress_test, "patterns/34life_36bitfortress.rle");
+    create_stilllife_test_function!(stilllife_block, "patterns/block.rle");
+    create_stilllife_test_function!(stilllife_boat, "patterns/boat.rle");
+    create_stilllife_test_function!(stilllife_spiral, "patterns/spiral.rle");
+    create_stilllife_test_function!(stilllife_34life_block, "patterns/34life_block.rle");
+    create_stilllife_test_function!(stilllife_34life_36bitfortress, "patterns/34life_36bitfortress.rle");
 
     // Oscillator tests
-    create_oscillator_test_function!(oscillator_blinker_test, "patterns/blinker.rle", 2);
-    create_oscillator_test_function!(oscillator_toad_test, "patterns/toad.rle", 2);
-    create_oscillator_test_function!(oscillator_koksgalaxy_test, "patterns/koksgalaxy.rle", 8);
-    create_oscillator_test_function!(oscillator_pentadecathlon_test, "patterns/pentadecathlon.rle", 15);
-    create_oscillator_test_function!(oscillator_queenbeeshuttle_test, "patterns/transqueenbeeshuttle.rle", 30);
-    create_oscillator_test_function!(oscillator_twinbeesshuttle_test, "patterns/3blocktwinbeesshuttle.rle", 46);
-    create_oscillator_test_function!(oscillator_p60glidershuttle_test, "patterns/p60glidershuttle.rle", 60);
-    create_oscillator_test_function!(oscillator_centinal_test, "patterns/centinal.rle", 100);
-    create_oscillator_test_function!(oscillator_highlife_p7_test, "patterns/highlife_p7.rle", 7);
-    create_oscillator_test_function!(oscillator_highlife_p10_test, "patterns/highlife_p10.rle", 10);
-    create_oscillator_test_function!(oscillator_seeds_duoplet_test, "patterns/seeds_duoplet.rle", 2);
-    create_oscillator_test_function!(oscillator_seeds_anchor_test, "patterns/seeds_anchor.rle", 4);
-    create_oscillator_test_function!(oscillator_34life_z_test, "patterns/34life_z.rle", 2);
-    create_oscillator_test_function!(oscillator_34life_loaf_test, "patterns/34life_loaf.rle", 12);
-    create_oscillator_test_function!(oscillator_2x2_largedomino_test, "patterns/2x2_largedomino.rle", 2);
-    create_oscillator_test_function!(oscillator_2x2_largetetromino_test, "patterns/2x2_largetetromino.rle", 6);
+    create_oscillator_test_function!(oscillator_blinker, "patterns/blinker.rle", 2);
+    create_oscillator_test_function!(oscillator_toad, "patterns/toad.rle", 2);
+    create_oscillator_test_function!(oscillator_koksgalaxy, "patterns/koksgalaxy.rle", 8);
+    create_oscillator_test_function!(oscillator_pentadecathlon, "patterns/pentadecathlon.rle", 15);
+    create_oscillator_test_function!(oscillator_queenbeeshuttle, "patterns/transqueenbeeshuttle.rle", 30);
+    create_oscillator_test_function!(oscillator_twinbeesshuttle, "patterns/3blocktwinbeesshuttle.rle", 46);
+    create_oscillator_test_function!(oscillator_p60glidershuttle, "patterns/p60glidershuttle.rle", 60);
+    create_oscillator_test_function!(oscillator_centinal, "patterns/centinal.rle", 100);
+    create_oscillator_test_function!(oscillator_highlife_p7, "patterns/highlife_p7.rle", 7);
+    create_oscillator_test_function!(oscillator_highlife_p10, "patterns/highlife_p10.rle", 10);
+    create_oscillator_test_function!(oscillator_seeds_duoplet, "patterns/seeds_duoplet.rle", 2);
+    create_oscillator_test_function!(oscillator_seeds_anchor, "patterns/seeds_anchor.rle", 4);
+    create_oscillator_test_function!(oscillator_34life_z, "patterns/34life_z.rle", 2);
+    create_oscillator_test_function!(oscillator_34life_loaf, "patterns/34life_loaf.rle", 12);
+    create_oscillator_test_function!(oscillator_2x2_largedomino, "patterns/2x2_largedomino.rle", 2);
+    create_oscillator_test_function!(oscillator_2x2_largetetromino, "patterns/2x2_largetetromino.rle", 6);
 
     // Spaceship tests
-    create_spaceship_test_function!(spaceship_glider_test, "patterns/glider.rle", 4, (1, 1));
-    create_spaceship_test_function!(spaceship_lwss_test, "patterns/lwss.rle", 4, (-2, 0));
-    create_spaceship_test_function!(spaceship_loafer_test, "patterns/loafer.rle", 7, (-1, 0));
-    create_spaceship_test_function!(spaceship_copperhead_test, "patterns/copperhead.rle", 10, (0, -1));
-    create_spaceship_test_function!(spaceship_highlife_bomber_test, "patterns/highlife_bomber.rle", 48, (8, 8));
-    create_spaceship_test_function!(spaceship_daynight_rocket_test, "patterns/daynight_rocket.rle", 40, (-20, 0));
-    create_spaceship_test_function!(spaceship_seeds_moon_test, "patterns/seeds_moon.rle", 1, (-1, 0));
-    create_spaceship_test_function!(spaceship_34life_glider_test, "patterns/34life_glider.rle", 3, (0, -1));
-    create_spaceship_test_function!(spaceship_2x2_crawler_test, "patterns/2x2_crawler.rle", 8, (1, -1));
+    create_spaceship_test_function!(spaceship_glider, "patterns/glider.rle", 4, (1, 1));
+    create_spaceship_test_function!(spaceship_lwss, "patterns/lwss.rle", 4, (-2, 0));
+    create_spaceship_test_function!(spaceship_loafer, "patterns/loafer.rle", 7, (-1, 0));
+    create_spaceship_test_function!(spaceship_copperhead, "patterns/copperhead.rle", 10, (0, -1));
+    create_spaceship_test_function!(spaceship_highlife_bomber, "patterns/highlife_bomber.rle", 48, (8, 8));
+    create_spaceship_test_function!(spaceship_daynight_rocket, "patterns/daynight_rocket.rle", 40, (-20, 0));
+    create_spaceship_test_function!(spaceship_seeds_moon, "patterns/seeds_moon.rle", 1, (-1, 0));
+    create_spaceship_test_function!(spaceship_34life_glider, "patterns/34life_glider.rle", 3, (0, -1));
+    create_spaceship_test_function!(spaceship_2x2_crawler, "patterns/2x2_crawler.rle", 8, (1, -1));
 
     // Methuselah tests
-    create_methuselah_test_function!(methuselah_rpentomino_test, "patterns/rpentomino.rle", 1103, 116);
-    create_methuselah_test_function!(methuselah_bheptomino_test, "patterns/bheptomino.rle", 148, 28);
-    create_methuselah_test_function!(methuselah_eheptomino_test, "patterns/eheptomino.rle", 343, 52);
-    create_methuselah_test_function!(methuselah_fheptomino_test, "patterns/fheptomino.rle", 437, 61);
-    create_methuselah_test_function!(methuselah_herschel_test, "patterns/herschel.rle", 128, 24);
-    create_methuselah_test_function!(methuselah_piheptomino_test, "patterns/piheptomino.rle", 173, 55);
-    create_methuselah_test_function!(methuselah_century_test, "patterns/century.rle", 103, 15);
-    create_methuselah_test_function!(methuselah_queenbee_test, "patterns/queenbee.rle", 191, 30);
-    create_methuselah_test_function!(methuselah_thunderbird_test, "patterns/thunderbird.rle", 243, 46);
-    create_methuselah_test_function!(methuselah_switchengine_test, "patterns/switchengine.rle", 3911, 842, ignore = "too long for testing");
-    create_methuselah_test_function!(methuselah_acorn_test, "patterns/acorn.rle", 5206, 633, ignore = "too long for testing");
-    create_methuselah_test_function!(methuselah_bunnies_test, "patterns/bunnies.rle", 17332, 1744, ignore = "too long for testing");
+    create_methuselah_test_function!(methuselah_rpentomino, "patterns/rpentomino.rle", 1103, 116);
+    create_methuselah_test_function!(methuselah_bheptomino, "patterns/bheptomino.rle", 148, 28);
+    create_methuselah_test_function!(methuselah_eheptomino, "patterns/eheptomino.rle", 343, 52);
+    create_methuselah_test_function!(methuselah_fheptomino, "patterns/fheptomino.rle", 437, 61);
+    create_methuselah_test_function!(methuselah_herschel, "patterns/herschel.rle", 128, 24);
+    create_methuselah_test_function!(methuselah_piheptomino, "patterns/piheptomino.rle", 173, 55);
+    create_methuselah_test_function!(methuselah_century, "patterns/century.rle", 103, 15);
+    create_methuselah_test_function!(methuselah_queenbee, "patterns/queenbee.rle", 191, 30);
+    create_methuselah_test_function!(methuselah_thunderbird, "patterns/thunderbird.rle", 243, 46);
+    create_methuselah_test_function!(methuselah_switchengine, "patterns/switchengine.rle", 3911, 842, ignore = "too long for testing");
+    create_methuselah_test_function!(methuselah_acorn, "patterns/acorn.rle", 5206, 633, ignore = "too long for testing");
+    create_methuselah_test_function!(methuselah_bunnies, "patterns/bunnies.rle", 17332, 1744, ignore = "too long for testing");
 
     // Diehard tests
-    create_diehard_test_function!(diehard_diehard_test, "patterns/diehard.rle", 130);
+    create_diehard_test_function!(diehard_diehard, "patterns/diehard.rle", 130);
 }

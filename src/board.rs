@@ -27,7 +27,7 @@ use crate::{BoardRange, Position};
 /// assert_eq!(board.iter().count(), 2);
 /// ```
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Board<T>(HashSet<Position<T>, FnvBuildHasher>)
 where
     T: Eq + Hash;
@@ -407,5 +407,18 @@ where
         U: IntoIterator<Item = Position<T>>,
     {
         self.0.extend(iter);
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn default() {
+        let target = Board::<i16>::default();
+        let expected = Board::<i16>::new();
+        assert_eq!(target, expected);
     }
 }

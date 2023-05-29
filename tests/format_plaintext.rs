@@ -66,7 +66,7 @@ fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, comment: Opti
 }
 
 #[test]
-fn format_plaintext_new_with_string_test() -> Result<()> {
+fn new_with_string() -> Result<()> {
     let input_pattern = "\
         !Name: Glider\n\
         .O\n\
@@ -78,14 +78,14 @@ fn format_plaintext_new_with_string_test() -> Result<()> {
 }
 
 #[test]
-fn format_plaintext_new_with_file_test() -> Result<()> {
+fn new_with_file() -> Result<()> {
     let input_path = "patterns/rpentomino.cells";
     let expected_positions = vec![(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)];
     do_new_test_with_path(input_path, &expected_positions)
 }
 
 #[test]
-fn format_plaintext_build_test() -> Result<()> {
+fn build() -> Result<()> {
     let pattern = vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)];
     let name = Some("Glider".to_string());
     let comment = Some("----".to_string());
