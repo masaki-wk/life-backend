@@ -5,19 +5,13 @@ on:
   pull_request:
 
 jobs:
-  verify-format:
+  verify:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Verify the format via Rustfmt
       run: cargo fmt --all --check --verbose
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
     - name: Lint via Clippy
       run: cargo clippy --all-targets --all-features --no-deps -- -D warnings
 
