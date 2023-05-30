@@ -13,7 +13,7 @@ jobs:
     - name: Verify the format via Rustfmt
       run: cargo fmt --all --check --verbose
     - name: Lint via Clippy
-      run: cargo clippy --all-targets --all-features --no-deps -- -D warnings
+      run: cargo clippy --no-deps --all-targets --all-features -- -D warnings
 
   doc:
     runs-on: ubuntu-latest
