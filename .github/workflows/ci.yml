@@ -12,32 +12,38 @@ jobs:
   verify-format:
     runs-on: ubuntu-latest
     steps:
+    - name: Show information
+      run: |
+        cargo --version
+        cargo fmt --version
     - name: Checkout
       uses: actions/checkout@v3
     - name: Verify the format via Rustfmt
-      run: |
-        cargo fmt --version
-        cargo fmt --all --check --verbose
+      run: cargo fmt --all --check --verbose
 
   lint:
     runs-on: ubuntu-latest
     steps:
+    - name: Show information
+      run: |
+        cargo --version
+        cargo clippy --version
     - name: Checkout
       uses: actions/checkout@v3
     - name: Lint via Clippy
-      run: |
-        cargo clippy --version
-        cargo clippy --no-deps --all-targets --all-features -- -D warnings
+      run: cargo clippy --no-deps --all-targets --all-features -- -D warnings
 
   doc:
     runs-on: ubuntu-latest
     steps:
+    - name: Show information
+      run: |
+        cargo --version
+        rustdoc --version
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build the document
-      run: |
-        rustdoc --version
-        cargo doc --no-deps --all-features
+      run: cargo doc --no-deps --all-features
 
   test:
     strategy:
