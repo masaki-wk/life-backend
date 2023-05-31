@@ -15,9 +15,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Verify the format via Rustfmt
-      run: cargo fmt --all --check --verbose
+      run: |
+        cargo fmt --version
+        cargo fmt --all --check --verbose
     - name: Lint via Clippy
-      run: cargo clippy --no-deps --all-targets --all-features -- -D warnings
+      run: |
+        cargo clippy --version
+        cargo clippy --no-deps --all-targets --all-features -- -D warnings
 
   doc:
     runs-on: ubuntu-latest
@@ -25,7 +29,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build the document
-      run: cargo doc --no-deps --all-features
+      run: |
+        rustdoc --version
+        cargo doc --no-deps --all-features
 
   test:
     strategy:
