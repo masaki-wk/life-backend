@@ -12,7 +12,7 @@ jobs:
   verify-format:
     runs-on: ubuntu-latest
     steps:
-    - name: Show information
+    - name: Show version information of tools
       run: |
         cargo --version
         cargo fmt --version
@@ -24,7 +24,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Show information
+    - name: Show version information of tools
       run: |
         cargo --version
         cargo clippy --version
@@ -36,7 +36,7 @@ jobs:
   doc:
     runs-on: ubuntu-latest
     steps:
-    - name: Show information
+    - name: Show version information of tools
       run: |
         cargo --version
         rustdoc --version
@@ -51,6 +51,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Show version information of tools
+      run: |
+        cargo --version
+        rustc --version
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build
