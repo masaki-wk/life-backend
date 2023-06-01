@@ -65,3 +65,20 @@ where
     };
     Ok(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn open_no_extension() {
+        let path = "patterns/rpentomino";
+        let result = open(path);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn open_unknown_extension() {
+        let path = "patterns/rpentomino.unknown";
+        let result = open(path);
+        assert!(result.is_err());
+    }
+}

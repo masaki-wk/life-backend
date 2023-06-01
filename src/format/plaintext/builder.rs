@@ -1,5 +1,6 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 
 use super::{Plaintext, PlaintextLine};
 use crate::Position;
@@ -57,7 +58,7 @@ use crate::Position;
 /// # }
 /// ```
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct PlaintextBuilder<Name = PlaintextBuilderNoName, Comment = PlaintextBuilderNoComment>
 where
     Name: PlaintextBuilderName,
@@ -69,31 +70,35 @@ where
 }
 
 // Traits and types for PlaintextBuilder's typestate
-pub trait PlaintextBuilderName {
+pub trait PlaintextBuilderName: Clone + fmt::Debug {
     fn drain(self) -> Option<String>;
 }
-pub trait PlaintextBuilderComment {
+pub trait PlaintextBuilderComment: Clone + fmt::Debug {
     fn drain(self) -> Option<String>;
 }
+#[derive(Clone, Debug)]
 pub struct PlaintextBuilderNoName;
 impl PlaintextBuilderName for PlaintextBuilderNoName {
     fn drain(self) -> Option<String> {
         None
     }
 }
+#[derive(Clone, Debug)]
 pub struct PlaintextBuilderWithName(String);
 impl PlaintextBuilderName for PlaintextBuilderWithName {
     fn drain(self) -> Option<String> {
         Some(self.0)
     }
 }
+#[derive(Clone, Debug)]
 pub struct PlaintextBuilderNoComment;
-pub struct PlaintextBuilderWithComment(String);
 impl PlaintextBuilderComment for PlaintextBuilderNoComment {
     fn drain(self) -> Option<String> {
         None
     }
 }
+#[derive(Clone, Debug)]
+pub struct PlaintextBuilderWithComment(String);
 impl PlaintextBuilderComment for PlaintextBuilderWithComment {
     fn drain(self) -> Option<String> {
         Some(self.0)
@@ -461,5 +466,17 @@ where
         T: IntoIterator<Item = Position<usize>>,
     {
         self.extend(iter);
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn default() {
+        let target = PlaintextBuilder::default();
+        assert!(target.contents.is_empty());
     }
 }

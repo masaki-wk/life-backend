@@ -36,7 +36,7 @@ use crate::{Board, Position, Rule};
 /// assert_eq!(bbox.y(), &(1..=3));
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Game<T>
 where
     T: Eq + Hash,
@@ -45,6 +45,8 @@ where
     curr_board: Board<T>,
     prev_board: Board<T>,
 }
+
+// Inherent methods
 
 impl<T> Game<T>
 where
@@ -160,6 +162,8 @@ where
     }
 }
 
+// Trait implementations
+
 impl<T> fmt::Display for Game<T>
 where
     T: Eq + Hash + Copy + PartialOrd + Zero + One + ToPrimitive,
@@ -167,5 +171,19 @@ where
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.board().fmt(f)
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn display() {
+        let rule = Rule::conways_life();
+        let board: Board<_> = [Position(1, 0), Position(0, 1)].iter().collect();
+        let target = Game::new(rule, board);
+        println!("{target}");
     }
 }

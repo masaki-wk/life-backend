@@ -44,7 +44,7 @@ use crate::{Format, Rule};
 /// # }
 /// ```
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Rle {
     pub(super) header: RleHeader,
     pub(super) comments: Vec<String>,

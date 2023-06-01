@@ -1,5 +1,6 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 
 use super::{Rle, RleHeader, RleRunsTriple};
 use crate::{Position, Rule};
@@ -55,7 +56,7 @@ use crate::{Position, Rule};
 /// # }
 /// ```
 ///
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct RleBuilder<Name = RleBuilderNoName, Created = RleBuilderNoCreated, Comment = RleBuilderNoComment, Rule = RleBuilderNoRule>
 where
     Name: RleBuilderName,
@@ -71,61 +72,69 @@ where
 }
 
 // Traits and types for RleBuilder's typestate
-pub trait RleBuilderName {
+pub trait RleBuilderName: Clone + fmt::Debug {
     fn drain(self) -> Option<String>;
 }
-pub trait RleBuilderCreated {
+pub trait RleBuilderCreated: Clone + fmt::Debug {
     fn drain(self) -> Option<String>;
 }
-pub trait RleBuilderComment {
+pub trait RleBuilderComment: Clone + fmt::Debug {
     fn drain(self) -> Option<String>;
 }
-pub trait RleBuilderRule {
+pub trait RleBuilderRule: Clone + fmt::Debug {
     fn drain(self) -> Option<Rule>;
 }
+#[derive(Clone, Debug)]
 pub struct RleBuilderNoName;
 impl RleBuilderName for RleBuilderNoName {
     fn drain(self) -> Option<String> {
         None
     }
 }
+#[derive(Clone, Debug)]
 pub struct RleBuilderWithName(String);
 impl RleBuilderName for RleBuilderWithName {
     fn drain(self) -> Option<String> {
         Some(self.0)
     }
 }
+#[derive(Clone, Debug)]
 pub struct RleBuilderNoCreated;
-pub struct RleBuilderWithCreated(String);
 impl RleBuilderCreated for RleBuilderNoCreated {
     fn drain(self) -> Option<String> {
         None
     }
 }
+#[derive(Clone, Debug)]
+pub struct RleBuilderWithCreated(String);
 impl RleBuilderCreated for RleBuilderWithCreated {
     fn drain(self) -> Option<String> {
         Some(self.0)
     }
 }
+#[derive(Clone, Debug)]
 pub struct RleBuilderNoComment;
-pub struct RleBuilderWithComment(String);
 impl RleBuilderComment for RleBuilderNoComment {
     fn drain(self) -> Option<String> {
         None
     }
 }
+#[derive(Clone, Debug)]
+pub struct RleBuilderWithComment(String);
 impl RleBuilderComment for RleBuilderWithComment {
     fn drain(self) -> Option<String> {
         Some(self.0)
     }
 }
+#[derive(Clone, Debug)]
 pub struct RleBuilderNoRule;
-pub struct RleBuilderWithRule(Rule);
 impl RleBuilderRule for RleBuilderNoRule {
     fn drain(self) -> Option<Rule> {
         None
     }
 }
+#[derive(Clone, Debug)]
+pub struct RleBuilderWithRule(Rule);
 impl RleBuilderRule for RleBuilderWithRule {
     fn drain(self) -> Option<Rule> {
         Some(self.0)
@@ -676,5 +685,28 @@ where
         T: IntoIterator<Item = Position<usize>>,
     {
         self.extend(iter);
+    }
+}
+
+// Unit tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn clone() {
+        let target = RleBuilder::new();
+        #[allow(clippy::redundant_clone)]
+        let _clone = target.clone();
+    }
+    #[test]
+    fn default() {
+        let target = RleBuilder::default();
+        assert!(target.contents.is_empty());
+    }
+    #[test]
+    fn debug() {
+        let target = RleBuilder::new();
+        println!("{:?}", target);
     }
 }

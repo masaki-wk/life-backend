@@ -21,7 +21,7 @@ use std::ops::{Add, Sub};
 /// assert_eq!(pos_y, 3);
 /// ```
 ///
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
@@ -75,9 +75,43 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use i32 as I;
+    use std::collections::HashSet;
     #[test]
-    fn test_display() {
+    fn display() {
         let target = Position(1, 2);
         assert_eq!(format!("{target}"), "(1, 2)".to_string());
+    }
+    #[test]
+    fn moore_neighborhood_positions_basic() {
+        let target: Position<I> = Position(0, 0);
+        let result: HashSet<_> = target.moore_neighborhood_positions().collect();
+        assert_eq!(
+            result,
+            [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+                .into_iter()
+                .map(|(x, y)| Position(x, y))
+                .collect::<HashSet<_>>()
+        );
+    }
+    #[test]
+    fn moore_neighborhood_positions_bounds() {
+        let min = I::min_value();
+        let max = I::max_value();
+        let zero: I = 0;
+        for (pos_tuple, expected_count) in [
+            ((min, min), 3),
+            ((min, zero), 5),
+            ((min, max), 3),
+            ((zero, min), 5),
+            ((zero, zero), 8),
+            ((zero, max), 5),
+            ((max, min), 3),
+            ((max, zero), 5),
+            ((max, max), 3),
+        ] {
+            let pos = Position(pos_tuple.0, pos_tuple.1);
+            assert_eq!(pos.moore_neighborhood_positions().count(), expected_count);
+        }
     }
 }
