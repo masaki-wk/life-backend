@@ -65,5 +65,5 @@ jobs:
       uses: actions/checkout@v3
     - name: Build
       run: cargo build --all-targets --all-features
-    - name: Execute tests
+    - name: Test
       run: cargo test --all-targets --all-features
