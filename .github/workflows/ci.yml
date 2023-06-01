@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify-format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Show version information of tools
+      run: |
+        cargo --version
+        cargo fmt --version
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Verify the format via Rustfmt
+      run: cargo fmt --all --check --verbose
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Show version information of tools
+      run: |
+        cargo --version
+        cargo clippy --version
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Lint via Clippy
+      run: cargo clippy --no-deps --all-targets --all-features -- -D warnings
+
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Show version information of tools
+      run: |
+        cargo --version
+        rustdoc --version
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build the document
+      run: cargo doc --no-deps --all-features
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable, nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.toolchain }}
+    - name: Show version information of tools
+      run: |
+        cargo --version
+        rustc --version
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --all-targets --all-features
+    - name: Test
+      run: cargo test --all-targets --all-features
