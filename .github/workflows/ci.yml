@@ -50,8 +50,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable nightly]
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.toolchain }}
     - name: Show version information of tools
       run: |
         cargo --version
