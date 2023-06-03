@@ -65,6 +65,7 @@ where
     }
 
     /// Adds the specified position to the board.
+    ///
     /// Returns whether the position was newly inserted, like as [`insert()`] of [`HashSet`].
     ///
     /// [`insert()`]: std::collections::HashSet::insert
@@ -85,6 +86,7 @@ where
     }
 
     /// Removes the specified position from the board.
+    ///
     /// Returns whether the position was contained in the board, like as [`remove()`] of [`HashSet`].
     ///
     /// [`remove()`]: std::collections::HashSet::remove
