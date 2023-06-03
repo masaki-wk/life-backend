@@ -17,5 +17,14 @@
       - Additional settings: (empty)
     - Require status checks to pass before merging
       - Require branches to be up to date before merging: enabled
-      - Status checks that are required: verify-format, lint, doc, test
+      - Status checks that are required
+        - verify-format
+        - lint
+        - doc
+        - test (ubuntu-latest, stable)
+        - test (ubuntu-latest, nightly)
+        - test (macos-latest, stable)
+        - test (macos-latest, nightly)
+        - test (windows-latest, stable)
+        - test (windows-latest, nightly)
     - Block force pushes
