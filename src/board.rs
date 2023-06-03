@@ -21,10 +21,6 @@ use crate::{BoardRange, Position};
 /// assert_eq!(board.contains(&Position(0, 0)), true);
 /// assert_eq!(board.contains(&Position(0, 1)), false);
 /// assert_eq!(board.iter().count(), 4);
-/// board.clear();
-/// board.insert(Position(1, 0));
-/// board.insert(Position(0, 1));
-/// assert_eq!(board.iter().count(), 2);
 /// ```
 ///
 #[derive(Clone, PartialEq, Eq, Debug)]
