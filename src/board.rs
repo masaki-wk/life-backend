@@ -17,7 +17,7 @@ use crate::{BoardRange, Position};
 /// ```
 /// use life_backend::{Board, Position};
 /// let pattern = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-/// let mut board: Board<i16> = pattern.iter().collect();
+/// let board: Board<i16> = pattern.iter().collect();
 /// assert_eq!(board.contains(&Position(0, 0)), true);
 /// assert_eq!(board.contains(&Position(0, 1)), false);
 /// assert_eq!(board.iter().count(), 4);
