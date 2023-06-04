@@ -3,7 +3,7 @@ use std::fmt;
 use std::fs::File;
 use std::path::Path;
 
-use crate::Rule;
+use crate::{Position, Rule};
 
 mod plaintext;
 pub use plaintext::{Plaintext, PlaintextBuilder};
@@ -14,7 +14,7 @@ pub use rle::{Rle, RleBuilder};
 /// Provides several methods for Conway's Game of Life pattern file formats.
 pub trait Format: fmt::Display {
     fn rule(&self) -> Rule;
-    fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_>;
+    fn live_cells(&self) -> Box<dyn Iterator<Item = Position<usize>> + '_>;
 }
 
 /// Attempts to open a file with the file format handler specified by the file extension.
