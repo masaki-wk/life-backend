@@ -1,6 +1,6 @@
 use anyhow::Result;
 use criterion::{criterion_group, criterion_main, Criterion};
-use num_traits::{Bounded, FromPrimitive, One, ToPrimitive, Zero};
+use num_traits::{Bounded, One, ToPrimitive, Zero};
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 use std::path::Path;
@@ -20,16 +20,13 @@ where
 
 fn do_benchmark<T, P>(c: &mut Criterion, id: &str, path: P, steps: usize) -> Result<()>
 where
-    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive + FromPrimitive,
+    T: Eq + Hash + Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Zero + One + Bounded + ToPrimitive + TryFrom<usize>,
+    <T as TryFrom<usize>>::Error: std::error::Error + Send + Sync + 'static,
     P: AsRef<Path>,
 {
-    let from_usize_unwrap = |x| T::from_usize(x).unwrap();
     let handler = format::open(path)?;
     let rule = handler.rule();
-    let board: Board<_> = handler
-        .live_cells()
-        .map(|pos| Position(from_usize_unwrap(pos.0), from_usize_unwrap(pos.1)))
-        .collect();
+    let board = handler.live_cells().map(Position::try_from).collect::<Result<Board<T>, _>>()?;
     let game = Game::new(rule, board);
     c.bench_function(id, |b| b.iter(|| workload(&game, steps)));
     Ok(())

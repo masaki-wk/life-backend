@@ -29,7 +29,7 @@ impl Config {
 fn run(config: Config) -> Result<()> {
     let handler = format::open(&config.path_str)?;
     let rule = handler.rule();
-    let board: Board<_> = handler.live_cells().map(|pos| Position(pos.0 as I, pos.1 as I)).collect();
+    let board = handler.live_cells().map(Position::try_from).collect::<Result<Board<_>, _>>()?;
     let game = Game::new(rule, board);
     simulate(game, config.generation, config.step_size);
     Ok(())
