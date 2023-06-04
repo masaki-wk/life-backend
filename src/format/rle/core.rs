@@ -4,7 +4,7 @@ use std::io::Read;
 use std::str::FromStr;
 
 use super::{RleHeader, RleParser, RleRunsTriple};
-use crate::{Format, Rule};
+use crate::{Format, Position, Rule};
 
 /// A representation for RLE file format.
 ///
@@ -20,10 +20,11 @@ use crate::{Format, Rule};
 /// ```
 /// use std::fs::File;
 /// use life_backend::format::Rle;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let file = File::open("patterns/rpentomino.rle")?;
 /// let parser = Rle::new(file)?;
-/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// assert!(parser.live_cells().eq([Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)]));
 /// # Ok(())
 /// # }
 /// ```
@@ -32,6 +33,7 @@ use crate::{Format, Rule};
 ///
 /// ```
 /// use life_backend::format::Rle;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = "\
 ///     #N R-pentomino\n\
@@ -39,7 +41,7 @@ use crate::{Format, Rule};
 ///     b2o$2o$bo!\n\
 /// ";
 /// let parser = pattern.parse::<Rle>()?;
-/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// assert!(parser.live_cells().eq([Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)]));
 /// # Ok(())
 /// # }
 /// ```
@@ -182,6 +184,7 @@ impl Rle {
     ///
     /// ```
     /// use life_backend::format::Rle;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     #N T-tetromino\n\
@@ -189,12 +192,12 @@ impl Rle {
     ///     3o$bo!\n\
     /// ";
     /// let parser = Rle::new(pattern.as_bytes())?;
-    /// assert!(parser.live_cells().eq([(0, 0), (1, 0), (2, 0), (1, 1)]));
+    /// assert!(parser.live_cells().eq([Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)]));
     /// # Ok(())
     /// # }
     /// ```
     ///
-    pub fn live_cells(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    pub fn live_cells(&self) -> impl Iterator<Item = Position<usize>> + '_ {
         self.contents
             .iter()
             .scan((0, 0), |(state_x, state_y), item| {
@@ -209,7 +212,7 @@ impl Rle {
                 *state_x += item.live_cells;
                 Some(output)
             })
-            .flat_map(|(y, x, num)| (x..(x + num)).map(move |x| (x, y)))
+            .flat_map(|(y, x, num)| (x..(x + num)).map(move |x| Position(x, y)))
     }
 }
 
@@ -219,7 +222,7 @@ impl Format for Rle {
     fn rule(&self) -> Rule {
         self.rule().clone()
     }
-    fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_> {
+    fn live_cells(&self) -> Box<dyn Iterator<Item = Position<usize>> + '_> {
         Box::new(self.live_cells())
     }
 }

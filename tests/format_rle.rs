@@ -19,7 +19,7 @@ where
     println!("Expected positions:");
     println!("{:?}", expected_positions);
 
-    assert!(target.live_cells().eq(expected_positions.iter().copied()));
+    assert!(target.live_cells().eq(expected_positions.iter().map(|&(x, y)| Position(x, y))));
     Ok(())
 }
 
@@ -67,7 +67,7 @@ fn do_build_test(pattern: &[(usize, usize)], name: Option<String>, created: Opti
     println!("{:?}", pattern);
 
     // Check
-    assert!(target.live_cells().eq(pattern.iter().copied()));
+    assert!(target.live_cells().eq(pattern.iter().map(|&(x, y)| Position(x, y))));
     Ok(())
 }
 
