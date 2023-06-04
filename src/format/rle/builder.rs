@@ -7,8 +7,6 @@ use crate::{Position, Rule};
 
 /// A builder of [`Rle`].
 ///
-/// [`Rle`]: Rle
-///
 /// # Examples
 ///
 /// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Rle`] via [`build()`]:
@@ -173,8 +171,6 @@ where
     RuleSpec: RleBuilderRule,
 {
     /// Builds the [`Rle`] value.
-    ///
-    /// [`Rle`]: Rle
     ///
     /// # Examples
     ///
@@ -356,7 +352,6 @@ where
     /// Set the information when and by whom the pattern was created.
     /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
     ///
-    /// [`Rle`]: Rle
     /// [`build()`]: #method.build
     ///
     /// # Examples
@@ -419,7 +414,6 @@ where
     /// Set the comment.
     /// If the argument includes newlines, the instance of [`Rle`] built by [`build()`] includes multiple comment lines.
     ///
-    /// [`Rle`]: Rle
     /// [`build()`]: #method.build
     ///
     /// # Examples

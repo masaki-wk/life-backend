@@ -16,9 +16,6 @@ use crate::{Board, Position, Rule};
 /// - Advancing a generation
 /// - Returning the current state
 ///
-/// [`Rule`]: Rule
-/// [`Board`]: Board
-///
 /// # Examples
 ///
 /// ```

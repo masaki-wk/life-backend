@@ -112,8 +112,6 @@ impl<T> BoardRange<T> {
 
     /// Destructures [`BoardRange`] into (range-x, range-y).
     ///
-    /// [`BoardRange`]: BoardRange
-    ///
     /// # Examples
     ///
     /// ```
