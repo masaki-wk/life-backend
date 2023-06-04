@@ -3,8 +3,6 @@ name: CI
 on:
   workflow_dispatch:
   pull_request:
-  push:
-    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
@@ -66,4 +64,6 @@ jobs:
     - name: Build
       run: cargo build --all-targets --all-features
     - name: Test
-      run: cargo test --all-targets --all-features
+      run: |
+        cargo test --all-targets --all-features
+        cargo test --doc
