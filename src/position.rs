@@ -25,6 +25,54 @@ use std::ops::{Add, Sub};
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
+    /// Converts from `Position<U>` to `Position<T>`.
+    ///
+    /// This operation converts the type of the x- and y-coordinate values of the position from `U` to `T`.
+    /// If an error occurs in converting from `U` to `T`, returns that error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Position;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let base: Position<usize> = Position(0, 0);
+    /// let pos = Position::<i16>::try_from(base)?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    pub fn try_from<U>(value: Position<U>) -> Result<Position<T>, T::Error>
+    where
+        T: TryFrom<U>,
+    {
+        Ok(Position(T::try_from(value.0)?, T::try_from(value.1)?))
+    }
+
+    /// Converts from `Position<T>` to `Position<U>`.
+    ///
+    /// `base.try_into::<U>()` is the same as `Position::<U>::try_from(base)`, see [`try_from()`].
+    ///
+    /// [`try_from()`]: #method.try_from
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::Position;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let base: Position<usize> = Position(0, 0);
+    /// let pos: Position<i16> = base.try_into()?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    #[inline]
+    pub fn try_into<U>(self) -> Result<Position<U>, U::Error>
+    where
+        U: TryFrom<T>,
+    {
+        Position::<U>::try_from(self)
+    }
+
     /// Creates an owning iterator over neighbour positions of the self position in arbitrary order.
     /// The neighbour positions are defined in [Moore neighbourhood](https://conwaylife.com/wiki/Moore_neighbourhood).
     ///
@@ -81,6 +129,42 @@ mod tests {
     fn display() {
         let target = Position(1, 2);
         assert_eq!(format!("{target}"), "(1, 2)".to_string());
+    }
+    #[test]
+    fn try_from_infallible() {
+        let base: Position<i8> = Position(0, 0);
+        let target = Position::<i16>::try_from(base);
+        assert!(target.is_ok());
+    }
+    #[test]
+    fn try_from_fallible_no_error() {
+        let base: Position<i16> = Position(0, 0);
+        let target = Position::<i8>::try_from(base);
+        assert!(target.is_ok());
+    }
+    #[test]
+    fn try_from_fallible_with_error() {
+        let base: Position<i8> = Position(-1, 0);
+        let target = Position::<u8>::try_from(base);
+        assert!(target.is_err());
+    }
+    #[test]
+    fn try_into_infallible() {
+        let base: Position<i8> = Position(0, 0);
+        let target = base.try_into::<i16>();
+        assert!(target.is_ok());
+    }
+    #[test]
+    fn try_into_fallible_no_error() {
+        let base: Position<i16> = Position(0, 0);
+        let target = base.try_into::<i8>();
+        assert!(target.is_ok());
+    }
+    #[test]
+    fn try_into_fallible_with_error() {
+        let base: Position<i8> = Position(-1, 0);
+        let target = base.try_into::<u8>();
+        assert!(target.is_err());
     }
     #[test]
     fn moore_neighborhood_positions_basic() {

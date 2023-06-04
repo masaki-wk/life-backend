@@ -4,7 +4,7 @@ use std::io::Read;
 use std::str::FromStr;
 
 use super::{PlaintextLine, PlaintextParser};
-use crate::{Format, Rule};
+use crate::{Format, Position, Rule};
 
 /// A representation for Plaintext file format.
 ///
@@ -19,10 +19,11 @@ use crate::{Format, Rule};
 /// ```
 /// use std::fs::File;
 /// use life_backend::format::Plaintext;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let file = File::open("patterns/rpentomino.cells")?;
 /// let parser = Plaintext::new(file)?;
-/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// assert!(parser.live_cells().eq([Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)]));
 /// # Ok(())
 /// # }
 /// ```
@@ -31,6 +32,7 @@ use crate::{Format, Rule};
 ///
 /// ```
 /// use life_backend::format::Plaintext;
+/// use life_backend::Position;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let pattern = "\
 ///     !Name: R-pentomino\n\
@@ -39,7 +41,7 @@ use crate::{Format, Rule};
 ///     .O.\n\
 /// ";
 /// let parser = pattern.parse::<Plaintext>()?;
-/// assert!(parser.live_cells().eq([(1, 0), (2, 0), (0, 1), (1, 1), (1, 2)]));
+/// assert!(parser.live_cells().eq([Position(1, 0), Position(2, 0), Position(0, 1), Position(1, 1), Position(1, 2)]));
 /// # Ok(())
 /// # }
 /// ```
@@ -137,6 +139,7 @@ impl Plaintext {
     ///
     /// ```
     /// use life_backend::format::Plaintext;
+    /// use life_backend::Position;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let pattern = "\
     ///     !Name: T-tetromino\n\
@@ -144,13 +147,13 @@ impl Plaintext {
     ///     .O.\n\
     /// ";
     /// let parser = Plaintext::new(pattern.as_bytes())?;
-    /// assert!(parser.live_cells().eq([(0, 0), (1, 0), (2, 0), (1, 1)]));
+    /// assert!(parser.live_cells().eq([Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)]));
     /// # Ok(())
     /// # }
     /// ```
     ///
-    pub fn live_cells(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| (*x, *y)))
+    pub fn live_cells(&self) -> impl Iterator<Item = Position<usize>> + '_ {
+        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| Position(*x, *y)))
     }
 }
 
@@ -160,7 +163,7 @@ impl Format for Plaintext {
     fn rule(&self) -> Rule {
         Rule::conways_life()
     }
-    fn live_cells(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_> {
+    fn live_cells(&self) -> Box<dyn Iterator<Item = Position<usize>> + '_> {
         Box::new(self.live_cells())
     }
 }
