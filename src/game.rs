@@ -16,9 +16,6 @@ use crate::{Board, Position, Rule};
 /// - Advancing a generation
 /// - Returning the current state
 ///
-/// [`Rule`]: Rule
-/// [`Board`]: Board
-///
 /// # Examples
 ///
 /// ```
@@ -30,8 +27,7 @@ use crate::{Board, Position, Rule};
 ///     .collect();
 /// let mut game = Game::new(rule, board);
 /// game.update();
-/// let board = game.board();
-/// let bbox = board.bounding_box();
+/// let bbox = game.board().bounding_box();
 /// assert_eq!(bbox.x(), &(0..=2));
 /// assert_eq!(bbox.y(), &(1..=3));
 /// ```

@@ -13,7 +13,46 @@ pub use rle::{Rle, RleBuilder};
 
 /// Provides several methods for Conway's Game of Life pattern file formats.
 pub trait Format: fmt::Display {
+    /// Returns the rule.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{Format, Rule};
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let pattern = "\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2, rule = B3/S23\n\
+    ///     3o$bo!\n\
+    /// ";
+    /// let handler: Box<dyn Format> = Box::new(pattern.parse::<Rle>()?);
+    /// assert_eq!(handler.rule(), Rule::conways_life());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     fn rule(&self) -> Rule;
+
+    /// Creates an owning iterator over the series of live cell positions in ascending order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use life_backend::{Format, Position, Rule};
+    /// use life_backend::format::Rle;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let pattern = "\
+    ///     #N T-tetromino\n\
+    ///     x = 3, y = 2, rule = B3/S23\n\
+    ///     3o$bo!\n\
+    /// ";
+    /// let handler: Box<dyn Format> = Box::new(pattern.parse::<Rle>()?);
+    /// assert!(handler.live_cells().eq([Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)]));
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     fn live_cells(&self) -> Box<dyn Iterator<Item = Position<usize>> + '_>;
 }
 

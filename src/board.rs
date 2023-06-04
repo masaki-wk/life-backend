@@ -17,14 +17,10 @@ use crate::{BoardRange, Position};
 /// ```
 /// use life_backend::{Board, Position};
 /// let pattern = [Position(0, 0), Position(1, 0), Position(2, 0), Position(1, 1)];
-/// let mut board: Board<i16> = pattern.iter().collect();
+/// let board: Board<i16> = pattern.iter().collect();
 /// assert_eq!(board.contains(&Position(0, 0)), true);
 /// assert_eq!(board.contains(&Position(0, 1)), false);
 /// assert_eq!(board.iter().count(), 4);
-/// board.clear();
-/// board.insert(Position(1, 0));
-/// board.insert(Position(0, 1));
-/// assert_eq!(board.iter().count(), 2);
 /// ```
 ///
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -69,6 +65,7 @@ where
     }
 
     /// Adds the specified position to the board.
+    ///
     /// Returns whether the position was newly inserted, like as [`insert()`] of [`HashSet`].
     ///
     /// [`insert()`]: std::collections::HashSet::insert
@@ -89,6 +86,7 @@ where
     }
 
     /// Removes the specified position from the board.
+    ///
     /// Returns whether the position was contained in the board, like as [`remove()`] of [`HashSet`].
     ///
     /// [`remove()`]: std::collections::HashSet::remove

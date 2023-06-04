@@ -6,6 +6,7 @@ use crate::Position;
 
 /// A range on a board.
 ///
+/// This range consists of four pieces of information: the minimum and maximum x-coordinate values and the minimum and maximum y-coordinate values.
 /// The type parameter `T` is used as the type of the x- and y-coordinate values.
 ///
 /// # Examples
@@ -110,8 +111,6 @@ impl<T> BoardRange<T> {
     }
 
     /// Destructures [`BoardRange`] into (range-x, range-y).
-    ///
-    /// [`BoardRange`]: BoardRange
     ///
     /// # Examples
     ///

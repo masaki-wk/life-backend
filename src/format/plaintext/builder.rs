@@ -7,8 +7,6 @@ use crate::Position;
 
 /// A builder of [`Plaintext`].
 ///
-/// [`Plaintext`]: Plaintext
-///
 /// # Examples
 ///
 /// Creates a builder via [`collect()`] with live cell positions, set a name via [`name()`], then builds [`Plaintext`] via [`build()`]:
@@ -133,8 +131,6 @@ where
     Comment: PlaintextBuilderComment,
 {
     /// Builds the [`Plaintext`] value.
-    ///
-    /// [`Plaintext`]: Plaintext
     ///
     /// # Examples
     ///
@@ -266,7 +262,6 @@ where
     /// Set the comment.
     /// If the argument includes newlines, the instance of [`Plaintext`] built by [`build()`] includes multiple comment lines.
     ///
-    /// [`Plaintext`]: Plaintext
     /// [`build()`]: #method.build
     ///
     /// # Examples

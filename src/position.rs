@@ -25,7 +25,7 @@ use std::ops::{Add, Sub};
 pub struct Position<T>(pub T, pub T);
 
 impl<T> Position<T> {
-    /// Converts from `Position<U>` to `Position<T>`.
+    /// Attempts to convert from `Position<U>` to `Position<T>`.
     ///
     /// This operation converts the type of the x- and y-coordinate values of the position from `U` to `T`.
     /// If an error occurs in converting from `U` to `T`, returns that error.
@@ -48,7 +48,7 @@ impl<T> Position<T> {
         Ok(Position(T::try_from(value.0)?, T::try_from(value.1)?))
     }
 
-    /// Converts from `Position<T>` to `Position<U>`.
+    /// Attempts to convert from `Position<T>` to `Position<U>`.
     ///
     /// `base.try_into::<U>()` is the same as `Position::<U>::try_from(base)`, see [`try_from()`].
     ///
