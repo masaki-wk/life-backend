@@ -45,7 +45,7 @@ fn print_game(game: &Game<I>, generation: usize) {
 fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
     for i in 0..generation {
         if i % step_size == 0 {
-            print_game(&game, generation);
+            print_game(&game, i);
         }
         game.update();
     }
