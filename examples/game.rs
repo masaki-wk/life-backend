@@ -56,3 +56,17 @@ fn main() -> Result<()> {
     let config = Config::new(env::args())?;
     run(config)
 }
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+    use std::process::Command;
+    #[test]
+    fn glider() -> Result<()> {
+        let status = Command::new("cargo")
+            .args(["run", "--example", "game", "patterns/glider.rle", "4", "4"])
+            .status()?;
+        assert!(status.success());
+        Ok(())
+    }
+}
