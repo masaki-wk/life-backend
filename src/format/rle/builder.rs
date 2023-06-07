@@ -1,6 +1,7 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::iter::FromIterator;
 
 use super::{Rle, RleHeader, RleRunsTriple};
 use crate::{Position, Rule};
@@ -187,7 +188,7 @@ where
     ///
     pub fn build(self) -> Result<Rle> {
         let comments: Vec<_> = {
-            fn parse_to_comments(str: Option<String>, prefix: &str) -> Vec<String> {
+            fn parse_to_comments(str: &Option<String>, prefix: &str) -> Vec<String> {
                 fn append_prefix(str: &str, prefix: &str) -> String {
                     let mut buf = prefix.to_owned();
                     if !str.is_empty() {
@@ -212,7 +213,7 @@ where
                 ensure!(str.lines().count() <= 1, "the string passed by name(str) includes multiple lines");
             }
             [(name, "#N"), (self.created.drain(), "#O"), (self.comment.drain(), "#C")]
-                .into_iter()
+                .iter()
                 .flat_map(|(str, prefix)| parse_to_comments(str, prefix).into_iter())
                 .collect()
         };

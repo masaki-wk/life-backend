@@ -5,6 +5,7 @@ use std::collections::hash_set;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
+use std::iter::FromIterator;
 
 use crate::{BoardRange, Position};
 
@@ -276,7 +277,7 @@ where
     /// let pattern = [Position(1, 0), Position(0, 1)];
     /// let board: Board<i16> = pattern.iter().collect();
     /// let result: HashSet<_> = board.into_iter().collect();
-    /// let expected: HashSet<_> = pattern.into_iter().collect();
+    /// let expected: HashSet<_> = pattern.iter().copied().collect();
     /// assert_eq!(result, expected);
     /// ```
     ///
