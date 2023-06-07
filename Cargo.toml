@@ -5,9 +5,9 @@ authors = ["Masaki Wakabayashi"]
 edition = "2018"
 description = "A backend implementation of Conway's Game of Life"
 repository = "https://github.com/masaki-wk/life-backend"
+license = "MIT OR Apache-2.0"
 keywords = ["cellular-automata", "conway", "game-of-life"]
 categories = ["science", "simulation"]
-license = "MIT OR Apache-2.0"
 
 [dependencies]
 anyhow = "1.0.71"
