@@ -45,7 +45,7 @@ fn print_game(game: &Game<I>, generation: usize) {
 fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
     for i in 0..generation {
         if i % step_size == 0 {
-            print_game(&game, generation);
+            print_game(&game, i);
         }
         game.update();
     }
@@ -55,4 +55,18 @@ fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
 fn main() -> Result<()> {
     let config = Config::new(env::args())?;
     run(config)
+}
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+    use std::process::Command;
+    #[test]
+    fn glider() -> Result<()> {
+        let status = Command::new("cargo")
+            .args(["run", "--example", "game", "patterns/glider.rle", "4", "4"])
+            .status()?;
+        assert!(status.success());
+        Ok(())
+    }
 }

@@ -30,7 +30,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Lint via Clippy
-      run: cargo clippy --no-deps --all-targets --all-features -- -D warnings
+      run: cargo clippy --no-deps --all-targets --all-features -- --deny warnings
 
   doc:
     runs-on: ubuntu-latest
