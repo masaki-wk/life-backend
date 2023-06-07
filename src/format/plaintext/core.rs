@@ -153,7 +153,7 @@ impl Plaintext {
     /// ```
     ///
     pub fn live_cells(&self) -> impl Iterator<Item = Position<usize>> + '_ {
-        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(|x| Position(*x, *y)))
+        self.contents.iter().flat_map(|PlaintextLine(y, xs)| xs.iter().map(move |x| Position(*x, *y)))
     }
 }
 

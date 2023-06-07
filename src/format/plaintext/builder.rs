@@ -1,6 +1,7 @@
 use anyhow::{ensure, Result};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::iter::FromIterator;
 
 use super::{Plaintext, PlaintextLine};
 use crate::Position;

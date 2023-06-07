@@ -1,5 +1,6 @@
 use num_iter::range_inclusive;
 use num_traits::{Bounded, One, ToPrimitive};
+use std::convert::TryFrom;
 use std::fmt;
 use std::hash::Hash;
 use std::ops::{Add, Sub};
@@ -86,7 +87,8 @@ impl<T> Position<T> {
     ///     .moore_neighborhood_positions()
     ///     .collect();
     /// let expected: HashSet<_> = [(1, 2), (2, 2), (3, 2), (1, 3), (3, 3), (1, 4), (2, 4), (3, 4)]
-    ///     .into_iter()
+    ///     .iter()
+    ///     .copied()
     ///     .map(|(x, y)| Position(x, y))
     ///     .collect();
     /// assert_eq!(result, expected);
@@ -173,7 +175,8 @@ mod tests {
         assert_eq!(
             result,
             [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
-                .into_iter()
+                .iter()
+                .copied()
                 .map(|(x, y)| Position(x, y))
                 .collect::<HashSet<_>>()
         );

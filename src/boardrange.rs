@@ -1,5 +1,6 @@
 use num_traits::{One, Zero};
 use std::fmt;
+use std::iter::FromIterator;
 use std::ops::RangeInclusive;
 
 use crate::Position;

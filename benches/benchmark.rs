@@ -1,6 +1,7 @@
 use anyhow::Result;
 use criterion::{criterion_group, criterion_main, Criterion};
 use num_traits::{Bounded, One, ToPrimitive, Zero};
+use std::convert::TryFrom;
 use std::hash::Hash;
 use std::ops::{Add, Sub};
 use std::path::Path;

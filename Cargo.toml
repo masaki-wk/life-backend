@@ -2,7 +2,7 @@
 name = "life-backend"
 version = "0.1.0"
 authors = ["Masaki Wakabayashi"]
-edition = "2021"
+edition = "2018"
 description = "A backend implementation of Conway's Game of Life"
 repository = "https://github.com/masaki-wk/life-backend"
 keywords = ["cellular-automata", "conway", "game-of-life"]

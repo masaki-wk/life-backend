@@ -22,7 +22,8 @@ use crate::{Board, Position, Rule};
 /// use life_backend::{Board, Game, Position, Rule};
 /// let rule = Rule::conways_life();
 /// let board: Board<_> = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)] // Glider pattern
-///     .into_iter()
+///     .iter()
+///     .copied()
 ///     .map(|(x, y)| Position(x, y))
 ///     .collect();
 /// let mut game = Game::new(rule, board);
@@ -140,20 +141,22 @@ where
         T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {
         mem::swap(&mut self.curr_board, &mut self.prev_board);
+        let prev_board = &self.prev_board;
+        let rule = &self.rule;
         self.curr_board.clear();
         self.curr_board.extend(
             self.prev_board
                 .iter()
                 .flat_map(|pos| pos.moore_neighborhood_positions())
-                .filter(|pos| !self.prev_board.contains(pos)),
+                .filter(|pos| !prev_board.contains(pos)),
         );
         self.curr_board.retain(|pos| {
-            let count = Self::live_neighbour_count(&self.prev_board, pos);
-            self.rule.is_born(count)
+            let count = Self::live_neighbour_count(prev_board, pos);
+            rule.is_born(count)
         });
         self.curr_board.extend(self.prev_board.iter().copied().filter(|pos| {
-            let count = Self::live_neighbour_count(&self.prev_board, pos);
-            self.rule.is_survive(count)
+            let count = Self::live_neighbour_count(prev_board, pos);
+            rule.is_survive(count)
         }));
     }
 }
