@@ -1,24 +1,17 @@
 # life-backend
 
-A backend implementation of [Conway's Game of Life](https://conwaylife.com/wiki/Conway%27s_Game_of_Life).
+A backend implementation of Conway's Game of Life.
 
-This library provides several functionalities for [Life-like cellular automata](https://conwaylife.com/wiki/Life-like_cellular_automaton), including Conway's Game of Life.
+This library provides several functionalities for Life-like cellular automata, including Conway's Game of Life.
 It does not provide frontend functionality for viewing or editing patterns through a user interface.
 
-This library includes the following structs:
+The following operations are supported:
 
-- [`Plaintext`], [`Rle`]: File format handlers for Life-like cellular automata.
-- [`Rule`]: Represents a rule and supports the birth/survival notation (e.g., `"B3/S23"`).
-- [`Position<T>`]: A position of a cell. The type parameter `T` is used as the type of the x- and y-coordinate values of positions.
-- [`Board<T>`]: A two-dimensional orthogonal grid map of live and dead cells.
-- [`Game<T>`]: Represents a game, including methods for creating a new game, advancing its generation, and querying the current state.
-
-[`Plaintext`]: format::Plaintext
-[`Rle`]: format::Rle
-[`Rule`]: Rule
-[`Position<T>`]: Position
-[`Board<T>`]: Board
-[`Game<T>`]: Game
+- Parsing or writing patterns of Life-like cellular automata (supported formats: Plaintext and RLE)
+- Parsing or writing a rule in the birth/survival notation (e.g., `"B3/S23"`)
+- Managing a board, a two-dimensional orthogonal grid map of live and dead cells
+  (The type of the x- and y-coordinate values of positions is set by the type parameter)
+- Creating a game from a rule and a board, advancing its generation, and querying the state
 
 ## Examples
 
