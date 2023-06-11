@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 const TRUTH_TABLE_SIZE: usize = 9;
 
-/// A representation of a rule of [Life-like cellular automaton](https://conwaylife.com/wiki/Life-like_cellular_automaton).
+/// A representation of a rule of [Life-like cellular automata](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
 /// The following operations are supported:
 ///
