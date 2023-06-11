@@ -1,15 +1,20 @@
 //! A backend implementation of Conway's Game of Life.
 //!
-//! This library provides several functionalities for Life-like cellular automata, including Conway's Game of Life.
-//! It does not provide frontend functionality for viewing or editing patterns through a user interface.
+//! # Introduction
+//!
+//! This library provides several functionalities for Life-like cellular automata,
+//! including Conway's Game of Life. It does not provide frontend functionality for
+//! viewing or editing patterns through a user interface.
 //!
 //! The following operations are supported:
 //!
-//! - Parsing or writing patterns of Life-like cellular automata (supported formats: Plaintext and RLE)
+//! - Parsing or writing patterns of Life-like cellular automata
+//!   (supported formats: Plaintext and RLE)
 //! - Parsing or writing a rule in the birth/survival notation (e.g., `"B3/S23"`)
 //! - Managing a board, a two-dimensional orthogonal grid map of live and dead cells
-//!   (The type of the x- and y-coordinate values of positions is set by the type parameter)
-//! - Creating a game from a rule and a board, advancing its generation, and querying the state
+//!   (The type of the x- and y-coordinates of positions is generalized)
+//! - Creating a new game from the given rule and board, advancing the generation
+//!   and querying the state
 //!
 //! # Examples
 //!
