@@ -24,7 +24,7 @@ struct RleRun(usize, RleTag);
 // Inherent methods
 
 impl RleParser {
-    // Parses the specified implementor of Read (e.g., File, `&[u8]`) into Rle
+    // Parses the specified implementor of Read (e.g., `File`, `&[u8]`) into Rle
     pub(super) fn parse<R>(read: R) -> Result<Rle>
     where
         R: Read,
