@@ -13,6 +13,10 @@
 //!
 //! [`Plaintext`]: format::Plaintext
 //! [`Rle`]: format::Rle
+//! [`Rule`]: Rule
+//! [`Position<T>`]: Position
+//! [`Board<T>`]: Board
+//! [`Game<T>`]: Game
 //!
 //! # Examples
 //!
