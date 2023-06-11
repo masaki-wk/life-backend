@@ -20,7 +20,7 @@
       - Status checks that are required
         - verify-format
         - lint
-        - doc
+        - verify-doc
         - test (ubuntu-latest, stable)
         - test (ubuntu-latest, nightly)
         - test (macos-latest, stable)
