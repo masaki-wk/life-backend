@@ -32,7 +32,7 @@ jobs:
     - name: Lint via Clippy
       run: cargo clippy --no-deps --all-targets --all-features -- --deny warnings
 
-  doc:
+  verify-doc:
     runs-on: ubuntu-latest
     steps:
     - name: Install cargo-readme
