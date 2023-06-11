@@ -4,18 +4,18 @@ use std::str::FromStr;
 
 const TRUTH_TABLE_SIZE: usize = 9;
 
-/// A representation of a rule of [Life-like cellular automaton](https://conwaylife.com/wiki/Life-like_cellular_automaton).
+/// A representation of a rule of [Life-like cellular automata](https://conwaylife.com/wiki/Life-like_cellular_automaton).
 ///
 /// The following operations are supported:
 ///
 /// - Constructing from a pair of truth tables
-/// - Parsing a string into a value of this type, ex. `"B3/S23"`.
+/// - Parsing a string into a value of this type, e.g., `"B3/S23"`.
 ///   The following notations are supported, see [Rulestring](https://conwaylife.com/wiki/Rulestring):
-///   - The birth/survival notation (ex. `"B3/S23"`). Lowercase `'b'` or `'s'` are also allowed in the notation instead of `'B'` or `'S'`
-///   - S/B notation (ex. `"23/3"`)
+///   - The birth/survival notation (e.g., `"B3/S23"`). Lowercase `'b'` or `'s'` are also allowed in the notation instead of `'B'` or `'S'`
+///   - S/B notation (e.g., `"23/3"`)
 /// - Determining whether a new cell will be born from the specified number of alive neighbors
 /// - Determining whether a cell surrounded by the specified number of alive neighbors will survive
-/// - Converting into a [`String`] value, ex. `"B3/S23"`.
+/// - Converting into a [`String`] value, e.g., `"B3/S23"`.
 ///   This operation only supports the birth/survival notation
 ///
 /// [`String`]: std::string::String
@@ -191,10 +191,10 @@ impl FromStr for Rule {
             .map(|s| s.split_at(s.find(|c: char| c.is_ascii_digit()).unwrap_or(s.len())))
             .unzip();
         let numbers = if labels.iter().zip(["B", "S"]).all(|(lhs, rhs)| lhs.eq_ignore_ascii_case(rhs)) {
-            // the birth/survival notation, ex. "B3/S23"
+            // the birth/survival notation, e.g., "B3/S23"
             numbers
         } else if labels.iter().all(|s| s.is_empty()) {
-            // S/B notation, ex. "23/3"
+            // S/B notation, e.g., "23/3"
             vec![numbers[1], numbers[0]]
         } else {
             return Err(ParseRuleError);

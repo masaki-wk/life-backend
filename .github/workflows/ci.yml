@@ -35,14 +35,19 @@ jobs:
   doc:
     runs-on: ubuntu-latest
     steps:
+    - name: Install cargo-readme
+      run: cargo install cargo-readme
     - name: Show version information of tools
       run: |
         cargo --version
         rustdoc --version
+        cargo readme --version
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build the document
       run: cargo doc --no-deps --all-features
+    - name: Verify README.md
+      run: cargo readme | cmp README.md -
 
   test:
     strategy:
