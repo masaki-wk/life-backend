@@ -1,7 +1,7 @@
 # life-backend
 
 [![GitHub](https://img.shields.io/badge/github-masaki--wk/life--backend-blue?logo=github)](https://github.com/masaki-wk/life-backend)
-[![CI Status](https://img.shields.io/github/actions/workflow/status/masaki-wk/life-backend/ci.yml?label=CI&logo=github)](https://github.com/masaki-wk/life-backend/actions/ci.yml)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/masaki-wk/life-backend/ci.yml?label=CI&logo=github)](https://github.com/masaki-wk/life-backend/actions/workflows/ci.yml)
 
 A backend implementation of Conway's Game of Life.
 
