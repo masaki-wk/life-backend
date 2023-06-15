@@ -1,10 +1,7 @@
 //! A backend implementation of Conway's Game of Life.
 //!
-//! # Introduction
-//!
 //! This library provides several functionalities for Life-like cellular automata,
-//! including Conway's Game of Life. It does not provide frontend functionality for
-//! viewing or editing patterns through a user interface.
+//! including Conway's Game of Life.
 //!
 //! The following operations are supported:
 //!
@@ -16,40 +13,40 @@
 //! - Creating a new game from the given rule and board, advancing the generation
 //!   and querying the state
 //!
-//! # Examples
+//! It does not provide frontend functionality for viewing or editing patterns
+//! through a user interface.
+//!
+//! # Example
+//!
+//! Creating a new game from the pattern file, advancing it and show the last state:
 //!
 //! ```
-//! use std::fs::File;
-//! use life_backend::format::{Rle, RleBuilder};
+//! use life_backend::format;
 //! use life_backend::{Board, Game, Position};
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Read a pattern file
-//! let file = File::open("patterns/glider.rle")?;
-//! let handler = Rle::new(file)?;
+//! let handler = format::open("patterns/glider.rle")?;
 //!
-//! // Create a game
-//! let rule = handler.rule().to_owned();
+//! // Create a new game (the type parameter is `i16`)
+//! let rule = handler.rule();
 //! let board = handler
 //!   .live_cells()
-//!   .map(Position::<i16>::try_from)
-//!   .collect::<Result<Board<_>, _>>()?;
+//!   .map(Position::try_from)
+//!   .collect::<Result<Board<i16>, _>>()?;
 //! let mut game = Game::new(rule, board);
 //!
 //! // Advance the generation
-//! for _ in 0..4 {
+//! let generation = 4;
+//! for _ in 0..generation {
 //!   game.update();
 //! }
 //!
-//! // Output the result in RLE format
-//! let handler = game
-//!   .board()
-//!   .iter()
-//!   .copied()
-//!   .map(Position::try_from)
-//!   .collect::<Result<RleBuilder, _>>()?
-//!   .build()?;
-//! println!("{handler}");
+//! // Print the last state
+//! let bbox = game.board().bounding_box();
+//! let population = game.board().iter().count();
+//! println!("Generation {generation}: bounding-box = {bbox}, population = {population}");
+//! println!("{game}");
 //! # Ok(())
 //! # }
 //! ```
