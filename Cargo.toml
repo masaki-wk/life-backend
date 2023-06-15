@@ -1,6 +1,6 @@
 [package]
 name = "life-backend"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Masaki Wakabayashi"]
 edition = "2018"
 rust-version = "1.65.0" # because the code in this package uses `let...else` statements
