@@ -14,3 +14,9 @@ A backend implementation of Conway's Game of Life
 - cellular-automata
 - conway
 - game-of-life
+
+## Include in the home page
+
+- Releases: enable
+- Packages: disable
+- Environments: enable

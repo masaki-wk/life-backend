@@ -27,7 +27,7 @@ use crate::{Board, Position, Rule};
 ///     .map(|(x, y)| Position(x, y))
 ///     .collect();
 /// let mut game = Game::new(rule, board);
-/// game.update();
+/// game.advance();
 /// let bbox = game.board().bounding_box();
 /// assert_eq!(bbox.x(), &(0..=2));
 /// assert_eq!(bbox.y(), &(1..=3));
@@ -117,7 +117,7 @@ where
         position.moore_neighborhood_positions().filter(|pos| board.contains(pos)).count()
     }
 
-    /// Updates the state of the game.
+    /// Advance the game by one generation.
     ///
     /// # Examples
     ///
@@ -126,7 +126,7 @@ where
     /// let rule = Rule::conways_life();
     /// let board: Board<_> = [Position(0, 1), Position(1, 1), Position(2, 1)].iter().collect(); // Blinker pattern
     /// let mut game = Game::new(rule, board);
-    /// game.update();
+    /// game.advance();
     /// let board = game.board();
     /// let bbox = board.bounding_box();
     /// assert_eq!(bbox.x(), &(1..=1));
@@ -136,7 +136,7 @@ where
     /// assert_eq!(board.contains(&Position(1, 2)), true);
     /// ```
     ///
-    pub fn update(&mut self)
+    pub fn advance(&mut self)
     where
         T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + One + Bounded + ToPrimitive,
     {

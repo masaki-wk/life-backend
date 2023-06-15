@@ -39,7 +39,7 @@
 //! // Advance the generation
 //! let generation = 4;
 //! for _ in 0..generation {
-//!   game.update();
+//!   game.advance();
 //! }
 //!
 //! // Print the last state
