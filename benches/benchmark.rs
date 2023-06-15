@@ -15,7 +15,7 @@ where
 {
     let mut game = game.clone();
     for _ in 0..steps {
-        game.update();
+        game.advance();
     }
 }
 

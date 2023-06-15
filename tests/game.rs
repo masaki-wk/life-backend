@@ -26,7 +26,7 @@ fn print_game(game: &Game<I>, generation: usize) {
 
 fn advance_game(mut game: Game<I>, steps: usize) -> Game<I> {
     for _ in 0..steps {
-        game.update();
+        game.advance();
     }
     game
 }
@@ -36,7 +36,7 @@ fn advance_game_with_check(mut game: Game<I>, steps: usize, init: &Board<I>) -> 
         if i > 0 {
             assert_ne!(game.board(), init);
         }
-        game.update();
+        game.advance();
     }
     game
 }
