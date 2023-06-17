@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/life-backend.svg?logo=rust)](https://crates.io/crates/life-backend)
 [![Docs.rs](https://img.shields.io/badge/Docs.rs-life--backend-informational?logo=docs.rs)](https://docs.rs/life-backend)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/masaki-wk/life-backend/ci.yml?label=CI&logo=github)](https://github.com/masaki-wk/life-backend/actions/workflows/ci.yml)
-![Docs Status](https://img.shields.io/docsrs/life-backend?logo=docs.rs)
+[![Docs Status](https://img.shields.io/docsrs/life-backend?logo=docs.rs)](https://docs.rs/life-backend)
 
 A backend implementation of Conway's Game of Life.
 
