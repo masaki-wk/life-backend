@@ -6,7 +6,7 @@ A backend implementation of Conway's Game of Life
 
 ## Website
 
-(empty)
+<https://crates.io/crates/life-backend>
 
 ## Topics
 
