@@ -1,3 +1,5 @@
+//! Provides several functionalities related to file formats.
+
 use anyhow::{bail, Context as _, Result};
 use std::fmt;
 use std::fs::File;
