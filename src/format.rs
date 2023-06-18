@@ -1,3 +1,5 @@
+//! Provides several functionalities related to file formats.
+
 use anyhow::{bail, Context as _, Result};
 use std::fmt;
 use std::fs::File;
@@ -12,6 +14,22 @@ mod rle;
 pub use rle::{Rle, RleBuilder};
 
 /// Provides several methods for Conway's Game of Life pattern file formats.
+///
+/// # Examples
+///
+/// ```
+/// use std::fs::File;
+/// use life_backend::{Format, Rule};
+/// use life_backend::format::Plaintext;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let file = File::open("patterns/rpentomino.cells")?;
+/// let handler: Box<dyn Format> = Box::new(Plaintext::new(file)?);
+/// assert_eq!(handler.rule(), Rule::conways_life());
+/// assert_eq!(handler.live_cells().count(), 5);
+/// # Ok(())
+/// # }
+/// ```
+///
 pub trait Format: fmt::Display {
     /// Returns the rule.
     ///
