@@ -1,0 +1,23 @@
+name: Feature Request
+description: Suggest an idea for this project
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this request!
+        Before submitting an issue, please make sure the issue has not been already addressed.
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does this feature solve?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution
+      description: If you have a solution suggestion, please describe it.
+    validations:
+      required: false
