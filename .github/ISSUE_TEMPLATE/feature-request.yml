@@ -21,3 +21,10 @@ body:
       description: If you have a solution suggestion, please describe it.
     validations:
       required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Provide any additional notes that might be helpful.
+    validations:
+      required: false

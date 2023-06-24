@@ -33,3 +33,10 @@ body:
       label: What actually happened
     validations:
       required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Provide any additional notes that might be helpful.
+    validations:
+      required: false
