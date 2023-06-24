@@ -22,16 +22,14 @@ body:
     validations:
       required: false
   - type: textarea
-    id: expected-behavior
+    id: expectation
     attributes:
-      label: Expected behavior
-      description: What did you expect to happen.
+      label: What was expected
     validations:
       required: false
   - type: textarea
-    id: what-happened
+    id: result
     attributes:
-      label: What happened
-      description: What actually happend.
+      label: What actually happened
     validations:
       required: false
