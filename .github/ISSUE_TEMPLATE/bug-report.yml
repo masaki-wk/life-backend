@@ -1,0 +1,35 @@
+name: Bug Report
+description: Create a report to help us reproduce and fix the bug
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Before submitting an issue, please make sure the issue has not been already addressed.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A short summary of the bug report.
+    validations:
+      required: true
+  - type: textarea
+    id: code-sample
+    attributes:
+      label: Code sample
+      description: Code sample that causes the bug.
+    validations:
+      required: false
+  - type: textarea
+    id: expectation
+    attributes:
+      label: What was expected
+    validations:
+      required: false
+  - type: textarea
+    id: result
+    attributes:
+      label: What actually happened
+    validations:
+      required: false
