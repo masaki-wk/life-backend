@@ -1,6 +1,6 @@
 # Contribution Guide
 
-Thanks for taking the time to contribute!  This guide provides an overview of
+Thank you for taking the time to contribute!  This guide provides an overview of
 how to contribute to the project.
 
 All contributors are expected to follow [the Code of Conduct](CODE_OF_CONDUCT.md).
@@ -17,24 +17,26 @@ All contributors are expected to follow [the Code of Conduct](CODE_OF_CONDUCT.md
 ## Instructions to contribute
 
 - Reporting bugs, Requesting/suggesting features
-  - Use [Issues](https://github.com/masaki-wk/life-backend/issues)
+  - Please use [Issues](https://github.com/masaki-wk/life-backend/issues)
 - Asking questions, discussing topics related to the project
-  - Use [Discussions](https://github.com/masaki-wk/life-backend/discussions)
-- Changing source code or documentation (all documentation is embedded in code)
-  1. Set up the development environment (described later)
-  2. Create a new topic branch in the repository for the changes, see
+  - Please use [Discussions](https://github.com/masaki-wk/life-backend/discussions)
+- Making changes to the source code or documentation
+  (all documentation is embedded in the code)
+  1. Set up the development environment (as described later)
+  2. Create a new topic branch in the repository for the changes.  Refer to
      [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
-  3. Make changes
+     for more details
+  3. Make the necessary changes
   4. Create a pull request
-     - Use [Pull requests](https://github.com/masaki-wk/life-backend/pulls)
+     - Please use [Pull requests](https://github.com/masaki-wk/life-backend/pulls)
 
 ## How to set up the development environment
 
-This project uses the tools listed below.  Many of these are common tools for
+This project uses the tools listed below, many of which are common tools for
 Rust programming.  Please refer to each link for details.  No platform-specific
 tools are required.
 
-- common Rust development environment, including `rustc` and `cargo`:
+- Common Rust development environment, including `rustc` and `cargo`:
   see [Install Rust](https://www.rust-lang.org/tools/install)
 - [Rustfmt](https://rust-lang.github.io/rustfmt/)
 - [Clippy](https://doc.rust-lang.org/clippy/)
@@ -44,13 +46,13 @@ tools are required.
 ## Required checks for changes
 
 Pull requests to `main` branch must pass the following checks, which are
-automatically perform via GitHub Actions.
+automatically performed via GitHub Actions.
 
-- Already formatted via Rustfmt
-- Already lint-checked with no errors nor warnings via Clippy
-- README.md was generated from the committed source code via cargo-readme
-- All tests passed via `cargo test`
+- Code formatting using Rustfmt should already be applied
+- Lint-checks using Clippy should have no errors or warnings
+- README.md should be generated from the committed code using cargo-readme
+- All tests should pass by executing `cargo test`
 
-Missing doc comments of public items are not allowed because the lint rule
+Missing doc comments for public items are not allowed because the lint rule
 [missing_docs](https://doc.rust-lang.org/rustdoc/lints.html#missing_docs) is
 enabled.

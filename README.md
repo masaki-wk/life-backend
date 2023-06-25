@@ -8,17 +8,17 @@
 
 A backend implementation of Conway's Game of Life.
 
-This library provides several functionalities for Life-like cellular automata,
-including Conway's Game of Life.
+This library provides several functionalities for simulating Life-like cellular
+automata, including Conway's Game of Life.
 
 The following operations are supported:
 
 - Parsing or writing patterns of Life-like cellular automata
-  (supported formats: Plaintext and RLE)
-- Parsing or writing a rule in the birth/survival notation (e.g., `"B3/S23"`)
+  (Plaintext and RLE formats are supported)
+- Parsing or writing rules in the birth/survival notation (e.g., `"B3/S23"`)
 - Managing a board, a two-dimensional orthogonal grid map of live and dead cells
   (The type of the x- and y-coordinates of positions is generalized)
-- Creating a new game from the given rule and board, advancing the generation
+- Creating a new game based on a given rule and board, advancing the generation
   and querying the state
 
 It does not provide frontend functionality for viewing or editing patterns
@@ -26,7 +26,8 @@ through a user interface.
 
 ## Examples
 
-Creating a new game from a pattern file, advancing it and show the last state:
+The following code example demonstrates how to create a new game from a pattern
+file, advance the game and print its final state:
 
 ```rust
 use life_backend::format;
@@ -57,8 +58,8 @@ println!("{game}");
 ```
 
 `examples/game.rs` is a simple Game of Life program.  It creates a new game from
-a pattern file, advances it and prints its state to the standard output.  You can
-run this program like as:
+a pattern file, advances the game and prints its state to the standard output.
+You can run this program like as:
 
 ```shell
 $ cargo run --example game -- --generation=1 patterns/glider.rle
