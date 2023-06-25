@@ -14,7 +14,7 @@ All contributors are expected to follow [the Code of Conduct](CODE_OF_CONDUCT.md
 - [Documentation on Docs.rs](https://docs.rs/life-backend/latest/life_backend/)
 - [README](README.md) for users
 
-## Quick instructions to contribute
+## Instructions to contribute
 
 - Reporting bugs, Requesting/suggesting features
   - Use [Issues](https://github.com/masaki-wk/life-backend/issues)
@@ -22,9 +22,11 @@ All contributors are expected to follow [the Code of Conduct](CODE_OF_CONDUCT.md
   - Use [Discussions](https://github.com/masaki-wk/life-backend/discussions)
 - Changing source code or documentation (all documentation is embedded in code)
   1. Set up the development environment (described later)
-  2. Clone the repository and create a new topic branch for the changes, see
+  2. Create a new topic branch in the repository for the changes, see
      [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
-  3. Use [Pull requests](https://github.com/masaki-wk/life-backend/pulls)
+  3. Make changes
+  4. Create a pull request
+     - Use [Pull requests](https://github.com/masaki-wk/life-backend/pulls)
 
 ## How to set up the development environment
 
