@@ -16,7 +16,7 @@
 //! It does not provide frontend functionality for viewing or editing patterns
 //! through a user interface.
 //!
-//! # Example
+//! # Examples
 //!
 //! Creating a new game from the pattern file, advancing it and show the last state:
 //!
@@ -49,6 +49,23 @@
 //! println!("{game}");
 //! # Ok(())
 //! # }
+//! ```
+//!
+//! `examples/game.rs` is a simple game-of-life program on CLI.
+//! You can run this program like as:
+//!
+//! ```shell
+//! $ cargo run --example game -- --generation=1 patterns/glider.rle
+//! ...
+//! Generation 0: bounding-box = (x:[0, 2], y:[0, 2]), population = 5
+//! .O.
+//! ..O
+//! OOO
+//!
+//! Generation 1: bounding-box = (x:[0, 2], y:[1, 3]), population = 5
+//! O.O
+//! .OO
+//! .O.
 //! ```
 
 // Lint settings for documentation
