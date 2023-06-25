@@ -18,7 +18,7 @@
 //!
 //! # Examples
 //!
-//! Creating a new game from the pattern file, advancing it and show the last state:
+//! Creating a new game from a pattern file, advancing it and show the last state:
 //!
 //! ```
 //! use life_backend::format;
@@ -51,8 +51,9 @@
 //! # }
 //! ```
 //!
-//! `examples/game.rs` is a simple game-of-life program on CLI.
-//! You can run this program like as:
+//! `examples/game.rs` is a simple Game of Life program.  It creates a new game from
+//! a pattern file, advances it and prints its state to the standard output.  You can
+//! run this program like as:
 //!
 //! ```shell
 //! $ cargo run --example game -- --generation=1 patterns/glider.rle
