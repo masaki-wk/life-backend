@@ -10,12 +10,17 @@
 
 ## Checklist before requesting a review
 
-- [ ] I have filled the description shown above
-- [ ] Test for the changes have been added (required for bug fixes / features)
-- [ ] Documentation have been added / updated (required for bug fixes / features)
-- [ ] I have set related issues
-- [ ] I have set appropriate labels, e.g., `bug`, `enhancement`
-- [ ] I have performed a self-review of my code
+- Tests
+  - [ ] Tests for the changes have been added (required for bug fixes / features)
+  - [ ] No need to add any tests
+- Documentation
+  - [ ] Documentation have been added / updated (required for bug fixes / features)
+  - [ ] No need to add / update any documentation
+- Pull request
+  - [ ] I have filled the description shown above
+  - [ ] I have set related issues / related issues not exist
+  - [ ] I have set appropriate labels, e.g., `bug`, `enhancement`
+  - [ ] I have performed a self-review of my code
 
 ## Notes
 
