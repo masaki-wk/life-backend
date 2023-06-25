@@ -50,3 +50,7 @@ automatically perform via GitHub Actions.
 - Already lint-checked with no errors nor warnings via Clippy
 - README.md was generated from the committed source code via cargo-readme
 - All tests passed via `cargo test`
+
+Missing doc comments of public items are not allowed because the lint rule
+[missing_docs](https://doc.rust-lang.org/rustdoc/lints.html#missing_docs) is
+enabled.
