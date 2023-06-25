@@ -1,37 +1,29 @@
-use anyhow::{Context as _, Result};
-use std::env;
+use anyhow::Result;
+use clap::Parser;
 
 use life_backend::format;
 use life_backend::{Board, Game, Position};
 
 use i16 as I;
 
-struct Config {
-    path_str: String,
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(help = "Pattern file path")]
+    path: String,
+
+    #[arg(short, long, default_value_t = 0, help = "Target generation")]
     generation: usize,
+
+    #[arg(short, long, default_value_t = 1, help = "Step size")]
     step_size: usize,
 }
 
-impl Config {
-    fn new(mut args: env::Args) -> Result<Self> {
-        args.next();
-        let path_str = args.next().context("Not enough arguments")?;
-        let generation = args.next().map_or(Ok(0), |s| s.parse().context("2nd argument is not a number"))?;
-        let step_size = args.next().map_or(Ok(1), |s| s.parse().context("3rd argument is not a number"))?;
-        Ok(Self {
-            path_str,
-            generation,
-            step_size,
-        })
-    }
-}
-
-fn run(config: Config) -> Result<()> {
-    let handler = format::open(&config.path_str)?;
+fn run(args: Args) -> Result<()> {
+    let handler = format::open(&args.path)?;
     let rule = handler.rule();
     let board = handler.live_cells().map(Position::try_from).collect::<Result<Board<_>, _>>()?;
     let game = Game::new(rule, board);
-    simulate(game, config.generation, config.step_size);
+    simulate(game, args.generation, args.step_size);
     Ok(())
 }
 
@@ -53,8 +45,8 @@ fn simulate(mut game: Game<I>, generation: usize, step_size: usize) {
 }
 
 fn main() -> Result<()> {
-    let config = Config::new(env::args())?;
-    run(config)
+    let args = Args::parse();
+    run(args)
 }
 
 #[cfg(test)]
@@ -64,7 +56,7 @@ mod tests {
     #[test]
     fn glider() -> Result<()> {
         let status = Command::new("cargo")
-            .args(["run", "--example", "game", "patterns/glider.rle", "4", "4"])
+            .args(["run", "--example", "game", "--", "--generation=4", "--step-size=4", "patterns/glider.rle"])
             .status()?;
         assert!(status.success());
         Ok(())
