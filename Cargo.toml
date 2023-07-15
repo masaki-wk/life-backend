@@ -17,7 +17,7 @@ num-iter = "0.1.43"
 num-traits = "0.2.15"
 
 [dev-dependencies]
-clap = { version = "4.3.11", features = ["derive"] } # only for examples/games.rs
+clap = { version = "4.3.12", features = ["derive"] } # only for examples/games.rs
 criterion = { version = "0.5.1", features = ["html_reports"] } # only for benches/benchmark.rs
 
 [[bench]]
