@@ -11,7 +11,7 @@ keywords = ["cellular-automata", "conway", "game-of-life"]
 categories = ["science", "simulation"]
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0.72"
 fnv = "1.0.7"
 num-iter = "0.1.43"
 num-traits = "0.2.15"
