@@ -14,7 +14,7 @@ categories = ["science", "simulation"]
 anyhow = "1.0.75"
 fnv = "1.0.7"
 num-iter = "0.1.43"
-num-traits = "0.2.15"
+num-traits = "0.2.16"
 
 [dev-dependencies]
 clap = { version = "4.3.12", features = ["derive"] } # only for examples/games.rs
