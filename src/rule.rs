@@ -199,10 +199,7 @@ impl FromStr for Rule {
         } else {
             return Err(ParseRuleError);
         };
-        let Some(slices) = numbers
-            .into_iter()
-            .map(convert_numbers_to_slice)
-            .collect::<Option<Vec<_>>>() else {
+        let Some(slices) = numbers.into_iter().map(convert_numbers_to_slice).collect::<Option<Vec<_>>>() else {
             return Err(ParseRuleError);
         };
         Ok(Self {
