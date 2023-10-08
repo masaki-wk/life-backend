@@ -58,7 +58,7 @@ impl RleParser {
             if !self.finished {
                 let (contents, terminated) = Self::parse_content_line(line)?;
                 let advanced_position = Self::advanced_position(header, self.position, &contents)?;
-                self.contents.extend(contents.into_iter());
+                self.contents.extend(contents);
                 self.position = advanced_position;
                 self.finished = terminated;
             }
