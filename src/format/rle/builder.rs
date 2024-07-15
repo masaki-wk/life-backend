@@ -218,10 +218,13 @@ where
                 .collect()
         };
         let rule = self.rule.drain().unwrap_or(Rule::conways_life());
-        let contents_group_by_y = self.contents.into_iter().fold(HashMap::new(), |mut acc, Position(x, y)| {
-            acc.entry(y).or_insert_with(Vec::new).push(x);
-            acc
-        });
+        let contents_group_by_y = self
+            .contents
+            .into_iter()
+            .fold(HashMap::<usize, Vec<_>>::new(), |mut acc: HashMap<usize, _>, Position(x, y)| {
+                acc.entry(y).or_default().push(x);
+                acc
+            });
         let contents_sorted = {
             let mut contents_sorted: Vec<_> = contents_group_by_y.into_iter().collect();
             contents_sorted.sort_by(|(y0, _), (y1, _)| y0.partial_cmp(y1).unwrap()); // this unwrap never panic because <usize>.partial_cmp(<usize>) always returns Some(_)
