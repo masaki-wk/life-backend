@@ -183,8 +183,8 @@ mod tests {
     }
     #[test]
     fn moore_neighborhood_positions_bounds() {
-        let min = I::min_value();
-        let max = I::max_value();
+        let min = I::MIN;
+        let max = I::MAX;
         let zero: I = 0;
         for (pos_tuple, expected_count) in [
             ((min, min), 3),
